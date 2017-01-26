@@ -115,6 +115,8 @@ func startInternalContentService() {
 		"Document Store",
 		enrichedContentApiHealthUri,
 		documentStoreApiHealthUri,
+		"panic guide",
+		"panic guide",
 		"",
 		"",
 	}

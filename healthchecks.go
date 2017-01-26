@@ -11,7 +11,7 @@ func (sc *ServiceConfig) enrichedContentAppCheck() fthealth.Check {
 	return fthealth.Check{
 		BusinessImpact:   "No articles would be available",
 		Name:             sc.enrichedContentAppName + " Availabililty Check",
-		PanicGuide:       sc.enrichedContentAppName,
+		PanicGuide:       sc.enrichedContentAppPanicGuide,
 		Severity:         1,
 		TechnicalSummary: "Checks that " + sc.enrichedContentAppName + " Service is reachable. Internal Content Service requests enriched content from " + sc.enrichedContentAppName + " service.",
 		Checker: func() (string, error) {
@@ -24,7 +24,7 @@ func (sc *ServiceConfig) documentStoreAppCheck() fthealth.Check {
 	return fthealth.Check{
 		BusinessImpact:   "Articles won't have the internal component",
 		Name:             sc.documentStoreAppName + " Availabililty Check",
-		PanicGuide:       sc.documentStoreAppName,
+		PanicGuide:       sc.documentStoreAppPanicGuide,
 		Severity:         2,
 		TechnicalSummary: "Checks that " + sc.documentStoreAppName + " Service is reachable. Internal Content Service relies on " + sc.documentStoreAppName + " service to get the internal components.",
 		Checker: func() (string, error) {
