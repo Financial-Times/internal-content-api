@@ -28,15 +28,15 @@ func main() {
 		EnvVar: "APP_PORT",
 	})
 	enrichedContentApiUri := app.String(cli.StringOpt{
-		Name: "enriched-content-api-uri",
-		Value: "http://localhost:8080/__enriched-content-read-api/enrichedcontent/",
-		Desc: "Enriched Content API URI",
+		Name:   "enriched-content-api-uri",
+		Value:  "http://localhost:8080/__enriched-content-read-api/enrichedcontent/",
+		Desc:   "Enriched Content API URI",
 		EnvVar: "ENRICHED_CONTENT_API_URI",
 	})
 	documentStoreApiUri := app.String(cli.StringOpt{
-		Name: "document-store-api-uri",
-		Value: "http://localhost:8080/__document-store-api/internalcomponents/",
-		Desc: "Document Store API URI",
+		Name:   "document-store-api-uri",
+		Value:  "http://localhost:8080/__document-store-api/internalcomponents/",
+		Desc:   "Document Store API URI",
 		EnvVar: "DOCUMENT_STORE_API_URI",
 	})
 	enrichedContentAppName := app.String(cli.StringOpt{
@@ -62,6 +62,12 @@ func main() {
 		Value:  "http://localhost:8080/__enriched-content-read-api/__health",
 		Desc:   "URI of the Document Store Application health endpoint",
 		EnvVar: "DOCUMENT_STORE_APP_HEALTH_URI",
+	})
+	envAPIHost := app.String(cli.StringOpt{
+		Name:   "env-api-host",
+		Value:  "api.ft.com",
+		Desc:   "API host to use for URLs in responses",
+		EnvVar: "ENV_API_HOST",
 	})
 	graphiteTCPAddress := app.String(cli.StringOpt{
 		Name:   "graphite-tcp-address",
@@ -91,6 +97,7 @@ func main() {
 			*documentStoreAppName,
 			*enrichedContentAppHealthUri,
 			*documentStoreAppHealthUri,
+			*envAPIHost,
 
 			*graphiteTCPAddress,
 			*graphitePrefix,
@@ -101,7 +108,7 @@ func main() {
 		h := setupServiceHandler(sc, metricsHandler, contentHandler)
 		appLogger.ServiceStartedEvent(*serviceName, sc.asMap())
 		metricsHandler.OutputMetricsIfRequired(*graphiteTCPAddress, *graphitePrefix, *logMetrics)
-		err := http.ListenAndServe(":" + *appPort, h)
+		err := http.ListenAndServe(":"+*appPort, h)
 		if err != nil {
 			logrus.Fatalf("Unable to start server: %v", err)
 		}
@@ -129,22 +136,24 @@ type ServiceConfig struct {
 	documentStoreAppName        string
 	enrichedContentAppHealthUri string
 	documentStoreAppHealthUri   string
+	envAPIHost                  string
 
-	graphiteTCPAddress          string
-	graphitePrefix              string
+	graphiteTCPAddress string
+	graphitePrefix     string
 }
 
 func (sc ServiceConfig) asMap() map[string]interface{} {
 	return map[string]interface{}{
-		"service-name":              sc.serviceName,
-		"service-port":              sc.appPort,
-		"enriched-content-api-uri":  sc.enrichedContentApiUri,
-		"document-store-api-uri":    sc.documentStoreApiUri,
-		"enriched-content-app-name": sc.enrichedContentAppName,
-		"document-store-app-name":   sc.documentStoreAppName,
-		"enriched-content-app-health-uri":  sc.enrichedContentAppHealthUri,
-		"document-store-app-health-uri":     sc.documentStoreAppHealthUri,
-		"graphite-tcp-address":      sc.graphiteTCPAddress,
-		"graphite-prefix":           sc.graphitePrefix,
+		"service-name":                    sc.serviceName,
+		"service-port":                    sc.appPort,
+		"enriched-content-api-uri":        sc.enrichedContentApiUri,
+		"document-store-api-uri":          sc.documentStoreApiUri,
+		"enriched-content-app-name":       sc.enrichedContentAppName,
+		"document-store-app-name":         sc.documentStoreAppName,
+		"enriched-content-app-health-uri": sc.enrichedContentAppHealthUri,
+		"document-store-app-health-uri":   sc.documentStoreAppHealthUri,
+		"graphite-tcp-address":            sc.graphiteTCPAddress,
+		"graphite-prefix":                 sc.graphitePrefix,
+		"env-api-host":                    sc.envAPIHost,
 	}
 }

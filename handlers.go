@@ -1,14 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	tid "github.com/Financial-Times/transactionid-utils-go"
 	"github.com/gorilla/mux"
 	"golang.org/x/net/context"
-	"net/http"
-	"encoding/json"
-	"io/ioutil"
 	"io"
+	"io/ioutil"
+	"net/http"
 )
 
 const uuidKey = "uuid"
@@ -38,7 +38,7 @@ func (handler ContentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 		return
 	}
 	// topper response is nil when is not found
-	if (topperResponse == nil) {
+	if topperResponse == nil {
 		io.Copy(responseWriter, contentResponse.Body)
 		return
 	}
@@ -63,37 +63,56 @@ func (handler ContentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 	}
 
 	contentBytes, err := ioutil.ReadAll(contentResponse.Body)
-	if (err != nil) {
+	if err != nil {
 		contentEvent.err = err
 		handler.handleErrorEvent(responseWriter, contentEvent, "Error while handling the response body")
 		return
 	}
 	topperBytes, err := ioutil.ReadAll(topperResponse.Body)
-	if (err != nil) {
+	if err != nil {
 		topperEvent.err = err
-		handler.handleErrorEvent(responseWriter, topperEvent, "Error while handling the response body");
+		handler.handleErrorEvent(responseWriter, topperEvent, "Error while handling the response body")
 		return
 	}
 
-	err = json.Unmarshal(contentBytes, &content);
-	if (err != nil) {
+	err = json.Unmarshal(contentBytes, &content)
+	if err != nil {
 		contentEvent.err = err
 		handler.handleErrorEvent(responseWriter, contentEvent, "Error while parsing the response json")
 		return
 	}
-	err = json.Unmarshal(topperBytes, &topper);
-	if (err != nil) {
+	err = json.Unmarshal(topperBytes, &topper)
+	if err != nil {
 		topperEvent.err = err
-		handler.handleErrorEvent(responseWriter, topperEvent, "Error while parsing the response json");
+		handler.handleErrorEvent(responseWriter, topperEvent, "Error while parsing the response json")
 		return
 	}
+	//hack
+	content["topper"] = topper["topper"]
 
-	content["topper"] = topper["topper"];
+	resolveImageURLs(topper["topper"].(map[string]interface{}), handler.serviceConfig.envAPIHost)
 
-
-	resultBytes, _ := json.Marshal(content);
+	resultBytes, _ := json.Marshal(content)
 	responseWriter.Write(resultBytes)
 	handler.metrics.recordResponseEvent()
+}
+
+func resolveImageURLs(topper map[string]interface{}, APIHost string) {
+	ii := topper["images"]
+	images, ok := ii.([]interface{})
+	if !ok {
+		return
+	}
+	for i, iimg := range images {
+		img, ok := iimg.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		imgURL := "http://" + APIHost + "/content/" + img["id"].(string)
+		img["id"] = imgURL
+		images[i] = img
+	}
+	topper["images"] = images
 }
 
 func (h ContentHandler) getEnrichedContent(ctx context.Context, w http.ResponseWriter) (ok bool, resp *http.Response) {
@@ -137,7 +156,7 @@ func (h ContentHandler) handleResponse(req *http.Request, extResp *http.Response
 		h.log.ResponseEvent(appName, req.URL.String(), extResp, uuid)
 		return true, extResp
 	case http.StatusNotFound:
-		if (doFail) {
+		if doFail {
 			h.handleNotFound(w, extResp, appName, req.URL.String(), uuid)
 			return false, nil
 		} else {
@@ -146,7 +165,7 @@ func (h ContentHandler) handleResponse(req *http.Request, extResp *http.Response
 			return true, nil
 		}
 	default:
-		if (doFail) {
+		if doFail {
 			h.handleFailedRequest(w, extResp, appName, req.URL.String(), uuid)
 			return false, nil
 		} else {

@@ -19,7 +19,7 @@ var enrichedContentApiMock *httptest.Server
 var documentStoreApiMock *httptest.Server
 
 func startEnrichedContentApiMock(status string) {
-	router := mux.NewRouter();
+	router := mux.NewRouter()
 	var getContent http.HandlerFunc
 	var health http.HandlerFunc
 
@@ -35,10 +35,10 @@ func startEnrichedContentApiMock(status string) {
 		health = internalErrorHandler
 	}
 
-	router.Path("/enrichedcontent/{uuid}").Handler(handlers.MethodHandler{"GET" : http.HandlerFunc(getContent)})
-	router.Path("/__health").Handler(handlers.MethodHandler{"GET" : http.HandlerFunc(health)})
+	router.Path("/enrichedcontent/{uuid}").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(getContent)})
+	router.Path("/__health").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(health)})
 
-	enrichedContentApiMock = httptest.NewServer(router);
+	enrichedContentApiMock = httptest.NewServer(router)
 }
 
 func happyEnrichedContentApiMock(writer http.ResponseWriter, request *http.Request) {
@@ -63,7 +63,7 @@ func happyHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func startDocumentStoreApiMock(status string) {
-	router := mux.NewRouter();
+	router := mux.NewRouter()
 	var getContent http.HandlerFunc
 	var health http.HandlerFunc
 
@@ -79,10 +79,10 @@ func startDocumentStoreApiMock(status string) {
 		health = internalErrorHandler
 	}
 
-	router.Path("/internalcomponents/{uuid}").Handler(handlers.MethodHandler{"GET" : http.HandlerFunc(getContent)})
-	router.Path("/__health").Handler(handlers.MethodHandler{"GET" : http.HandlerFunc(health)})
+	router.Path("/internalcomponents/{uuid}").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(getContent)})
+	router.Path("/__health").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(health)})
 
-	documentStoreApiMock = httptest.NewServer(router);
+	documentStoreApiMock = httptest.NewServer(router)
 }
 
 func happyDocumentStoreApiMock(writer http.ResponseWriter, request *http.Request) {
@@ -115,6 +115,7 @@ func startInternalContentService() {
 		"Document Store",
 		enrichedContentApiHealthUri,
 		documentStoreApiHealthUri,
+		"api.ft.com",
 		"",
 		"",
 	}
