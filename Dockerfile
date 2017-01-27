@@ -1,11 +1,15 @@
 FROM alpine:3.4
 
-ADD *.go .git /internal-content-api/
+ADD *.go /internal-content-api/
+
+ADD .git /internal-content-api/.git
+
+ADD test-resources /internal-content-api/test-resources
 
 RUN apk --update add git go ca-certificates \
   && export GOPATH=/gopath \
   && REPO_PATH="github.com/Financial-Times/internal-content-api" \
-  && cd content-preview \
+  && cd internal-content-api \
   && BUILDINFO_PACKAGE="github.com/Financial-Times/internal-content-api/buildinfo." \
   && VERSION="version=$(git describe --tag --always 2> /dev/null)" \
   && DATETIME="dateTime=$(date -u +%Y%m%d%H%M%S)" \
