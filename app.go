@@ -63,6 +63,18 @@ func main() {
 		Desc:   "URI of the Document Store Application health endpoint",
 		EnvVar: "DOCUMENT_STORE_APP_HEALTH_URI",
 	})
+	enrichedContentAppPanicGuide := app.String(cli.StringOpt{
+		Name:   "enriched-content-app-panic-guide",
+		Value:  "https://sites.google.com/a/ft.com/dynamic-publishing-team/content-public-read-panic-guide",
+		Desc:   "Enriched content appllication application panic guide url for healthcheck. Default panic guide is for content public read.",
+		EnvVar: "ENRICHED_CONTENT_APP_PANIC_GUIDE",
+	})
+	documentStoreAppPanicGuide := app.String(cli.StringOpt{
+		Name:   "document-store-app-panic-guide",
+		Value:  "https://sites.google.com/a/ft.com/dynamic-publishing-team/document-store-api-panic-guide",
+		Desc:   "Document Store application panic guide url for healthcheck. Default panic guide is for document store api",
+		EnvVar: "DOCUMENT_STORE_APP_PANIC_GUIDE",
+	})
 	envAPIHost := app.String(cli.StringOpt{
 		Name:   "env-api-host",
 		Value:  "api.ft.com",
@@ -97,8 +109,9 @@ func main() {
 			*documentStoreAppName,
 			*enrichedContentAppHealthUri,
 			*documentStoreAppHealthUri,
+			*enrichedContentAppPanicGuide,
+			*documentStoreAppPanicGuide,
 			*envAPIHost,
-
 			*graphiteTCPAddress,
 			*graphitePrefix,
 		}
@@ -108,7 +121,7 @@ func main() {
 		h := setupServiceHandler(sc, metricsHandler, contentHandler)
 		appLogger.ServiceStartedEvent(*serviceName, sc.asMap())
 		metricsHandler.OutputMetricsIfRequired(*graphiteTCPAddress, *graphitePrefix, *logMetrics)
-		err := http.ListenAndServe(":"+*appPort, h)
+		err := http.ListenAndServe(":" + *appPort, h)
 		if err != nil {
 			logrus.Fatalf("Unable to start server: %v", err)
 		}
@@ -128,32 +141,35 @@ func setupServiceHandler(sc ServiceConfig, metricsHandler Metrics, contentHandle
 }
 
 type ServiceConfig struct {
-	serviceName                 string
-	appPort                     string
-	enrichedContentApiUri       string
-	documentStoreApiUri         string
-	enrichedContentAppName      string
-	documentStoreAppName        string
-	enrichedContentAppHealthUri string
-	documentStoreAppHealthUri   string
-	envAPIHost                  string
-
-	graphiteTCPAddress string
-	graphitePrefix     string
+	serviceName                  string
+	appPort                      string
+	enrichedContentApiUri        string
+	documentStoreApiUri          string
+	enrichedContentAppName       string
+	documentStoreAppName         string
+	enrichedContentAppHealthUri  string
+	documentStoreAppHealthUri    string
+	enrichedContentAppPanicGuide string
+	documentStoreAppPanicGuide   string
+	envAPIHost                   string
+	graphiteTCPAddress           string
+	graphitePrefix               string
 }
 
 func (sc ServiceConfig) asMap() map[string]interface{} {
 	return map[string]interface{}{
-		"service-name":                    sc.serviceName,
-		"service-port":                    sc.appPort,
-		"enriched-content-api-uri":        sc.enrichedContentApiUri,
-		"document-store-api-uri":          sc.documentStoreApiUri,
-		"enriched-content-app-name":       sc.enrichedContentAppName,
-		"document-store-app-name":         sc.documentStoreAppName,
-		"enriched-content-app-health-uri": sc.enrichedContentAppHealthUri,
-		"document-store-app-health-uri":   sc.documentStoreAppHealthUri,
-		"graphite-tcp-address":            sc.graphiteTCPAddress,
-		"graphite-prefix":                 sc.graphitePrefix,
-		"env-api-host":                    sc.envAPIHost,
+		"service-name":                     sc.serviceName,
+		"service-port":                     sc.appPort,
+		"enriched-content-api-uri":         sc.enrichedContentApiUri,
+		"document-store-api-uri":           sc.documentStoreApiUri,
+		"enriched-content-app-name":        sc.enrichedContentAppName,
+		"document-store-app-name":          sc.documentStoreAppName,
+		"enriched-content-app-health-uri":  sc.enrichedContentAppHealthUri,
+		"document-store-app-health-uri":    sc.documentStoreAppHealthUri,
+		"enriched-content-app-panic-guide": sc.enrichedContentAppPanicGuide,
+		"document-store-app-panic-guide" :  sc.documentStoreAppPanicGuide,
+		"env-api-host":                     sc.envAPIHost,
+		"graphite-tcp-address":             sc.graphiteTCPAddress,
+		"graphite-prefix":                  sc.graphitePrefix,
 	}
 }

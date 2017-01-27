@@ -35,8 +35,8 @@ func startEnrichedContentApiMock(status string) {
 		health = internalErrorHandler
 	}
 
-	router.Path("/enrichedcontent/{uuid}").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(getContent)})
-	router.Path("/__health").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(health)})
+	router.Path("/enrichedcontent/{uuid}").Handler(handlers.MethodHandler{"GET" : http.HandlerFunc(getContent)})
+	router.Path("/__health").Handler(handlers.MethodHandler{"GET" : http.HandlerFunc(health)})
 
 	enrichedContentApiMock = httptest.NewServer(router)
 }
@@ -79,8 +79,8 @@ func startDocumentStoreApiMock(status string) {
 		health = internalErrorHandler
 	}
 
-	router.Path("/internalcomponents/{uuid}").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(getContent)})
-	router.Path("/__health").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(health)})
+	router.Path("/internalcomponents/{uuid}").Handler(handlers.MethodHandler{"GET" : http.HandlerFunc(getContent)})
+	router.Path("/__health").Handler(handlers.MethodHandler{"GET" : http.HandlerFunc(health)})
 
 	documentStoreApiMock = httptest.NewServer(router)
 }
@@ -115,6 +115,8 @@ func startInternalContentService() {
 		"Document Store",
 		enrichedContentApiHealthUri,
 		documentStoreApiHealthUri,
+		"panic guide",
+		"panic guide",
 		"api.ft.com",
 		"",
 		"",
