@@ -33,7 +33,6 @@ func (handler ContentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 	}
 	defer contentResponse.Body.Close()
 	success, topperResponse := handler.getInternalComponent(ctx, responseWriter)
-
 	if !success {
 		return
 	}
@@ -74,7 +73,7 @@ func (handler ContentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 		handler.handleErrorEvent(responseWriter, topperEvent, "Error while handling the response body");
 		return
 	}
-
+	fmt.Println("this is the content ",len(contentBytes), string(contentBytes))
 	err = json.Unmarshal(contentBytes, &content);
 	if (err != nil) {
 		contentEvent.err = err

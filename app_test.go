@@ -12,6 +12,9 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"fmt"
+	"path/filepath"
+	"log"
 )
 
 var internalContentApi *httptest.Server
@@ -42,10 +45,26 @@ func startEnrichedContentApiMock(status string) {
 }
 
 func happyEnrichedContentApiMock(writer http.ResponseWriter, request *http.Request) {
+
+	visit := func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			fmt.Println("dir:  ", path)
+		} else {
+			fmt.Println("file: ", path)
+		}
+		return nil
+	}
+
+	err2 := filepath.Walk("./", visit)
+	if err2 != nil {
+		log.Fatal(err2)
+	}
+
 	file, err := os.Open("test-resources/enriched-content-api-output.json")
 	if err != nil {
 		return
 	}
+
 	defer file.Close()
 	io.Copy(writer, file)
 }
@@ -146,7 +165,6 @@ func TestShouldReturn200AndInternalComponentOutput(t *testing.T) {
 		panic(err)
 	}
 	defer resp.Body.Close()
-
 	assert.Equal(t, http.StatusOK, resp.StatusCode, "Response status should be 200")
 
 	file, _ := os.Open("test-resources/full-internal-content-api-output.json")
