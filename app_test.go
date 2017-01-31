@@ -14,17 +14,17 @@ import (
 	"testing"
 )
 
-var internalContentApi *httptest.Server
-var enrichedContentApiMock *httptest.Server
-var documentStoreApiMock *httptest.Server
+var internalContentAPI *httptest.Server
+var enrichedContentAPIMock *httptest.Server
+var documentStoreAPIMock *httptest.Server
 
-func startEnrichedContentApiMock(status string) {
+func startEnrichedContentAPIMock(status string) {
 	router := mux.NewRouter()
 	var getContent http.HandlerFunc
 	var health http.HandlerFunc
 
 	if status == "happy" {
-		getContent = happyEnrichedContentApiMock
+		getContent = happyEnrichedContentAPIMock
 		health = happyHandler
 
 	} else if status == "notFound" {
@@ -35,13 +35,13 @@ func startEnrichedContentApiMock(status string) {
 		health = internalErrorHandler
 	}
 
-	router.Path("/enrichedcontent/{uuid}").Handler(handlers.MethodHandler{"GET" : http.HandlerFunc(getContent)})
-	router.Path("/__health").Handler(handlers.MethodHandler{"GET" : http.HandlerFunc(health)})
+	router.Path("/enrichedcontent/{uuid}").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(getContent)})
+	router.Path("/__health").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(health)})
 
-	enrichedContentApiMock = httptest.NewServer(router)
+	enrichedContentAPIMock = httptest.NewServer(router)
 }
 
-func happyEnrichedContentApiMock(writer http.ResponseWriter, request *http.Request) {
+func happyEnrichedContentAPIMock(writer http.ResponseWriter, request *http.Request) {
 	file, err := os.Open("test-resources/enriched-content-api-output.json")
 	if err != nil {
 		return
@@ -62,13 +62,13 @@ func happyHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func startDocumentStoreApiMock(status string) {
+func startDocumentStoreAPIMock(status string) {
 	router := mux.NewRouter()
 	var getContent http.HandlerFunc
 	var health http.HandlerFunc
 
 	if status == "happy" {
-		getContent = happyDocumentStoreApiMock
+		getContent = happyDocumentStoreAPIMock
 		health = happyHandler
 
 	} else if status == "notFound" {
@@ -79,13 +79,13 @@ func startDocumentStoreApiMock(status string) {
 		health = internalErrorHandler
 	}
 
-	router.Path("/internalcomponents/{uuid}").Handler(handlers.MethodHandler{"GET" : http.HandlerFunc(getContent)})
-	router.Path("/__health").Handler(handlers.MethodHandler{"GET" : http.HandlerFunc(health)})
+	router.Path("/internalcomponents/{uuid}").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(getContent)})
+	router.Path("/__health").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(health)})
 
-	documentStoreApiMock = httptest.NewServer(router)
+	documentStoreAPIMock = httptest.NewServer(router)
 }
 
-func happyDocumentStoreApiMock(writer http.ResponseWriter, request *http.Request) {
+func happyDocumentStoreAPIMock(writer http.ResponseWriter, request *http.Request) {
 	file, err := os.Open("test-resources/document-store-api-output.json")
 	if err != nil {
 		return
@@ -95,26 +95,26 @@ func happyDocumentStoreApiMock(writer http.ResponseWriter, request *http.Request
 }
 
 func stopServices() {
-	internalContentApi.Close()
-	enrichedContentApiMock.Close()
-	documentStoreApiMock.Close()
+	internalContentAPI.Close()
+	enrichedContentAPIMock.Close()
+	documentStoreAPIMock.Close()
 }
 
 func startInternalContentService() {
-	enrichedContentApiUri := enrichedContentApiMock.URL + "/enrichedcontent/"
-	enrichedContentApiHealthUri := enrichedContentApiMock.URL + "/__health"
-	documentStoreApiUri := documentStoreApiMock.URL + "/internalcomponents/"
-	documentStoreApiHealthUri := documentStoreApiMock.URL + "/__health"
+	enrichedContentAPIURI := enrichedContentAPIMock.URL + "/enrichedcontent/"
+	enrichedContentAPIHealthURI := enrichedContentAPIMock.URL + "/__health"
+	documentStoreAPIURI := documentStoreAPIMock.URL + "/internalcomponents/"
+	documentStoreAPIHealthURI := documentStoreAPIMock.URL + "/__health"
 
-	sc := ServiceConfig{
+	sc := serviceConfig{
 		"internal-content-api",
 		"8084",
-		enrichedContentApiUri,
-		documentStoreApiUri,
+		enrichedContentAPIURI,
+		documentStoreAPIURI,
 		"Enriched Content",
 		"Document Store",
-		enrichedContentApiHealthUri,
-		documentStoreApiHealthUri,
+		enrichedContentAPIHealthURI,
+		documentStoreAPIHealthURI,
 		"panic guide",
 		"panic guide",
 		"api.ft.com",
@@ -122,13 +122,13 @@ func startInternalContentService() {
 		"",
 	}
 
-	appLogger := NewAppLogger()
+	appLogger := newAppLogger()
 	metricsHandler := NewMetrics()
-	contentHandler := ContentHandler{&sc, appLogger, &metricsHandler}
+	contentHandler := contentHandler{&sc, appLogger, &metricsHandler}
 
 	h := setupServiceHandler(sc, metricsHandler, contentHandler)
 
-	internalContentApi = httptest.NewServer(h)
+	internalContentAPI = httptest.NewServer(h)
 }
 
 func getStringFromReader(r io.Reader) string {
@@ -138,11 +138,11 @@ func getStringFromReader(r io.Reader) string {
 }
 
 func TestShouldReturn200AndInternalComponentOutput(t *testing.T) {
-	startEnrichedContentApiMock("happy")
-	startDocumentStoreApiMock("happy")
+	startEnrichedContentAPIMock("happy")
+	startDocumentStoreAPIMock("happy")
 	startInternalContentService()
 	defer stopServices()
-	resp, err := http.Get(internalContentApi.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
+	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
 	if err != nil {
 		panic(err)
 	}
@@ -160,12 +160,12 @@ func TestShouldReturn200AndInternalComponentOutput(t *testing.T) {
 }
 
 func TestShouldReturn404(t *testing.T) {
-	startEnrichedContentApiMock("notFound")
-	startDocumentStoreApiMock("notFound")
+	startEnrichedContentAPIMock("notFound")
+	startDocumentStoreAPIMock("notFound")
 	startInternalContentService()
 	defer stopServices()
 
-	resp, err := http.Get(internalContentApi.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
+	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
 	if err != nil {
 		panic(err)
 	}
@@ -175,11 +175,11 @@ func TestShouldReturn404(t *testing.T) {
 }
 
 func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentNotFound(t *testing.T) {
-	startEnrichedContentApiMock("happy")
-	startDocumentStoreApiMock("notFound")
+	startEnrichedContentAPIMock("happy")
+	startDocumentStoreAPIMock("notFound")
 	startInternalContentService()
 	defer stopServices()
-	resp, err := http.Get(internalContentApi.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
+	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
 	if err != nil {
 		panic(err)
 	}
@@ -197,11 +197,11 @@ func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentNotFound(t 
 }
 
 func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentFailed(t *testing.T) {
-	startEnrichedContentApiMock("happy")
-	startDocumentStoreApiMock("unhappy")
+	startEnrichedContentAPIMock("happy")
+	startDocumentStoreAPIMock("unhappy")
 	startInternalContentService()
 	defer stopServices()
-	resp, err := http.Get(internalContentApi.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
+	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
 	if err != nil {
 		panic(err)
 	}
@@ -219,12 +219,12 @@ func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentFailed(t *t
 }
 
 func TestShouldReturn503whenEnrichedContentApiIsNotAvailable(t *testing.T) {
-	startEnrichedContentApiMock("unhappy")
-	startDocumentStoreApiMock("happy")
+	startEnrichedContentAPIMock("unhappy")
+	startDocumentStoreAPIMock("happy")
 	startInternalContentService()
 	defer stopServices()
 
-	resp, err := http.Get(internalContentApi.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
+	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
 
 	if err != nil {
 		panic(err)
@@ -235,12 +235,12 @@ func TestShouldReturn503whenEnrichedContentApiIsNotAvailable(t *testing.T) {
 }
 
 func TestShouldBeHealthy(t *testing.T) {
-	startEnrichedContentApiMock("happy")
-	startDocumentStoreApiMock("happy")
+	startEnrichedContentAPIMock("happy")
+	startDocumentStoreAPIMock("happy")
 	startInternalContentService()
 	defer stopServices()
 
-	resp, err := http.Get(internalContentApi.URL + "/__health")
+	resp, err := http.Get(internalContentAPI.URL + "/__health")
 	if err != nil {
 		panic(err)
 	}
@@ -256,12 +256,12 @@ func TestShouldBeHealthy(t *testing.T) {
 }
 
 func TestShouldBeUnhealthyWhenMethodeApiIsNotHappy(t *testing.T) {
-	startEnrichedContentApiMock("unhappy")
-	startDocumentStoreApiMock("happy")
+	startEnrichedContentAPIMock("unhappy")
+	startDocumentStoreAPIMock("happy")
 	startInternalContentService()
 	defer stopServices()
 
-	resp, err := http.Get(internalContentApi.URL + "/__health")
+	resp, err := http.Get(internalContentAPI.URL + "/__health")
 	if err != nil {
 		panic(err)
 	}
@@ -288,12 +288,12 @@ func TestShouldBeUnhealthyWhenMethodeApiIsNotHappy(t *testing.T) {
 }
 
 func TestShouldBeUnhealthyWhenTransformerIsNotHappy(t *testing.T) {
-	startEnrichedContentApiMock("happy")
-	startDocumentStoreApiMock("unhappy")
+	startEnrichedContentAPIMock("happy")
+	startDocumentStoreAPIMock("unhappy")
 	startInternalContentService()
 	defer stopServices()
 
-	resp, err := http.Get(internalContentApi.URL + "/__health")
+	resp, err := http.Get(internalContentAPI.URL + "/__health")
 	if err != nil {
 		panic(err)
 	}

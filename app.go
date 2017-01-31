@@ -27,13 +27,13 @@ func main() {
 		Desc:   "Default port for Internal Content API",
 		EnvVar: "APP_PORT",
 	})
-	enrichedContentApiUri := app.String(cli.StringOpt{
+	enrichedContentAPIURI := app.String(cli.StringOpt{
 		Name:   "enriched-content-api-uri",
 		Value:  "http://localhost:8080/__enriched-content-read-api/enrichedcontent/",
 		Desc:   "Enriched Content API URI",
 		EnvVar: "ENRICHED_CONTENT_API_URI",
 	})
-	documentStoreApiUri := app.String(cli.StringOpt{
+	documentStoreAPIURI := app.String(cli.StringOpt{
 		Name:   "document-store-api-uri",
 		Value:  "http://localhost:8080/__document-store-api/internalcomponents/",
 		Desc:   "Document Store API URI",
@@ -51,13 +51,13 @@ func main() {
 		Desc:   "Service name of the document store application",
 		EnvVar: "DOCUMENT_STORE_APP_NAME",
 	})
-	enrichedContentAppHealthUri := app.String(cli.StringOpt{
+	enrichedContentAppHealthURI := app.String(cli.StringOpt{
 		Name:   "enriched-content-app-health-uri",
 		Value:  "http://localhost:8080/__enriched-content-read-api/__health",
 		Desc:   "URI of the Enriched Content Application health endpoint",
 		EnvVar: "ENRICHED_CONTENT_APP_HEALTH_URI",
 	})
-	documentStoreAppHealthUri := app.String(cli.StringOpt{
+	documentStoreAppHealthURI := app.String(cli.StringOpt{
 		Name:   "document-store-app-health-uri",
 		Value:  "http://localhost:8080/__enriched-content-read-api/__health",
 		Desc:   "URI of the Document Store Application health endpoint",
@@ -100,28 +100,28 @@ func main() {
 		EnvVar: "LOG_METRICS",
 	})
 	app.Action = func() {
-		sc := ServiceConfig{
+		sc := serviceConfig{
 			*serviceName,
 			*appPort,
-			*enrichedContentApiUri,
-			*documentStoreApiUri,
+			*enrichedContentAPIURI,
+			*documentStoreAPIURI,
 			*enrichedContentAppName,
 			*documentStoreAppName,
-			*enrichedContentAppHealthUri,
-			*documentStoreAppHealthUri,
+			*enrichedContentAppHealthURI,
+			*documentStoreAppHealthURI,
 			*enrichedContentAppPanicGuide,
 			*documentStoreAppPanicGuide,
 			*envAPIHost,
 			*graphiteTCPAddress,
 			*graphitePrefix,
 		}
-		appLogger := NewAppLogger()
+		appLogger := newAppLogger()
 		metricsHandler := NewMetrics()
-		contentHandler := ContentHandler{&sc, appLogger, &metricsHandler}
+		contentHandler := contentHandler{&sc, appLogger, &metricsHandler}
 		h := setupServiceHandler(sc, metricsHandler, contentHandler)
 		appLogger.ServiceStartedEvent(*serviceName, sc.asMap())
 		metricsHandler.OutputMetricsIfRequired(*graphiteTCPAddress, *graphitePrefix, *logMetrics)
-		err := http.ListenAndServe(":" + *appPort, h)
+		err := http.ListenAndServe(":"+*appPort, h)
 		if err != nil {
 			logrus.Fatalf("Unable to start server: %v", err)
 		}
@@ -129,26 +129,26 @@ func main() {
 	app.Run(os.Args)
 }
 
-func setupServiceHandler(sc ServiceConfig, metricsHandler Metrics, contentHandler ContentHandler) *mux.Router {
+func setupServiceHandler(sc serviceConfig, metricsHandler Metrics, contentHandler contentHandler) *mux.Router {
 	r := mux.NewRouter()
 	r.Path("/internalcontent/{uuid}").Handler(handlers.MethodHandler{"GET": oldhttphandlers.HTTPMetricsHandler(metricsHandler.registry,
 		oldhttphandlers.TransactionAwareRequestLoggingHandler(logrus.StandardLogger(), contentHandler))})
 	r.Path(httphandlers.BuildInfoPath).HandlerFunc(httphandlers.BuildInfoHandler)
 	r.Path(httphandlers.PingPath).HandlerFunc(httphandlers.PingHandler)
 	r.Path("/__health").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(fthealth.Handler(sc.serviceName, serviceDescription, sc.enrichedContentAppCheck(), sc.documentStoreAppCheck()))})
-	r.Path("/__metrics").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(metricsHttpEndpoint)})
+	r.Path("/__metrics").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(metricsHTTPEndpoint)})
 	return r
 }
 
-type ServiceConfig struct {
+type serviceConfig struct {
 	serviceName                  string
 	appPort                      string
-	enrichedContentApiUri        string
-	documentStoreApiUri          string
+	enrichedContentAPIURI        string
+	documentStoreAPIURI          string
 	enrichedContentAppName       string
 	documentStoreAppName         string
-	enrichedContentAppHealthUri  string
-	documentStoreAppHealthUri    string
+	enrichedContentAppHealthURI  string
+	documentStoreAppHealthURI    string
 	enrichedContentAppPanicGuide string
 	documentStoreAppPanicGuide   string
 	envAPIHost                   string
@@ -156,18 +156,18 @@ type ServiceConfig struct {
 	graphitePrefix               string
 }
 
-func (sc ServiceConfig) asMap() map[string]interface{} {
+func (sc serviceConfig) asMap() map[string]interface{} {
 	return map[string]interface{}{
 		"service-name":                     sc.serviceName,
 		"service-port":                     sc.appPort,
-		"enriched-content-api-uri":         sc.enrichedContentApiUri,
-		"document-store-api-uri":           sc.documentStoreApiUri,
+		"enriched-content-api-uri":         sc.enrichedContentAPIURI,
+		"document-store-api-uri":           sc.documentStoreAPIURI,
 		"enriched-content-app-name":        sc.enrichedContentAppName,
 		"document-store-app-name":          sc.documentStoreAppName,
-		"enriched-content-app-health-uri":  sc.enrichedContentAppHealthUri,
-		"document-store-app-health-uri":    sc.documentStoreAppHealthUri,
+		"enriched-content-app-health-uri":  sc.enrichedContentAppHealthURI,
+		"document-store-app-health-uri":    sc.documentStoreAppHealthURI,
 		"enriched-content-app-panic-guide": sc.enrichedContentAppPanicGuide,
-		"document-store-app-panic-guide" :  sc.documentStoreAppPanicGuide,
+		"document-store-app-panic-guide":   sc.documentStoreAppPanicGuide,
 		"env-api-host":                     sc.envAPIHost,
 		"graphite-tcp-address":             sc.graphiteTCPAddress,
 		"graphite-prefix":                  sc.graphitePrefix,

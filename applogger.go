@@ -8,53 +8,53 @@ import (
 
 type event struct {
 	serviceName   string
-	requestUrl    string
-	transactionId string
+	requestURL    string
+	transactionID string
 	err           error
 	uuid          string
 }
 
-type AppLogger struct {
+type appLogger struct {
 	log *logrus.Logger
 }
 
-func NewAppLogger() *AppLogger {
+func newAppLogger() *appLogger {
 	logrus.SetLevel(logrus.InfoLevel)
 	log := logrus.New()
 	log.Formatter = new(logrus.JSONFormatter)
-	return &AppLogger{log}
+	return &appLogger{log}
 }
 
-func (appLogger *AppLogger) ServiceStartedEvent(serviceName string, serviceConfig map[string]interface{}) {
+func (appLogger *appLogger) ServiceStartedEvent(serviceName string, serviceConfig map[string]interface{}) {
 	serviceConfig["event"] = "service_started"
 	appLogger.log.WithFields(serviceConfig).Infof("%s started with configuration", serviceName)
 }
 
-func (appLogger *AppLogger) TransactionStartedEvent(requestUrl string, transactionId string, uuid string) {
+func (appLogger *appLogger) TransactionStartedEvent(requestURL string, transactionID string, uuid string) {
 	appLogger.log.WithFields(logrus.Fields{
 		"event":          "transaction_started",
-		"request_url":    requestUrl,
-		"transaction_id": transactionId,
+		"request_url":    requestURL,
+		"transaction_id": transactionID,
 		"uuid":           uuid,
 	}).Info()
 }
 
-func (appLogger *AppLogger) RequestEvent(serviceName string, requestUrl string, transactionId string, uuid string) {
+func (appLogger *appLogger) RequestEvent(serviceName string, requestURL string, transactionID string, uuid string) {
 	appLogger.log.WithFields(logrus.Fields{
 		"event":          "request",
 		"service_name":   serviceName,
-		"request_uri":    requestUrl,
-		"transaction_id": transactionId,
+		"request_uri":    requestURL,
+		"transaction_id": transactionID,
 		"uuid":           uuid,
 	}).Info()
 }
 
-func (appLogger *AppLogger) ErrorEvent(serviceName string, requestUrl string, transactionId string, err error, uuid string) {
+func (appLogger *appLogger) ErrorEvent(serviceName string, requestURL string, transactionID string, err error, uuid string) {
 	appLogger.log.WithFields(logrus.Fields{
 		"event":          "error",
 		"service_name":   serviceName,
-		"request_url":    requestUrl,
-		"transaction_id": transactionId,
+		"request_url":    requestURL,
+		"transaction_id": transactionID,
 		"error":          err,
 		"uuid":           uuid,
 	}).
@@ -62,23 +62,23 @@ func (appLogger *AppLogger) ErrorEvent(serviceName string, requestUrl string, tr
 
 }
 
-func (appLogger *AppLogger) Error(event event, errMessage string) {
+func (appLogger *appLogger) Error(event event, errMessage string) {
 	appLogger.log.WithFields(logrus.Fields{
 		"event":          "error",
 		"service_name":   event.serviceName,
-		"request_url":    event.requestUrl,
-		"transaction_id": event.transactionId,
+		"request_url":    event.requestURL,
+		"transaction_id": event.transactionID,
 		"error":          event.err,
 		"uuid":           event.uuid,
 	}).
 		Warn(errMessage)
 }
 
-func (appLogger *AppLogger) RequestFailedEvent(serviceName string, requestUrl string, resp *http.Response, uuid string) {
+func (appLogger *appLogger) RequestFailedEvent(serviceName string, requestURL string, resp *http.Response, uuid string) {
 	appLogger.log.WithFields(logrus.Fields{
 		"event":          "request_failed",
 		"service_name":   serviceName,
-		"request_url":    requestUrl,
+		"request_url":    requestURL,
 		"transaction_id": resp.Header.Get(tid.TransactionIDHeader),
 		"status":         resp.StatusCode,
 		"uuid":           uuid,
@@ -86,12 +86,12 @@ func (appLogger *AppLogger) RequestFailedEvent(serviceName string, requestUrl st
 		Warnf("Request failed. %s responded with %s", serviceName, resp.Status)
 }
 
-func (appLogger *AppLogger) ResponseEvent(serviceName string, requestUrl string, resp *http.Response, uuid string) {
+func (appLogger *appLogger) ResponseEvent(serviceName string, requestURL string, resp *http.Response, uuid string) {
 	appLogger.log.WithFields(logrus.Fields{
 		"event":          "response",
 		"service_name":   serviceName,
 		"status":         resp.StatusCode,
-		"request_url":    requestUrl,
+		"request_url":    requestURL,
 		"transaction_id": resp.Header.Get(tid.TransactionIDHeader),
 		"uuid":           uuid,
 	}).

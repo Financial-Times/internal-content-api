@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func (sc *ServiceConfig) enrichedContentAppCheck() fthealth.Check {
+func (sc *serviceConfig) enrichedContentAppCheck() fthealth.Check {
 	return fthealth.Check{
 		BusinessImpact:   "No articles would be available",
 		Name:             sc.enrichedContentAppName + " Availabililty Check",
@@ -15,12 +15,12 @@ func (sc *ServiceConfig) enrichedContentAppCheck() fthealth.Check {
 		Severity:         1,
 		TechnicalSummary: "Checks that " + sc.enrichedContentAppName + " Service is reachable. Internal Content Service requests enriched content from " + sc.enrichedContentAppName + " service.",
 		Checker: func() (string, error) {
-			return checkServiceAvailability(sc.enrichedContentAppName, sc.enrichedContentAppHealthUri)
+			return checkServiceAvailability(sc.enrichedContentAppName, sc.enrichedContentAppHealthURI)
 		},
 	}
 }
 
-func (sc *ServiceConfig) documentStoreAppCheck() fthealth.Check {
+func (sc *serviceConfig) documentStoreAppCheck() fthealth.Check {
 	return fthealth.Check{
 		BusinessImpact:   "Articles won't have the internal component",
 		Name:             sc.documentStoreAppName + " Availabililty Check",
@@ -28,13 +28,13 @@ func (sc *ServiceConfig) documentStoreAppCheck() fthealth.Check {
 		Severity:         2,
 		TechnicalSummary: "Checks that " + sc.documentStoreAppName + " Service is reachable. Internal Content Service relies on " + sc.documentStoreAppName + " service to get the internal components.",
 		Checker: func() (string, error) {
-			return checkServiceAvailability(sc.documentStoreAppName, sc.documentStoreAppHealthUri)
+			return checkServiceAvailability(sc.documentStoreAppName, sc.documentStoreAppHealthURI)
 		},
 	}
 }
 
-func checkServiceAvailability(serviceName string, healthUri string) (string, error) {
-	req, err := http.NewRequest("GET", healthUri, nil)
+func checkServiceAvailability(serviceName string, healthURI string) (string, error) {
+	req, err := http.NewRequest("GET", healthURI, nil)
 	resp, err := client.Do(req)
 	if err != nil {
 		msg := fmt.Sprintf("%s service is unreachable: %v", serviceName, err)

@@ -40,7 +40,7 @@ func (m Metrics) recordResponseEvent() {
 	meter.Mark(1)
 }
 
-func metricsHttpEndpoint(w http.ResponseWriter, r *http.Request) {
+func metricsHTTPEndpoint(w http.ResponseWriter, r *http.Request) {
 	metrics.WriteOnce(metrics.DefaultRegistry, w)
 }
 
