@@ -1,10 +1,6 @@
 FROM alpine:3.4
 
-ADD *.go /internal-content-api/
-
-ADD .git /internal-content-api/.git
-
-ADD test-resources /internal-content-api/test-resources
+COPY . /internal-content-api/
 
 RUN apk --update add git go ca-certificates \
   && export GOPATH=/gopath \
@@ -28,4 +24,4 @@ RUN apk --update add git go ca-certificates \
   && apk del go git \
   && rm -rf $GOPATH /var/cache/apk/*
 
-CMD exec /internal-content-api-app
+CMD ["/internal-content-api-app"]

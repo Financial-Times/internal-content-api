@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	tid "github.com/Financial-Times/transactionid-utils-go"
+	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	"golang.org/x/net/context"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"sync"
-	"github.com/Sirupsen/logrus"
 )
 
 const uuidKey = "uuid"
