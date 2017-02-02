@@ -15,7 +15,7 @@ import (
 
 const serviceDescription = "A RESTful API for retrieving and transforming internal content"
 
-var timeout = time.Duration(10 * time.Second)
+var timeout = 10 * time.Second
 var client = &http.Client{Timeout: timeout}
 
 func main() {
