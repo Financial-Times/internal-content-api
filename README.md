@@ -1,4 +1,4 @@
-[![Circle CI](https://circleci.com/gh/Financial-Times/internal-content-api.svg?style=shield)](https://circleci.com/gh/Financial-Times/internal-content-api)[![Go Report Card](https://goreportcard.com/badge/github.com/Financial-Times/internal-content-api)](https://goreportcard.com/report/github.com/Financial-Times/internal-content-api) [![Coverage Status](https://coveralls.io/repos/github/Financial-Times/internal-content-api/badge.svg)](https://coveralls.io/github/Financial-Times/internal-content-api)
+[![Circle CI](https://circleci.com/gh/Financial-Times/internal-content-api.svg?style=shield)](https://circleci.com/gh/Financial-Times/internal-content-api)[![Go Report Card](https://goreportcard.com/badge/github.com/Financial-Times/internal-content-api)](https://goreportcard.com/report/github.com/Financial-Times/internal-content-api) [![Coverage Status](https://coveralls.io/repos/github/Financial-Times/internal-content-api/badge.svg?branch=master)](https://coveralls.io/github/Financial-Times/internal-content-api?branch=master)
 
 # Internal Content API (internal-content-api)
 
