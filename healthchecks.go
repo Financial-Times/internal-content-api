@@ -10,12 +10,12 @@ import (
 func (sc *serviceConfig) enrichedContentAppCheck() fthealth.Check {
 	return fthealth.Check{
 		BusinessImpact:   "No articles would be available",
-		Name:             sc.enrichedContentAppName + " Availabililty Check",
-		PanicGuide:       sc.enrichedContentAppPanicGuide,
+		Name:             sc.contentSourceAppName + " Availabililty Check",
+		PanicGuide:       sc.contentSourceAppPanicGuide,
 		Severity:         1,
-		TechnicalSummary: "Checks that " + sc.enrichedContentAppName + " Service is reachable. Internal Content Service requests enriched content from " + sc.enrichedContentAppName + " service.",
+		TechnicalSummary: "Checks that " + sc.contentSourceAppName + " Service is reachable. Internal Content Service requests enriched content from " + sc.contentSourceAppName + " service.",
 		Checker: func() (string, error) {
-			return checkServiceAvailability(sc.enrichedContentAppName, sc.enrichedContentAppHealthURI)
+			return checkServiceAvailability(sc.contentSourceAppName, sc.contentSourceAppHealthURI)
 		},
 	}
 }
@@ -23,12 +23,12 @@ func (sc *serviceConfig) enrichedContentAppCheck() fthealth.Check {
 func (sc *serviceConfig) documentStoreAppCheck() fthealth.Check {
 	return fthealth.Check{
 		BusinessImpact:   "Articles won't have the internal component",
-		Name:             sc.documentStoreAppName + " Availabililty Check",
-		PanicGuide:       sc.documentStoreAppPanicGuide,
+		Name:             sc.internalComponentsSourceAppName + " Availabililty Check",
+		PanicGuide:       sc.internalComponentsSourceAppPanicGuide,
 		Severity:         2,
-		TechnicalSummary: "Checks that " + sc.documentStoreAppName + " Service is reachable. Internal Content Service relies on " + sc.documentStoreAppName + " service to get the internal components.",
+		TechnicalSummary: "Checks that " + sc.internalComponentsSourceAppName + " Service is reachable. Internal Content Service relies on " + sc.internalComponentsSourceAppName + " service to get the internal components.",
 		Checker: func() (string, error) {
-			return checkServiceAvailability(sc.documentStoreAppName, sc.documentStoreAppHealthURI)
+			return checkServiceAvailability(sc.internalComponentsSourceAppName, sc.internalComponentsSourceAppHealthURI)
 		},
 	}
 }

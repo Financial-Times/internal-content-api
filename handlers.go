@@ -135,37 +135,37 @@ func resolveImageURLs(topper map[string]interface{}, APIHost string) {
 
 func (handler contentHandler) getEnrichedContent(ctx context.Context, w http.ResponseWriter) (ok bool, resp *http.Response) {
 	uuid := ctx.Value(uuidKey).(string)
-	requestURL := fmt.Sprintf("%s%s", handler.serviceConfig.enrichedContentAPIURI, uuid)
+	requestURL := fmt.Sprintf("%s%s", handler.serviceConfig.contentSourceURI, uuid)
 	transactionID, _ := tid.GetTransactionIDFromContext(ctx)
-	handler.log.RequestEvent(handler.serviceConfig.enrichedContentAppName, requestURL, transactionID, uuid)
+	handler.log.RequestEvent(handler.serviceConfig.contentSourceAppName, requestURL, transactionID, uuid)
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
-		handler.handleError(w, err, "h.serviceConfig.enrichedContentAppName", "", req.Header.Get(tid.TransactionIDHeader), uuid)
+		handler.handleError(w, err, "h.serviceConfig.contentSourceAppName", "", req.Header.Get(tid.TransactionIDHeader), uuid)
 		return false, nil
 	}
 	req.Header.Set(tid.TransactionIDHeader, transactionID)
 	req.Header.Set("Content-Type", "application/json")
 	resp, err = client.Do(req)
 
-	return handler.handleResponse(req, resp, err, w, uuid, "h.serviceConfig.enrichedContentAppName", true)
+	return handler.handleResponse(req, resp, err, w, uuid, "h.serviceConfig.contentSourceAppName", true)
 }
 
 func (handler contentHandler) getInternalComponent(ctx context.Context, w http.ResponseWriter) (ok bool, resp *http.Response) {
 	uuid := ctx.Value(uuidKey).(string)
-	requestURL := fmt.Sprintf("%s%s", handler.serviceConfig.documentStoreAPIURI, uuid)
+	requestURL := fmt.Sprintf("%s%s", handler.serviceConfig.internalComponentsSourceURI, uuid)
 	transactionID, _ := tid.GetTransactionIDFromContext(ctx)
-	handler.log.RequestEvent(handler.serviceConfig.documentStoreAppName, requestURL, transactionID, uuid)
+	handler.log.RequestEvent(handler.serviceConfig.internalComponentsSourceAppName, requestURL, transactionID, uuid)
 
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
-		handler.handleError(w, err, "h.serviceConfig.documentStoreAppName", "", req.Header.Get(tid.TransactionIDHeader), uuid)
+		handler.handleError(w, err, "h.serviceConfig.internalComponentsSourceAppName", "", req.Header.Get(tid.TransactionIDHeader), uuid)
 		return false, nil
 	}
 	req.Header.Set(tid.TransactionIDHeader, transactionID)
 	req.Header.Set("Content-Type", "application/json")
 	resp, err = client.Do(req)
 
-	return handler.handleResponse(req, resp, err, w, uuid, "h.serviceConfig.documentStoreAppName", false)
+	return handler.handleResponse(req, resp, err, w, uuid, "h.serviceConfig.internalComponentsSourceAppName", false)
 
 }
 

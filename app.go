@@ -27,53 +27,53 @@ func main() {
 		Desc:   "Default port for Internal Content API",
 		EnvVar: "APP_PORT",
 	})
-	enrichedContentAPIURI := app.String(cli.StringOpt{
-		Name:   "enriched-content-api-uri",
+	contentSourceURI := app.String(cli.StringOpt{
+		Name:   "content-source-uri",
 		Value:  "http://localhost:8080/__enriched-content-read-api/enrichedcontent/",
-		Desc:   "Enriched Content API URI",
-		EnvVar: "ENRICHED_CONTENT_API_URI",
+		Desc:   "Content source URI",
+		EnvVar: "CONTENT_SOURCE_URI",
 	})
-	documentStoreAPIURI := app.String(cli.StringOpt{
-		Name:   "document-store-api-uri",
+	internalComponentsSourceURI := app.String(cli.StringOpt{
+		Name:   "internal-components-source-uri",
 		Value:  "http://localhost:8080/__document-store-api/internalcomponents/",
-		Desc:   "Document Store API URI",
-		EnvVar: "DOCUMENT_STORE_API_URI",
+		Desc:   "Internal components source URI",
+		EnvVar: "INTERNAL_COMPONENTS_SOURCE_URI",
 	})
-	enrichedContentAppName := app.String(cli.StringOpt{
-		Name:   "enriched-content-app-name",
-		Value:  "Enriched Content Service",
-		Desc:   "Service name of the enriched content application",
-		EnvVar: "ENRICHED_CONTENT_APP_NAME",
+	contentSourceAppName := app.String(cli.StringOpt{
+		Name:   "content-source-app-name",
+		Value:  "Content Source Service",
+		Desc:   "Service name of the content source application",
+		EnvVar: "CONTENT_SOURCE_APP_NAME",
 	})
-	documentStoreAppName := app.String(cli.StringOpt{
-		Name:   "document-store-app-name",
-		Value:  "Document Store Service",
-		Desc:   "Service name of the document store application",
-		EnvVar: "DOCUMENT_STORE_APP_NAME",
+	internalComponentsSourceAppName := app.String(cli.StringOpt{
+		Name:   "internal-components-source-app-name",
+		Value:  "Internal Components Source Service",
+		Desc:   "Service name of the internal components source application",
+		EnvVar: "INTERNAL_COMPONENTS_SOURCE_APP_NAME",
 	})
-	enrichedContentAppHealthURI := app.String(cli.StringOpt{
-		Name:   "enriched-content-app-health-uri",
+	contentSourceAppHealthURI := app.String(cli.StringOpt{
+		Name:   "content-source-app-health-uri",
 		Value:  "http://localhost:8080/__enriched-content-read-api/__health",
-		Desc:   "URI of the Enriched Content Application health endpoint",
-		EnvVar: "ENRICHED_CONTENT_APP_HEALTH_URI",
+		Desc:   "URI of the Content Source Application health endpoint",
+		EnvVar: "CONTENT_SOURCE_APP_HEALTH_URI",
 	})
-	documentStoreAppHealthURI := app.String(cli.StringOpt{
-		Name:   "document-store-app-health-uri",
-		Value:  "http://localhost:8080/__enriched-content-read-api/__health",
-		Desc:   "URI of the Document Store Application health endpoint",
-		EnvVar: "DOCUMENT_STORE_APP_HEALTH_URI",
+	internalComponentsSourceAppHealthURI := app.String(cli.StringOpt{
+		Name:   "internal-components-source-app-health-uri",
+		Value:  "http://localhost:8080/__document-store-api/__health",
+		Desc:   "URI of the Internal Components Source Application health endpoint",
+		EnvVar: "INTERNAL_COMPONENTS_SOURCE_APP_HEALTH_URI",
 	})
-	enrichedContentAppPanicGuide := app.String(cli.StringOpt{
-		Name:   "enriched-content-app-panic-guide",
+	contentSourceAppPanicGuide := app.String(cli.StringOpt{
+		Name:   "content-source-app-panic-guide",
 		Value:  "https://sites.google.com/a/ft.com/dynamic-publishing-team/content-public-read-panic-guide",
-		Desc:   "Enriched content appllication application panic guide url for healthcheck. Default panic guide is for content public read.",
-		EnvVar: "ENRICHED_CONTENT_APP_PANIC_GUIDE",
+		Desc:   "Content source appllication panic guide url for healthcheck. Default panic guide is for content public read.",
+		EnvVar: "CONTENT_SOURCE_APP_PANIC_GUIDE",
 	})
-	documentStoreAppPanicGuide := app.String(cli.StringOpt{
-		Name:   "document-store-app-panic-guide",
+	internalComponentsSourceAppPanicGuide := app.String(cli.StringOpt{
+		Name:   "internal-components-source-app-panic-guide",
 		Value:  "https://sites.google.com/a/ft.com/dynamic-publishing-team/document-store-api-panic-guide",
-		Desc:   "Document Store application panic guide url for healthcheck. Default panic guide is for document store api",
-		EnvVar: "DOCUMENT_STORE_APP_PANIC_GUIDE",
+		Desc:   "Internal components source application panic guide url for healthcheck. Default panic guide is for document store api",
+		EnvVar: "INTERNAL_COMPONENTS_SOURCE_APP_PANIC_GUIDE",
 	})
 	envAPIHost := app.String(cli.StringOpt{
 		Name:   "env-api-host",
@@ -103,14 +103,14 @@ func main() {
 		sc := serviceConfig{
 			*serviceName,
 			*appPort,
-			*enrichedContentAPIURI,
-			*documentStoreAPIURI,
-			*enrichedContentAppName,
-			*documentStoreAppName,
-			*enrichedContentAppHealthURI,
-			*documentStoreAppHealthURI,
-			*enrichedContentAppPanicGuide,
-			*documentStoreAppPanicGuide,
+			*contentSourceURI,
+			*internalComponentsSourceURI,
+			*contentSourceAppName,
+			*internalComponentsSourceAppName,
+			*contentSourceAppHealthURI,
+			*internalComponentsSourceAppHealthURI,
+			*contentSourceAppPanicGuide,
+			*internalComponentsSourceAppPanicGuide,
 			*envAPIHost,
 			*graphiteTCPAddress,
 			*graphitePrefix,
@@ -141,35 +141,35 @@ func setupServiceHandler(sc serviceConfig, metricsHandler Metrics, contentHandle
 }
 
 type serviceConfig struct {
-	serviceName                  string
-	appPort                      string
-	enrichedContentAPIURI        string
-	documentStoreAPIURI          string
-	enrichedContentAppName       string
-	documentStoreAppName         string
-	enrichedContentAppHealthURI  string
-	documentStoreAppHealthURI    string
-	enrichedContentAppPanicGuide string
-	documentStoreAppPanicGuide   string
-	envAPIHost                   string
-	graphiteTCPAddress           string
-	graphitePrefix               string
+	serviceName                           string
+	appPort                               string
+	contentSourceURI                      string
+	internalComponentsSourceURI           string
+	contentSourceAppName                  string
+	internalComponentsSourceAppName       string
+	contentSourceAppHealthURI             string
+	internalComponentsSourceAppHealthURI  string
+	contentSourceAppPanicGuide            string
+	internalComponentsSourceAppPanicGuide string
+	envAPIHost                            string
+	graphiteTCPAddress                    string
+	graphitePrefix                        string
 }
 
 func (sc serviceConfig) asMap() map[string]interface{} {
 	return map[string]interface{}{
-		"service-name":                     sc.serviceName,
-		"service-port":                     sc.appPort,
-		"enriched-content-api-uri":         sc.enrichedContentAPIURI,
-		"document-store-api-uri":           sc.documentStoreAPIURI,
-		"enriched-content-app-name":        sc.enrichedContentAppName,
-		"document-store-app-name":          sc.documentStoreAppName,
-		"enriched-content-app-health-uri":  sc.enrichedContentAppHealthURI,
-		"document-store-app-health-uri":    sc.documentStoreAppHealthURI,
-		"enriched-content-app-panic-guide": sc.enrichedContentAppPanicGuide,
-		"document-store-app-panic-guide":   sc.documentStoreAppPanicGuide,
-		"env-api-host":                     sc.envAPIHost,
-		"graphite-tcp-address":             sc.graphiteTCPAddress,
-		"graphite-prefix":                  sc.graphitePrefix,
+		"service-name":                               sc.serviceName,
+		"service-port":                               sc.appPort,
+		"content-source-uri":                         sc.contentSourceURI,
+		"internal-components-source-uri":             sc.internalComponentsSourceURI,
+		"content-source-app-name":                    sc.contentSourceAppName,
+		"internal-components-source-app-name":        sc.internalComponentsSourceAppName,
+		"content-source-app-health-uri":              sc.contentSourceAppHealthURI,
+		"internal-components-source-app-health-uri":  sc.internalComponentsSourceAppHealthURI,
+		"content-source-app-panic-guide":             sc.contentSourceAppPanicGuide,
+		"internal-components-source-app-panic-guide": sc.internalComponentsSourceAppPanicGuide,
+		"env-api-host":                               sc.envAPIHost,
+		"graphite-tcp-address":                       sc.graphiteTCPAddress,
+		"graphite-prefix":                            sc.graphitePrefix,
 	}
 }
