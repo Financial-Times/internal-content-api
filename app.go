@@ -27,6 +27,12 @@ func main() {
 		Desc:   "Default port for Internal Content API",
 		EnvVar: "APP_PORT",
 	})
+	handlerPath := app.String(cli.StringOpt{
+		Name:   "handler-path",
+		Value:  "internalcontent",
+		Desc:   "Path on which the handler will be mapped",
+		EnvVar: "HANDLER_PATH",
+	})
 	enrichedContentAPIURI := app.String(cli.StringOpt{
 		Name:   "enriched-content-api-uri",
 		Value:  "http://localhost:8080/__enriched-content-read-api/enrichedcontent/",
@@ -103,6 +109,7 @@ func main() {
 		sc := serviceConfig{
 			*serviceName,
 			*appPort,
+			*handlerPath,
 			*enrichedContentAPIURI,
 			*documentStoreAPIURI,
 			*enrichedContentAppName,
@@ -131,7 +138,7 @@ func main() {
 
 func setupServiceHandler(sc serviceConfig, metricsHandler Metrics, contentHandler contentHandler) *mux.Router {
 	r := mux.NewRouter()
-	r.Path("/internalcontent/{uuid}").Handler(handlers.MethodHandler{"GET": oldhttphandlers.HTTPMetricsHandler(metricsHandler.registry,
+	r.Path("/" + sc.handlerPath + "/{uuid}").Handler(handlers.MethodHandler{"GET": oldhttphandlers.HTTPMetricsHandler(metricsHandler.registry,
 		oldhttphandlers.TransactionAwareRequestLoggingHandler(logrus.StandardLogger(), contentHandler))})
 	r.Path(httphandlers.BuildInfoPath).HandlerFunc(httphandlers.BuildInfoHandler)
 	r.Path(httphandlers.PingPath).HandlerFunc(httphandlers.PingHandler)
@@ -143,6 +150,7 @@ func setupServiceHandler(sc serviceConfig, metricsHandler Metrics, contentHandle
 type serviceConfig struct {
 	serviceName                  string
 	appPort                      string
+	handlerPath                  string
 	enrichedContentAPIURI        string
 	documentStoreAPIURI          string
 	enrichedContentAppName       string
@@ -160,6 +168,7 @@ func (sc serviceConfig) asMap() map[string]interface{} {
 	return map[string]interface{}{
 		"service-name":                     sc.serviceName,
 		"service-port":                     sc.appPort,
+		"handler-path":                     sc.handlerPath,
 		"enriched-content-api-uri":         sc.enrichedContentAPIURI,
 		"document-store-api-uri":           sc.documentStoreAPIURI,
 		"enriched-content-app-name":        sc.enrichedContentAppName,

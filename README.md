@@ -30,6 +30,7 @@ Locally with properties set:
 go install
 $GOPATH/bin/internal-content-api \
 --app-port  "8084" \
+--handler-path "internalcontent" \
 --enriched-content-api-uri "http://localhost:8080/__enriched-content-read-api/enrichedconten \
 --document-store-api-uri "http://localhost:8080/__document-store-api/internalcomponents/" \
 --enriched-content-app-name  "Enriched Content Service" \
@@ -50,6 +51,7 @@ With Docker:
 ```
 docker run -ti  
 --env "APP_PORT=8080" \  
+--env "HANDLER_PATH=internalcontent" \
 --env "ENRICHED_CONTENT_API_URI=http://localhost:8080/__enriched-content-read-api/enrichedcontent/" \  
 --env "DOCUMENT_STORE_API_URI=http://localhost:8080/__document-store-api/internalcomponents/" \  
 --env "ENRICHED_CONTENT_APP_NAME=Enriched Content Service" \  
@@ -74,6 +76,16 @@ The read should return the internal content of an article.
 404 if article with given uuid does not exist.
 
 503 when one of the collaborating mandatory services is inaccessible.
+
+
+In case `handler-path` / `HANDLER_PATH` is set to something else other than `internalcontent`, 
+for example to `internalcontent-preview`, the endpoint will change accordingly to:
+
+/internalcontent-preview/{uuid}
+
+Example in this case will be:
+`curl -v http://localhost:8084/internalcontent-preview/9358ba1e-c07f-11e5-846f-79b0e3d20eaf`
+
 
 ### Admin endpoints
 Healthchecks: [http://localhost:8084/__health](http://localhost:8084/__health)

@@ -109,6 +109,7 @@ func startInternalContentService() {
 	sc := serviceConfig{
 		"internal-content-api",
 		"8084",
+		"internalcontent",
 		enrichedContentAPIURI,
 		documentStoreAPIURI,
 		"Enriched Content",
