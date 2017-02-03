@@ -1,0 +1,16 @@
+dependencies:
+  pre:
+    - go get github.com/axw/gocov/gocov; go get github.com/matm/gocov-html; go get -u github.com/jstemmer/go-junit-report
+test:
+  pre:
+    - go get github.com/mattn/goveralls
+  override:
+    - mkdir -p $CIRCLE_TEST_REPORTS/golang
+    - go test -race -v ./... | go-junit-report > $CIRCLE_TEST_REPORTS/golang/junit.xml
+    - go test -v -cover -race -coverprofile=$CIRCLE_ARTIFACTS/coverage.out ./...
+    - cd $CIRCLE_ARTIFACTS && sed -i '1d' *.out
+    - |
+      echo "mode: atomic" > $CIRCLE_ARTIFACTS/overall-coverage.result
+    - cd $CIRCLE_ARTIFACTS && cat *.out >> overall-coverage.result
+  post:
+    - goveralls -coverprofile=$CIRCLE_ARTIFACTS/overall-coverage.result -service=circle-ci -repotoken=$COVERALLS_TOKEN
