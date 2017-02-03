@@ -3,14 +3,15 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	tid "github.com/Financial-Times/transactionid-utils-go"
-	"github.com/Sirupsen/logrus"
-	"github.com/gorilla/mux"
-	"golang.org/x/net/context"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"sync"
+
+	tid "github.com/Financial-Times/transactionid-utils-go"
+	"github.com/Sirupsen/logrus"
+	"github.com/gorilla/mux"
+	"golang.org/x/net/context"
 )
 
 const uuidKey = "uuid"
@@ -105,9 +106,9 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 		handler.handleErrorEvent(responseWriter, topperEvent, "Error while parsing the response json")
 		return
 	}
-	//hack
 	content["topper"] = topper["topper"]
 
+	//hack
 	resolveImageURLs(topper["topper"].(map[string]interface{}), handler.serviceConfig.envAPIHost)
 
 	resultBytes, _ := json.Marshal(content)
@@ -116,21 +117,18 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 }
 
 func resolveImageURLs(topper map[string]interface{}, APIHost string) {
-	ii := topper["images"]
-	images, ok := ii.([]interface{})
+	images, ok := topper["images"].([]interface{})
 	if !ok {
 		return
 	}
-	for i, iimg := range images {
-		img, ok := iimg.(map[string]interface{})
+	for _, img := range images {
+		img, ok := img.(map[string]interface{})
 		if !ok {
 			continue
 		}
 		imgURL := "http://" + APIHost + "/content/" + img["id"].(string)
 		img["id"] = imgURL
-		images[i] = img
 	}
-	topper["images"] = images
 }
 
 func (handler contentHandler) getEnrichedContent(ctx context.Context, w http.ResponseWriter) (ok bool, resp *http.Response) {
