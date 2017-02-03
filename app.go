@@ -128,7 +128,7 @@ func main() {
 		h := setupServiceHandler(sc, metricsHandler, contentHandler)
 		appLogger.ServiceStartedEvent(*serviceName, sc.asMap())
 		metricsHandler.OutputMetricsIfRequired(*graphiteTCPAddress, *graphitePrefix, *logMetrics)
-		err := http.ListenAndServe(":" + *appPort, h)
+		err := http.ListenAndServe(":"+*appPort, h)
 		if err != nil {
 			logrus.Fatalf("Unable to start server: %v", err)
 		}
