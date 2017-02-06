@@ -126,8 +126,8 @@ func addInternalComponentsToContent(content map[string]interface{}, internalComp
 }
 
 func resolveImageURLs(content map[string]interface{}, APIHost string) {
-	topper, found := content["topper"].(map[string]interface{})
-	if !found {
+	topper, ok := content["topper"].(map[string]interface{})
+	if !ok {
 		return
 	}
 
