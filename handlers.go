@@ -107,7 +107,7 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 		return
 	}
 
-	addInternalComponentsToContent(content, internalComponents);
+	addInternalComponentsToContent(content, internalComponents)
 	resolveImageURLs(content, handler.serviceConfig.envAPIHost)
 
 	resultBytes, _ := json.Marshal(content)
@@ -116,11 +116,11 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 }
 
 func addInternalComponentsToContent(content map[string]interface{}, internalComponents map[string]interface{}) {
-	excludedAttributes := map[string]bool{"uuid": true, "lastModified": true, "publishReference": true};
+	excludedAttributes := map[string]bool{"uuid": true, "lastModified": true, "publishReference": true}
 	for key, value := range internalComponents {
 		_, found := excludedAttributes[key]
-		if (!found) {
-			content[key] = value;
+		if !found {
+			content[key] = value
 		}
 	}
 }

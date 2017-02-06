@@ -150,7 +150,7 @@ func setupServiceHandler(sc serviceConfig, metricsHandler Metrics, contentHandle
 type serviceConfig struct {
 	serviceName                           string
 	appPort                               string
-	handlerPath                  	      string
+	handlerPath                           string
 	contentSourceURI                      string
 	internalComponentsSourceURI           string
 	contentSourceAppName                  string
@@ -168,7 +168,7 @@ func (sc serviceConfig) asMap() map[string]interface{} {
 	return map[string]interface{}{
 		"service-name":                               sc.serviceName,
 		"service-port":                               sc.appPort,
-		"handler-path":                     	      sc.handlerPath,
+		"handler-path":                               sc.handlerPath,
 		"content-source-uri":                         sc.contentSourceURI,
 		"internal-components-source-uri":             sc.internalComponentsSourceURI,
 		"content-source-app-name":                    sc.contentSourceAppName,
