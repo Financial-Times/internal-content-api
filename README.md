@@ -2,7 +2,7 @@
 
 # Internal Content API (internal-content-api)
 
-__Internal Content API serves published content that includes the internal component besides the normal enriched content__
+__Internal Content API serves published content that includes the internal component besides the normal content__
 
 ## Installation
 
@@ -31,12 +31,12 @@ go install
 $GOPATH/bin/internal-content-api \
 --app-port  "8084" \
 --handler-path "internalcontent" \
---enriched-content-api-uri "http://localhost:8080/__enriched-content-read-api/enrichedconten \
---document-store-api-uri "http://localhost:8080/__document-store-api/internalcomponents/" \
---enriched-content-app-name  "Enriched Content Service" \
---document-store-app-name  "Document Store Service" \
---enriched-content-app-health-uri  "http://localhost:8080/__enriched-content-read-api/__health" \
---document-store-app-health-uri  "http://localhost:8080/__enriched-content-read-api/__health" \
+--content-source-uri "http://localhost:8080/__enriched-content-read-api/enrichedcontent \
+--internal-components-source-uri "http://localhost:8080/__document-store-api/internalcomponents/" \
+--content-source-app-name  "Content Source Service" \
+--internal-components-source-app-name  "Internal Components Source Service" \
+--content-source-app-health-uri  "http://localhost:8080/__enriched-content-read-api/__health" \
+--internal-components-source-app-health-uri  "http://localhost:8080/__document-store-api/__health" \
 --graphite-tcp-address "graphite.ft.com:2003" \
 --graphite-prefix "coco.services.$ENV.content-preview.%i"
  
@@ -50,14 +50,14 @@ With Docker:
 
 ```
 docker run -ti  
---env "APP_PORT=8080" \  
+--env "APP_PORT=8080" \
 --env "HANDLER_PATH=internalcontent" \
---env "ENRICHED_CONTENT_API_URI=http://localhost:8080/__enriched-content-read-api/enrichedcontent/" \  
---env "DOCUMENT_STORE_API_URI=http://localhost:8080/__document-store-api/internalcomponents/" \  
---env "ENRICHED_CONTENT_APP_NAME=Enriched Content Service" \  
---env "DOCUMENT_STORE_APP_NAME=Document Store Service" \  
---env "ENRICHED_CONTENT_APP_HEALTH_URI=http://localhost:8080/__enriched-content-read-api/__health" \  
---env "DOCUMENT_STORE_APP_HEALTH_URI=http://localhost:8080/__enriched-content-read-api/__health" \  
+--env "CONTENT_SOURCE_URI=http://localhost:8080/__enriched-content-read-api/enrichedcontent/" \
+--env "INTERNAL_COMPONENTS_SOURCE_URI=http://localhost:8080/__document-store-api/internalcomponents/" \
+--env "CONTENT_SOURCE_APP_NAME=Content Source Service" \
+--env "INTERNAL_COMPONENTS_SOURCE_APP_NAME=Document Store Service" \
+--env "CONTENT_SOURCE_APP_HEALTH_URI=http://localhost:8080/__enriched-content-read-api/__health" \
+--env "INTERNAL_COMPONENTS_SOURCE_APP_HEALTH_URI=http://localhost:8080/__document-store-api/__health" \
 --env "GRAPHITE_TCP_ADDRESS=graphite.ft.com:2003" \  
 --env "GRAPHITE_PREFIX=coco.services.$ENV.content-preview.%i" \  
 coco/internal-content-api  
@@ -71,14 +71,14 @@ When deployed locally arguments are optional.
 Example
 `curl -v http://localhost:8084/internalcontent/9358ba1e-c07f-11e5-846f-79b0e3d20eaf`
 
-The read should return the internal content of an article.
+The read should return the internal content of an article (i.e. an aggregation of content plus internal components)
 
 404 if article with given uuid does not exist.
 
 503 when one of the collaborating mandatory services is inaccessible.
 
 
-In case `handler-path` / `HANDLER_PATH` is set to something else other than `internalcontent`, 
+In case `handler-path` / `HANDLER_PATH` is set to something else other than `internalcontent`,
 for example to `internalcontent-preview`, the endpoint will change accordingly to:
 
 /internalcontent-preview/{uuid}
