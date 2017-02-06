@@ -126,22 +126,25 @@ func addInternalComponentsToContent(content map[string]interface{}, internalComp
 }
 
 func resolveImageURLs(content map[string]interface{}, APIHost string) {
-	topper := content["topper"].(map[string]interface{})
-	ii := topper["images"]
-	images, ok := ii.([]interface{})
-	if !ok {
-		return
-	}
-	for i, iimg := range images {
-		img, ok := iimg.(map[string]interface{})
+	topper, found := content["topper"]
+	if found {
+		topper := topper.(map[string]interface{})
+		ii := topper["images"]
+		images, ok := ii.([]interface{})
 		if !ok {
-			continue
+			return
 		}
-		imgURL := "http://" + APIHost + "/content/" + img["id"].(string)
-		img["id"] = imgURL
-		images[i] = img
+		for i, iimg := range images {
+			img, ok := iimg.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			imgURL := "http://" + APIHost + "/content/" + img["id"].(string)
+			img["id"] = imgURL
+			images[i] = img
+		}
+		topper["images"] = images
 	}
-	topper["images"] = images
 }
 
 func (handler contentHandler) getContent(ctx context.Context, w http.ResponseWriter) (ok bool, resp *http.Response) {
