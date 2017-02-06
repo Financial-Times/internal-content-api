@@ -2,7 +2,7 @@
 
 # Internal Content API (internal-content-api)
 
-__Internal Content API serves published content that includes the internal component besides the normal enriched content__
+__Internal Content API serves published content that includes the internal component besides the normal content__
 
 ## Installation
 

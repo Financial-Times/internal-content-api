@@ -7,22 +7,22 @@ import (
 	"net/http"
 )
 
-func (sc *serviceConfig) enrichedContentAppCheck() fthealth.Check {
+func (sc *serviceConfig) contentSourceAppCheck() fthealth.Check {
 	return fthealth.Check{
 		BusinessImpact:   "No articles would be available",
 		Name:             sc.contentSourceAppName + " Availabililty Check",
 		PanicGuide:       sc.contentSourceAppPanicGuide,
 		Severity:         1,
-		TechnicalSummary: "Checks that " + sc.contentSourceAppName + " Service is reachable. Internal Content Service requests enriched content from " + sc.contentSourceAppName + " service.",
+		TechnicalSummary: "Checks that " + sc.contentSourceAppName + " Service is reachable. Internal Content Service requests content from " + sc.contentSourceAppName + " service.",
 		Checker: func() (string, error) {
 			return checkServiceAvailability(sc.contentSourceAppName, sc.contentSourceAppHealthURI)
 		},
 	}
 }
 
-func (sc *serviceConfig) documentStoreAppCheck() fthealth.Check {
+func (sc *serviceConfig) internalComponentsSourceAppCheck() fthealth.Check {
 	return fthealth.Check{
-		BusinessImpact:   "Articles won't have the internal component",
+		BusinessImpact:   "Articles won't have the internal components",
 		Name:             sc.internalComponentsSourceAppName + " Availabililty Check",
 		PanicGuide:       sc.internalComponentsSourceAppPanicGuide,
 		Severity:         2,

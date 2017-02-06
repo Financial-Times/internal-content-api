@@ -32,48 +32,49 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 
 	var waitGroup sync.WaitGroup
 	waitGroup.Add(2)
-	var successContent bool
+	var contentIsOK bool
 	var contentResponse *http.Response
 	go func() {
 		defer waitGroup.Done()
-		successContent, contentResponse = handler.getEnrichedContent(ctx, responseWriter)
+		contentIsOK, contentResponse = handler.getContent(ctx, responseWriter)
 	}()
 
-	var successTopper bool
-	var topperResponse *http.Response
+	var internalComponentsAreOK bool
+	var internalComponentsResponse *http.Response
 	go func() {
 		defer waitGroup.Done()
-		successTopper, topperResponse = handler.getInternalComponent(ctx, responseWriter)
+		internalComponentsAreOK, internalComponentsResponse = handler.getInternalComponents(ctx, responseWriter)
 	}()
 
 	waitGroup.Wait()
-	if !successContent {
+	if !contentIsOK {
 		return
 	}
 	defer cleanupResp(contentResponse, handler.log.log)
 
-	if !successTopper {
+	if !internalComponentsAreOK {
 		return
 	}
-	// topper response is nil when is not found
-	if topperResponse == nil {
+	// internal components response is nil when is not found
+	if internalComponentsResponse == nil {
 		io.Copy(responseWriter, contentResponse.Body)
 		return
 	}
-	defer cleanupResp(topperResponse, handler.log.log)
+	defer cleanupResp(internalComponentsResponse, handler.log.log)
+
 	var content map[string]interface{}
-	var topper map[string]interface{}
+	var internalComponents map[string]interface{}
 
 	contentEvent := event{
-		"h.serviceConfig.enrichedConentAppName",
+		"h.serviceConfig.contentSourceAppName",
 		contentResponse.Request.URL.String(),
 		transactionID,
 		nil,
 		uuid,
 	}
 
-	topperEvent := event{
-		"h.serviceConfig.AppName",
+	internalComponentsEvent := event{
+		"h.serviceConfig.internalComponentsSourceAppName",
 		contentResponse.Request.URL.String(),
 		transactionID,
 		nil,
@@ -86,10 +87,10 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 		handler.handleErrorEvent(responseWriter, contentEvent, "Error while handling the response body")
 		return
 	}
-	topperBytes, err := ioutil.ReadAll(topperResponse.Body)
+	internalComponentsBytes, err := ioutil.ReadAll(internalComponentsResponse.Body)
 	if err != nil {
-		topperEvent.err = err
-		handler.handleErrorEvent(responseWriter, topperEvent, "Error while handling the response body")
+		internalComponentsEvent.err = err
+		handler.handleErrorEvent(responseWriter, internalComponentsEvent, "Error while handling the response body")
 		return
 	}
 
@@ -99,23 +100,33 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 		handler.handleErrorEvent(responseWriter, contentEvent, "Error while parsing the response json")
 		return
 	}
-	err = json.Unmarshal(topperBytes, &topper)
+	err = json.Unmarshal(internalComponentsBytes, &internalComponents)
 	if err != nil {
-		topperEvent.err = err
-		handler.handleErrorEvent(responseWriter, topperEvent, "Error while parsing the response json")
+		internalComponentsEvent.err = err
+		handler.handleErrorEvent(responseWriter, internalComponentsEvent, "Error while parsing the response json")
 		return
 	}
-	//hack
-	content["topper"] = topper["topper"]
 
-	resolveImageURLs(topper["topper"].(map[string]interface{}), handler.serviceConfig.envAPIHost)
+	addInternalComponentsToContent(content, internalComponents);
+	resolveImageURLs(content, handler.serviceConfig.envAPIHost)
 
 	resultBytes, _ := json.Marshal(content)
 	responseWriter.Write(resultBytes)
 	handler.metrics.recordResponseEvent()
 }
 
-func resolveImageURLs(topper map[string]interface{}, APIHost string) {
+func addInternalComponentsToContent(content map[string]interface{}, internalComponents map[string]interface{}) {
+	excludedAttributes := map[string]bool{"uuid": true, "lastModified": true, "publishReference": true};
+	for key, value := range internalComponents {
+		_, found := excludedAttributes[key]
+		if (!found) {
+			content[key] = value;
+		}
+	}
+}
+
+func resolveImageURLs(content map[string]interface{}, APIHost string) {
+	topper := content["topper"].(map[string]interface{})
 	ii := topper["images"]
 	images, ok := ii.([]interface{})
 	if !ok {
@@ -133,7 +144,7 @@ func resolveImageURLs(topper map[string]interface{}, APIHost string) {
 	topper["images"] = images
 }
 
-func (handler contentHandler) getEnrichedContent(ctx context.Context, w http.ResponseWriter) (ok bool, resp *http.Response) {
+func (handler contentHandler) getContent(ctx context.Context, w http.ResponseWriter) (ok bool, resp *http.Response) {
 	uuid := ctx.Value(uuidKey).(string)
 	requestURL := fmt.Sprintf("%s%s", handler.serviceConfig.contentSourceURI, uuid)
 	transactionID, _ := tid.GetTransactionIDFromContext(ctx)
@@ -150,7 +161,7 @@ func (handler contentHandler) getEnrichedContent(ctx context.Context, w http.Res
 	return handler.handleResponse(req, resp, err, w, uuid, "h.serviceConfig.contentSourceAppName", true)
 }
 
-func (handler contentHandler) getInternalComponent(ctx context.Context, w http.ResponseWriter) (ok bool, resp *http.Response) {
+func (handler contentHandler) getInternalComponents(ctx context.Context, w http.ResponseWriter) (ok bool, resp *http.Response) {
 	uuid := ctx.Value(uuidKey).(string)
 	requestURL := fmt.Sprintf("%s%s", handler.serviceConfig.internalComponentsSourceURI, uuid)
 	transactionID, _ := tid.GetTransactionIDFromContext(ctx)

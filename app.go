@@ -142,7 +142,7 @@ func setupServiceHandler(sc serviceConfig, metricsHandler Metrics, contentHandle
 		oldhttphandlers.TransactionAwareRequestLoggingHandler(logrus.StandardLogger(), contentHandler))})
 	r.Path(httphandlers.BuildInfoPath).HandlerFunc(httphandlers.BuildInfoHandler)
 	r.Path(httphandlers.PingPath).HandlerFunc(httphandlers.PingHandler)
-	r.Path("/__health").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(fthealth.Handler(sc.serviceName, serviceDescription, sc.enrichedContentAppCheck(), sc.documentStoreAppCheck()))})
+	r.Path("/__health").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(fthealth.Handler(sc.serviceName, serviceDescription, sc.contentSourceAppCheck(), sc.internalComponentsSourceAppCheck()))})
 	r.Path("/__metrics").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(metricsHTTPEndpoint)})
 	return r
 }
