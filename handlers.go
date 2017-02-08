@@ -39,7 +39,7 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 	var contentResponse *http.Response
 	go func() {
 		defer waitGroup.Done()
-		contentIsOK, contentStatusCode, contentResponse = handler.getContent(ctx, responseWriter)
+		contentIsOK, contentStatusCode, contentResponse = handler.getContent(ctx)
 	}()
 
 	var internalComponentsAreOK bool
@@ -47,7 +47,7 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 	var internalComponentsResponse *http.Response
 	go func() {
 		defer waitGroup.Done()
-		internalComponentsAreOK, internalComponentsStatusCode, internalComponentsResponse = handler.getInternalComponents(ctx, responseWriter)
+		internalComponentsAreOK, internalComponentsStatusCode, internalComponentsResponse = handler.getInternalComponents(ctx)
 	}()
 
 	waitGroup.Wait()
@@ -151,7 +151,7 @@ func resolveImageURLs(content map[string]interface{}, APIHost string) {
 	}
 }
 
-func (handler contentHandler) getContent(ctx context.Context, w http.ResponseWriter) (ok bool, statusCode int, resp *http.Response) {
+func (handler contentHandler) getContent(ctx context.Context) (ok bool, statusCode int, resp *http.Response) {
 	uuid := ctx.Value(uuidKey).(string)
 	requestURL := fmt.Sprintf("%s%s", handler.serviceConfig.contentSourceURI, uuid)
 	transactionID, _ := tid.GetTransactionIDFromContext(ctx)
@@ -168,7 +168,7 @@ func (handler contentHandler) getContent(ctx context.Context, w http.ResponseWri
 	return handler.handleResponse(req, resp, err, uuid, "h.serviceConfig.contentSourceAppName", true)
 }
 
-func (handler contentHandler) getInternalComponents(ctx context.Context, w http.ResponseWriter) (ok bool, statusCode int, resp *http.Response) {
+func (handler contentHandler) getInternalComponents(ctx context.Context) (ok bool, statusCode int, resp *http.Response) {
 	uuid := ctx.Value(uuidKey).(string)
 	requestURL := fmt.Sprintf("%s%s", handler.serviceConfig.internalComponentsSourceURI, uuid)
 	transactionID, _ := tid.GetTransactionIDFromContext(ctx)
