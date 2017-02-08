@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -36,7 +37,7 @@ func TestServeHTTP_CacheControlHeaderIsSet(t *testing.T) {
 	metricsHandler := NewMetrics()
 	contentHandler := contentHandler{&sc, appLogger, &metricsHandler}
 
-	req := httptest.NewRequest("GET", "http://internalcontentapi.ft.com/internalcontent/foobar", nil)
+	req, _ := http.NewRequest("GET", "http://internalcontentapi.ft.com/internalcontent/foobar", nil)
 	w := httptest.NewRecorder()
 	contentHandler.ServeHTTP(w, req)
 
