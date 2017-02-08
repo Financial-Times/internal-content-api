@@ -35,26 +35,30 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 	var waitGroup sync.WaitGroup
 	waitGroup.Add(2)
 	var contentIsOK bool
+	var contentStatusCode int
 	var contentResponse *http.Response
 	go func() {
 		defer waitGroup.Done()
-		contentIsOK, contentResponse = handler.getContent(ctx, responseWriter)
+		contentIsOK, contentStatusCode, contentResponse = handler.getContent(ctx, responseWriter)
 	}()
 
 	var internalComponentsAreOK bool
+	var internalComponentsStatusCode int
 	var internalComponentsResponse *http.Response
 	go func() {
 		defer waitGroup.Done()
-		internalComponentsAreOK, internalComponentsResponse = handler.getInternalComponents(ctx, responseWriter)
+		internalComponentsAreOK, internalComponentsStatusCode, internalComponentsResponse = handler.getInternalComponents(ctx, responseWriter)
 	}()
 
 	waitGroup.Wait()
 	if !contentIsOK {
+		responseWriter.WriteHeader(contentStatusCode)
 		return
 	}
 	defer cleanupResp(contentResponse, handler.log.log)
 
 	if !internalComponentsAreOK {
+		responseWriter.WriteHeader(internalComponentsStatusCode)
 		return
 	}
 	// internal components response is nil when is not found
@@ -147,24 +151,24 @@ func resolveImageURLs(content map[string]interface{}, APIHost string) {
 	}
 }
 
-func (handler contentHandler) getContent(ctx context.Context, w http.ResponseWriter) (ok bool, resp *http.Response) {
+func (handler contentHandler) getContent(ctx context.Context, w http.ResponseWriter) (ok bool, statusCode int, resp *http.Response) {
 	uuid := ctx.Value(uuidKey).(string)
 	requestURL := fmt.Sprintf("%s%s", handler.serviceConfig.contentSourceURI, uuid)
 	transactionID, _ := tid.GetTransactionIDFromContext(ctx)
 	handler.log.RequestEvent(handler.serviceConfig.contentSourceAppName, requestURL, transactionID, uuid)
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
-		handler.handleError(w, err, "h.serviceConfig.contentSourceAppName", "", req.Header.Get(tid.TransactionIDHeader), uuid)
-		return false, nil
+		handler.handleError(err, "h.serviceConfig.contentSourceAppName", "", req.Header.Get(tid.TransactionIDHeader), uuid)
+		return false, http.StatusInternalServerError, nil
 	}
 	req.Header.Set(tid.TransactionIDHeader, transactionID)
 	req.Header.Set("Content-Type", "application/json")
 	resp, err = client.Do(req)
 
-	return handler.handleResponse(req, resp, err, w, uuid, "h.serviceConfig.contentSourceAppName", true)
+	return handler.handleResponse(req, resp, err, uuid, "h.serviceConfig.contentSourceAppName", true)
 }
 
-func (handler contentHandler) getInternalComponents(ctx context.Context, w http.ResponseWriter) (ok bool, resp *http.Response) {
+func (handler contentHandler) getInternalComponents(ctx context.Context, w http.ResponseWriter) (ok bool, statusCode int, resp *http.Response) {
 	uuid := ctx.Value(uuidKey).(string)
 	requestURL := fmt.Sprintf("%s%s", handler.serviceConfig.internalComponentsSourceURI, uuid)
 	transactionID, _ := tid.GetTransactionIDFromContext(ctx)
@@ -172,44 +176,43 @@ func (handler contentHandler) getInternalComponents(ctx context.Context, w http.
 
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
-		handler.handleError(w, err, "h.serviceConfig.internalComponentsSourceAppName", "", req.Header.Get(tid.TransactionIDHeader), uuid)
-		return false, nil
+		handler.handleError(err, "h.serviceConfig.internalComponentsSourceAppName", "", req.Header.Get(tid.TransactionIDHeader), uuid)
+		return false, http.StatusInternalServerError, nil
 	}
 	req.Header.Set(tid.TransactionIDHeader, transactionID)
 	req.Header.Set("Content-Type", "application/json")
 	resp, err = client.Do(req)
 
-	return handler.handleResponse(req, resp, err, w, uuid, "h.serviceConfig.internalComponentsSourceAppName", false)
-
+	return handler.handleResponse(req, resp, err, uuid, "h.serviceConfig.internalComponentsSourceAppName", false)
 }
 
-func (handler contentHandler) handleResponse(req *http.Request, extResp *http.Response, err error, w http.ResponseWriter, uuid string, appName string, doFail bool) (ok bool, resp *http.Response) {
+func (handler contentHandler) handleResponse(req *http.Request, extResp *http.Response, err error, uuid string, appName string, doFail bool) (ok bool, statusCode int, resp *http.Response) {
 	//this happens when hostname cannot be resolved or host is not accessible
 	if err != nil {
-		handler.handleError(w, err, appName, req.URL.String(), req.Header.Get(tid.TransactionIDHeader), uuid)
-		return false, nil
+		handler.handleError(err, appName, req.URL.String(), req.Header.Get(tid.TransactionIDHeader), uuid)
+		return false, http.StatusServiceUnavailable, nil
 	}
 	switch extResp.StatusCode {
 	case http.StatusOK:
 		handler.log.ResponseEvent(appName, req.URL.String(), extResp, uuid)
-		return true, extResp
+		return true, http.StatusOK, extResp
 	case http.StatusNotFound:
 		if doFail {
-			handler.handleNotFound(w, extResp, appName, req.URL.String(), uuid)
-			return false, nil
+			handler.handleNotFound(extResp, appName, req.URL.String(), uuid)
+			return false, http.StatusNotFound, nil
 		}
 		handler.log.RequestFailedEvent(appName, req.URL.String(), extResp, uuid)
 		handler.metrics.recordRequestFailedEvent()
-		return true, nil
+		return true, http.StatusNotFound, nil
 
 	default:
 		if doFail {
-			handler.handleFailedRequest(w, extResp, appName, req.URL.String(), uuid)
-			return false, nil
+			handler.handleFailedRequest(extResp, appName, req.URL.String(), uuid)
+			return false, http.StatusServiceUnavailable, nil
 		}
 		handler.log.RequestFailedEvent(appName, req.URL.String(), extResp, uuid)
 		handler.metrics.recordRequestFailedEvent()
-		return true, nil
+		return true, http.StatusOK, nil
 
 	}
 }
@@ -231,20 +234,17 @@ func (handler contentHandler) handleErrorEvent(w http.ResponseWriter, event even
 	handler.metrics.recordErrorEvent()
 }
 
-func (handler contentHandler) handleError(w http.ResponseWriter, err error, serviceName string, url string, transactionID string, uuid string) {
-	w.WriteHeader(http.StatusServiceUnavailable)
+func (handler contentHandler) handleError(err error, serviceName string, url string, transactionID string, uuid string) {
 	handler.log.ErrorEvent(serviceName, url, transactionID, err, uuid)
 	handler.metrics.recordErrorEvent()
 }
 
-func (handler contentHandler) handleFailedRequest(w http.ResponseWriter, resp *http.Response, serviceName string, url string, uuid string) {
-	w.WriteHeader(http.StatusServiceUnavailable)
+func (handler contentHandler) handleFailedRequest(resp *http.Response, serviceName string, url string, uuid string) {
 	handler.log.RequestFailedEvent(serviceName, url, resp, uuid)
 	handler.metrics.recordRequestFailedEvent()
 }
 
-func (handler contentHandler) handleNotFound(w http.ResponseWriter, resp *http.Response, serviceName string, url string, uuid string) {
-	w.WriteHeader(http.StatusNotFound)
+func (handler contentHandler) handleNotFound(resp *http.Response, serviceName string, url string, uuid string) {
 	handler.log.RequestFailedEvent(serviceName, url, resp, uuid)
 	handler.metrics.recordRequestFailedEvent()
 }

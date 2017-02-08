@@ -29,7 +29,7 @@ func TestResolveImgURLs(t *testing.T) {
 
 func TestServeHTTP_CacheControlHeaderIsSet(t *testing.T) {
 	sc := serviceConfig{
-		cacheControlPolicy: "max-age: 10",
+		cacheControlPolicy: "max-age=10",
 	}
 
 	appLogger := newAppLogger()
@@ -40,5 +40,5 @@ func TestServeHTTP_CacheControlHeaderIsSet(t *testing.T) {
 	w := httptest.NewRecorder()
 	contentHandler.ServeHTTP(w, req)
 
-	assert.Equal(t, w.Header().Get("Cache-Control"), "max-age: 10")
+	assert.Equal(t, w.Header().Get("Cache-Control"), "max-age=10")
 }
