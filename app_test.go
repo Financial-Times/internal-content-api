@@ -110,6 +110,7 @@ func startInternalContentService() {
 		"internal-content-api",
 		"8084",
 		"internalcontent",
+		"no-store",
 		enrichedContentAPIURI,
 		documentStoreAPIURI,
 		"Enriched Content",

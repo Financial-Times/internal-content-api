@@ -30,6 +30,7 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 	ctx := tid.TransactionAwareContext(context.Background(), transactionID)
 	ctx = context.WithValue(ctx, uuidKey, uuid)
 	responseWriter.Header().Set("Content-Type", "application/json; charset=utf-8")
+	responseWriter.Header().Set("Cache-Control", handler.serviceConfig.cacheControlPolicy)
 
 	var waitGroup sync.WaitGroup
 	waitGroup.Add(2)
