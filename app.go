@@ -33,6 +33,12 @@ func main() {
 		Desc:   "Path on which the handler will be mapped",
 		EnvVar: "HANDLER_PATH",
 	})
+	cacheControlPolicy := app.String(cli.StringOpt{
+		Name:   "cache-control-policy",
+		Value:  "no-store",
+		Desc:   "Cache control policy header",
+		EnvVar: "CACHE_CONTROL_POLICY",
+	})
 	contentSourceURI := app.String(cli.StringOpt{
 		Name:   "content-source-uri",
 		Value:  "http://localhost:8080/__enriched-content-read-api/enrichedcontent/",
@@ -110,6 +116,7 @@ func main() {
 			*serviceName,
 			*appPort,
 			*handlerPath,
+			*cacheControlPolicy,
 			*contentSourceURI,
 			*internalComponentsSourceURI,
 			*contentSourceAppName,
@@ -151,6 +158,7 @@ type serviceConfig struct {
 	serviceName                           string
 	appPort                               string
 	handlerPath                           string
+	cacheControlPolicy                    string
 	contentSourceURI                      string
 	internalComponentsSourceURI           string
 	contentSourceAppName                  string
@@ -168,6 +176,7 @@ func (sc serviceConfig) asMap() map[string]interface{} {
 	return map[string]interface{}{
 		"service-name":                               sc.serviceName,
 		"service-port":                               sc.appPort,
+		"cache-control-policy":                       sc.cacheControlPolicy,
 		"handler-path":                               sc.handlerPath,
 		"content-source-uri":                         sc.contentSourceURI,
 		"internal-components-source-uri":             sc.internalComponentsSourceURI,
