@@ -45,18 +45,18 @@ func TestServeHTTP_CacheControlHeaderIsSet(t *testing.T) {
 }
 
 var mapWithSingleValue = map[string]interface{}{
-	"string" : "value",
+	"string": "value",
 }
 
 var mapWithValueAndEmptySlice = map[string]interface{}{
-	"string" : "value",
-	"slice" : []interface{} {},
+	"string": "value",
+	"slice":  []interface{}{},
 }
 
 func TestEmptyFieldRemoval_NilIsRemoved(t *testing.T) {
 	content := map[string]interface{}{
-		"string" : "value",
-		"nil" : nil,
+		"string": "value",
+		"nil":    nil,
 	}
 
 	removeEmptyMapFields(content)
@@ -66,8 +66,8 @@ func TestEmptyFieldRemoval_NilIsRemoved(t *testing.T) {
 
 func TestEmptyFieldRemoval_EmptyStringIsRemoved(t *testing.T) {
 	content := map[string]interface{}{
-		"string" : "value",
-		"emptyString" : "",
+		"string":      "value",
+		"emptyString": "",
 	}
 
 	removeEmptyMapFields(content)
@@ -77,8 +77,8 @@ func TestEmptyFieldRemoval_EmptyStringIsRemoved(t *testing.T) {
 
 func TestEmptyFieldRemoval_EmptyMapIsRemoved(t *testing.T) {
 	content := map[string]interface{}{
-		"string" : "value",
-		"emptyMap" : map[string]interface{}{},
+		"string":   "value",
+		"emptyMap": map[string]interface{}{},
 	}
 
 	removeEmptyMapFields(content)
@@ -88,9 +88,9 @@ func TestEmptyFieldRemoval_EmptyMapIsRemoved(t *testing.T) {
 
 func TestEmptyFieldRemoval_MapWithEmptyStringIsRemoved(t *testing.T) {
 	content := map[string]interface{}{
-		"string" : "value",
-		"emptyMap" : map[string]interface{}{
-			"emptyString" : "",
+		"string": "value",
+		"emptyMap": map[string]interface{}{
+			"emptyString": "",
 		},
 	}
 
@@ -101,8 +101,8 @@ func TestEmptyFieldRemoval_MapWithEmptyStringIsRemoved(t *testing.T) {
 
 func TestEmptyFieldRemoval_EmptyArrayIsNotRemoved(t *testing.T) {
 	content := map[string]interface{}{
-		"string" : "value",
-		"slice" : []interface{} {},
+		"string": "value",
+		"slice":  []interface{}{},
 	}
 
 	removeEmptyMapFields(content)
@@ -112,8 +112,8 @@ func TestEmptyFieldRemoval_EmptyArrayIsNotRemoved(t *testing.T) {
 
 func TestEmptyFieldRemoval_ArrayWithNilIsEmptied(t *testing.T) {
 	content := map[string]interface{}{
-		"string" : "value",
-		"slice" : []interface{} { nil },
+		"string": "value",
+		"slice":  []interface{}{nil},
 	}
 
 	removeEmptyMapFields(content)
@@ -123,8 +123,8 @@ func TestEmptyFieldRemoval_ArrayWithNilIsEmptied(t *testing.T) {
 
 func TestEmptyFieldRemoval_ArrayWithEmptyValueIsEmptied(t *testing.T) {
 	content := map[string]interface{}{
-		"string" : "value",
-		"slice" : []interface{} { "" },
+		"string": "value",
+		"slice":  []interface{}{""},
 	}
 
 	removeEmptyMapFields(content)
@@ -134,9 +134,9 @@ func TestEmptyFieldRemoval_ArrayWithEmptyValueIsEmptied(t *testing.T) {
 
 func TestEmptyFieldRemoval_SliceWithEmptyMapIsEmptied(t *testing.T) {
 	content := map[string]interface{}{
-		"string" : "value",
-		"slice" : []interface{} {
-			map[string]interface{} {},
+		"string": "value",
+		"slice": []interface{}{
+			map[string]interface{}{},
 		},
 	}
 
@@ -147,10 +147,10 @@ func TestEmptyFieldRemoval_SliceWithEmptyMapIsEmptied(t *testing.T) {
 
 func TestEmptyFieldRemoval_SliceWithMapWithNilIsEmptied(t *testing.T) {
 	content := map[string]interface{}{
-		"string" : "value",
-		"slice" : []interface{} {
-			map[string]interface{} {
-				"nil" : nil,
+		"string": "value",
+		"slice": []interface{}{
+			map[string]interface{}{
+				"nil": nil,
 			},
 		},
 	}
@@ -160,59 +160,58 @@ func TestEmptyFieldRemoval_SliceWithMapWithNilIsEmptied(t *testing.T) {
 	assert.Equal(t, mapWithValueAndEmptySlice, content)
 }
 
-func TestEmptyFieldRemoval_complexCase(t *testing.T)  {
+func TestEmptyFieldRemoval_complexCase(t *testing.T) {
 	content := map[string]interface{}{
-		"string" : "value",
-		"emptyString" : "",
-		"nil" : nil,
-		"map1" : map[string]interface{} {
-		},
-		"map2" : map[string]interface{} {
-			"map" : map[string]interface{} {
-				"nil" : nil,
+		"string":      "value",
+		"emptyString": "",
+		"nil":         nil,
+		"map1":        map[string]interface{}{},
+		"map2": map[string]interface{}{
+			"map": map[string]interface{}{
+				"nil": nil,
 			},
 		},
-		"map3" : map[string]interface{} {
-			"map" : map[string]interface{} {
-				"string" : "value",
-				"slice" : []interface{}{
+		"map3": map[string]interface{}{
+			"map": map[string]interface{}{
+				"string": "value",
+				"slice": []interface{}{
 					map[string]interface{}{
-						"nil" : nil,
+						"nil": nil,
 					},
 					map[string]interface{}{
-						"emptyString" : "",
+						"emptyString": "",
 					},
 				},
 			},
 		},
-		"slice1" : []interface{} {
-			map[string]interface{} {
-				"nil" : nil,
+		"slice1": []interface{}{
+			map[string]interface{}{
+				"nil": nil,
 			},
-			map[string]interface{} {
-				"emptyString" : "",
+			map[string]interface{}{
+				"emptyString": "",
 			},
-			map[string]interface{} {
-				"string" : "value",
-				"int" : 0,
+			map[string]interface{}{
+				"string": "value",
+				"int":    0,
 			},
-			map[string]interface{} {
-				"string" : "value",
-				"float" : 0.0,
+			map[string]interface{}{
+				"string": "value",
+				"float":  0.0,
 			},
 		},
-		"slice2" : []interface{} { 1, 2, 3 },
-		"slice3" : []interface{} {
+		"slice2": []interface{}{1, 2, 3},
+		"slice3": []interface{}{
 			nil,
 			1,
 			2,
 			3,
 			[]interface{}{
 				map[string]interface{}{
-					"nil" : nil,
+					"nil": nil,
 				},
 				map[string]interface{}{
-					"emptyString" : "",
+					"emptyString": "",
 				},
 				"",
 				"",
@@ -221,33 +220,33 @@ func TestEmptyFieldRemoval_complexCase(t *testing.T)  {
 	}
 
 	expected := map[string]interface{}{
-		"string" : "value",
-		"map3" : map[string]interface{} {
-			"map" : map[string]interface{} {
-				"string" : "value",
-				"slice" : []interface{} {},
+		"string": "value",
+		"map3": map[string]interface{}{
+			"map": map[string]interface{}{
+				"string": "value",
+				"slice":  []interface{}{},
 			},
 		},
-		"slice1" : []interface{} {
-			map[string]interface{} {
-				"string" : "value",
-				"int" : 0,
+		"slice1": []interface{}{
+			map[string]interface{}{
+				"string": "value",
+				"int":    0,
 			},
-			map[string]interface{} {
-				"string" : "value",
-				"float" : 0.0,
+			map[string]interface{}{
+				"string": "value",
+				"float":  0.0,
 			},
 		},
-		"slice2" : []interface{} { 1, 2, 3 },
-		"slice3" : []interface{} {
+		"slice2": []interface{}{1, 2, 3},
+		"slice3": []interface{}{
 			1,
 			2,
 			3,
-			[]interface{} {},
+			[]interface{}{},
 		},
 	}
 
-	removeEmptyMapFields(content);
+	removeEmptyMapFields(content)
 
-	assert.Equal(t, expected, content);
+	assert.Equal(t, expected, content)
 }

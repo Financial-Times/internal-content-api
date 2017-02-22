@@ -160,27 +160,31 @@ func removeEmptyMapFields(content map[string]interface{}) {
 		}
 
 		str, ok := value.(string)
-		if (ok) {
-			if (str == "") { delete(content, key) }
+		if ok {
+			if str == "" {
+				delete(content, key)
+			}
 			continue
 		}
 
 		subMap, ok := value.(map[string]interface{})
-		if (ok) {
+		if ok {
 			removeEmptyMapFields(subMap)
-			if (len(subMap) == 0) { delete(content, key) }
+			if len(subMap) == 0 {
+				delete(content, key)
+			}
 			continue
 		}
 
 		slice, ok := value.([]interface{})
-		if (ok) {
+		if ok {
 			content[key] = removeEmptySliceValues(slice)
 		}
 	}
 }
 
 func removeEmptySliceValues(slice []interface{}) []interface{} {
-	sliceCopy := []interface{} {}
+	sliceCopy := []interface{}{}
 
 	for _, value := range slice {
 		if value == nil {
@@ -188,24 +192,24 @@ func removeEmptySliceValues(slice []interface{}) []interface{} {
 		}
 
 		str, ok := value.(string)
-		if (ok) {
-			if (str != "") {
+		if ok {
+			if str != "" {
 				sliceCopy = append(sliceCopy, value)
 			}
 			continue
 		}
 
 		subMap, ok := value.(map[string]interface{})
-		if (ok) {
+		if ok {
 			removeEmptyMapFields(subMap)
-			if (len(subMap) != 0) {
+			if len(subMap) != 0 {
 				sliceCopy = append(sliceCopy, value)
 			}
 			continue
 		}
 
-		subSlice, ok := value.([]interface{});
-		if (ok) {
+		subSlice, ok := value.([]interface{})
+		if ok {
 			sliceCopy = append(sliceCopy, removeEmptySliceValues(subSlice))
 			continue
 		}
