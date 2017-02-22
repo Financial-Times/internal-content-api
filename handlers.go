@@ -114,6 +114,7 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 	}
 	addInternalComponentsToContent(content, internalComponents)
 	resolveImageURLs(content, handler.serviceConfig.envAPIHost)
+	removeEmptyMapFields(content)
 
 	resultBytes, _ := json.Marshal(content)
 	responseWriter.Write(resultBytes)
@@ -149,6 +150,70 @@ func resolveImageURLs(content map[string]interface{}, APIHost string) {
 		imgURL := "http://" + APIHost + "/content/" + img["id"].(string)
 		img["id"] = imgURL
 	}
+}
+
+func removeEmptyMapFields(content map[string]interface{}) {
+	for key, value := range content {
+		if value == nil {
+			delete(content, key)
+			continue
+		}
+
+		str, ok := value.(string)
+		if (ok) {
+			if (str == "") { delete(content, key) }
+			continue
+		}
+
+		subMap, ok := value.(map[string]interface{})
+		if (ok) {
+			removeEmptyMapFields(subMap)
+			if (len(subMap) == 0) { delete(content, key) }
+			continue
+		}
+
+		slice, ok := value.([]interface{})
+		if (ok) {
+			content[key] = removeEmptySliceValues(slice)
+		}
+	}
+}
+
+func removeEmptySliceValues(slice []interface{}) []interface{} {
+	sliceCopy := []interface{} {}
+
+	for _, value := range slice {
+		if value == nil {
+			continue
+		}
+
+		str, ok := value.(string)
+		if (ok) {
+			if (str != "") {
+				sliceCopy = append(sliceCopy, value)
+			}
+			continue
+		}
+
+		subMap, ok := value.(map[string]interface{})
+		if (ok) {
+			removeEmptyMapFields(subMap)
+			if (len(subMap) != 0) {
+				sliceCopy = append(sliceCopy, value)
+			}
+			continue
+		}
+
+		subSlice, ok := value.([]interface{});
+		if (ok) {
+			sliceCopy = append(sliceCopy, removeEmptySliceValues(subSlice))
+			continue
+		}
+
+		sliceCopy = append(sliceCopy, value)
+	}
+
+	return sliceCopy
 }
 
 func (handler contentHandler) getContent(ctx context.Context) (ok bool, statusCode int, resp *http.Response) {
