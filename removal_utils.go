@@ -4,10 +4,8 @@ func removeEmptyMapFields(content map[string]interface{}) {
 	for key, val := range content {
 		switch typedVal := val.(type) {
 
-		default:
-			if val == nil {
-				delete(content, key)
-			}
+		case nil:
+			delete(content, key)
 
 		case string:
 			if typedVal == "" {
@@ -21,40 +19,38 @@ func removeEmptyMapFields(content map[string]interface{}) {
 			}
 
 		case []interface{}:
-			content[key] = removeEmptySliceValues(typedVal)
-
+			removeEmptySliceValues(&typedVal)
+			content[key] = typedVal
 		}
 	}
 }
 
-func removeEmptySliceValues(slice []interface{}) []interface{} {
-	sliceCopy := []interface{}{}
+func removeEmptySliceValues(slice *[]interface{}) {
+	localSlice := *slice
+	length := len(localSlice)
 
-	for _, elem := range slice {
+	for i := length - 1; i >= 0; i-- {
+		switch typedElem := localSlice[i].(type) {
 
-		switch typedElem := elem.(type) {
-
-		default:
-			if elem != nil {
-				sliceCopy = append(sliceCopy, elem)
-			}
+		case nil:
+			localSlice = append(localSlice[:i], localSlice[i+1:]...)
 
 		case string:
-			if typedElem != "" {
-				sliceCopy = append(sliceCopy, typedElem)
+			if typedElem == "" {
+				localSlice = append(localSlice[:i], localSlice[i+1:]...)
 			}
 
 		case map[string]interface{}:
 			removeEmptyMapFields(typedElem)
-			if len(typedElem) != 0 {
-				sliceCopy = append(sliceCopy, typedElem)
+			if len(typedElem) == 0 {
+				localSlice = append(localSlice[:i], localSlice[i+1:]...)
 			}
 
 		case []interface{}:
-			sliceCopy = append(sliceCopy, removeEmptySliceValues(typedElem))
-
+			removeEmptySliceValues(&typedElem)
+			localSlice[i] = typedElem
 		}
 	}
 
-	return sliceCopy
+	*slice = localSlice
 }
