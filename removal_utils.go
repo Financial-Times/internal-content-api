@@ -19,38 +19,35 @@ func removeEmptyMapFields(content map[string]interface{}) {
 			}
 
 		case []interface{}:
-			removeEmptySliceValues(&typedVal)
-			content[key] = typedVal
+			content[key] = removeEmptySliceValues(typedVal)
 		}
 	}
 }
 
-func removeEmptySliceValues(slice *[]interface{}) {
-	localSlice := *slice
-	length := len(localSlice)
+func removeEmptySliceValues(slice []interface{}) []interface{} {
+	length := len(slice)
 
 	for i := length - 1; i >= 0; i-- {
-		switch typedElem := localSlice[i].(type) {
+		switch typedElem := slice[i].(type) {
 
 		case nil:
-			localSlice = append(localSlice[:i], localSlice[i+1:]...)
+			slice = append(slice[:i], slice[i+1:]...)
 
 		case string:
 			if typedElem == "" {
-				localSlice = append(localSlice[:i], localSlice[i+1:]...)
+				slice = append(slice[:i], slice[i+1:]...)
 			}
 
 		case map[string]interface{}:
 			removeEmptyMapFields(typedElem)
 			if len(typedElem) == 0 {
-				localSlice = append(localSlice[:i], localSlice[i+1:]...)
+				slice = append(slice[:i], slice[i+1:]...)
 			}
 
 		case []interface{}:
-			removeEmptySliceValues(&typedElem)
-			localSlice[i] = typedElem
+			slice[i] = removeEmptySliceValues(typedElem)
 		}
 	}
 
-	*slice = localSlice
+	return slice
 }
