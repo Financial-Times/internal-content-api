@@ -5,6 +5,7 @@ import (
 	"fmt"
 	fthealth "github.com/Financial-Times/go-fthealth/v1a"
 	"net/http"
+	"strings"
 )
 
 func (sc *serviceConfig) contentSourceAppCheck() fthealth.Check {
@@ -13,7 +14,7 @@ func (sc *serviceConfig) contentSourceAppCheck() fthealth.Check {
 		Name:             sc.contentSourceAppName + " Availabililty Check",
 		PanicGuide:       sc.contentSourceAppPanicGuide,
 		Severity:         1,
-		TechnicalSummary: "Checks that " + sc.contentSourceAppName + " Service is reachable. Internal Content Service requests content from " + sc.contentSourceAppName + " service.",
+		TechnicalSummary: "Checks that " + sc.contentSourceAppName + " service is reachable. " + formattedServiceName(sc.serviceName) + " requests content from " + sc.contentSourceAppName + " service.",
 		Checker: func() (string, error) {
 			return checkServiceAvailability(sc.contentSourceAppName, sc.contentSourceAppHealthURI)
 		},
@@ -26,7 +27,7 @@ func (sc *serviceConfig) internalComponentsSourceAppCheck() fthealth.Check {
 		Name:             sc.internalComponentsSourceAppName + " Availabililty Check",
 		PanicGuide:       sc.internalComponentsSourceAppPanicGuide,
 		Severity:         2,
-		TechnicalSummary: "Checks that " + sc.internalComponentsSourceAppName + " Service is reachable. Internal Content Service relies on " + sc.internalComponentsSourceAppName + " service to get the internal components.",
+		TechnicalSummary: "Checks that " + sc.internalComponentsSourceAppName + " service is reachable. " + formattedServiceName(sc.serviceName) + " relies on " + sc.internalComponentsSourceAppName + " service to get the internal components.",
 		Checker: func() (string, error) {
 			return checkServiceAvailability(sc.internalComponentsSourceAppName, sc.internalComponentsSourceAppHealthURI)
 		},
@@ -45,4 +46,8 @@ func checkServiceAvailability(serviceName string, healthURI string) (string, err
 		return msg, errors.New(msg)
 	}
 	return "Ok", nil
+}
+
+func formattedServiceName(serviceName string) string {
+	return strings.Title(strings.Replace(serviceName, "-", " ", -1))
 }

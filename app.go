@@ -20,11 +20,16 @@ var client = &http.Client{Timeout: timeout}
 
 func main() {
 	app := cli.App("internal-content-api", serviceDescription)
-	serviceName := app.StringOpt("app-name", "internal-content-api", "The name of this service")
+	serviceName := app.String(cli.StringOpt{
+		Name:   "app-name",
+		Value:  "internal-content-api",
+		Desc:   "The name of this service",
+		EnvVar: "APP_NAME",
+	})
 	appPort := app.String(cli.StringOpt{
 		Name:   "app-port",
 		Value:  "8084",
-		Desc:   "Default port for Internal Content API",
+		Desc:   "Default port of the service",
 		EnvVar: "APP_PORT",
 	})
 	handlerPath := app.String(cli.StringOpt{
