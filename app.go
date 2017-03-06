@@ -92,6 +92,18 @@ func main() {
 		Desc:   "Internal components source application panic guide url for healthcheck. Default panic guide is for Document Store API.",
 		EnvVar: "INTERNAL_COMPONENTS_SOURCE_APP_PANIC_GUIDE",
 	})
+	contentSourceAppBusinessImpact := app.String(cli.StringOpt{
+		Name:   "content-source-app-business-impact",
+		Value:  "No articles would be available",
+		Desc:   "Describe the business impact the content source app would produce if it is broken.",
+		EnvVar: "CONTENT_SOURCE_APP_BUSINESS_IMPACT",
+	})
+	internalComponentsSourceAppBusinessImpact := app.String(cli.StringOpt{
+		Name:   "internal-components-source-app-business-impact",
+		Value:  "Articles won't have the internal components",
+		Desc:   "Describe the business impact the internal components source app would produce if it is broken.",
+		EnvVar: "INTERNAL_COMPONENTS_SOURCE_APP_BUSINESS_IMPACT",
+	})
 	envAPIHost := app.String(cli.StringOpt{
 		Name:   "env-api-host",
 		Value:  "api.ft.com",
@@ -130,6 +142,8 @@ func main() {
 			*internalComponentsSourceAppHealthURI,
 			*contentSourceAppPanicGuide,
 			*internalComponentsSourceAppPanicGuide,
+			*contentSourceAppBusinessImpact,
+			*internalComponentsSourceAppBusinessImpact,
 			*envAPIHost,
 			*graphiteTCPAddress,
 			*graphitePrefix,
@@ -160,39 +174,43 @@ func setupServiceHandler(sc serviceConfig, metricsHandler Metrics, contentHandle
 }
 
 type serviceConfig struct {
-	serviceName                           string
-	appPort                               string
-	handlerPath                           string
-	cacheControlPolicy                    string
-	contentSourceURI                      string
-	internalComponentsSourceURI           string
-	contentSourceAppName                  string
-	internalComponentsSourceAppName       string
-	contentSourceAppHealthURI             string
-	internalComponentsSourceAppHealthURI  string
-	contentSourceAppPanicGuide            string
-	internalComponentsSourceAppPanicGuide string
-	envAPIHost                            string
-	graphiteTCPAddress                    string
-	graphitePrefix                        string
+	serviceName                               string
+	appPort                                   string
+	handlerPath                               string
+	cacheControlPolicy                        string
+	contentSourceURI                          string
+	internalComponentsSourceURI               string
+	contentSourceAppName                      string
+	internalComponentsSourceAppName           string
+	contentSourceAppHealthURI                 string
+	internalComponentsSourceAppHealthURI      string
+	contentSourceAppPanicGuide                string
+	internalComponentsSourceAppPanicGuide     string
+	contentSourceAppBusinessImpact            string
+	internalComponentsSourceAppBusinessImpact string
+	envAPIHost                                string
+	graphiteTCPAddress                        string
+	graphitePrefix                            string
 }
 
 func (sc serviceConfig) asMap() map[string]interface{} {
 	return map[string]interface{}{
-		"service-name":                               sc.serviceName,
-		"service-port":                               sc.appPort,
-		"cache-control-policy":                       sc.cacheControlPolicy,
-		"handler-path":                               sc.handlerPath,
-		"content-source-uri":                         sc.contentSourceURI,
-		"internal-components-source-uri":             sc.internalComponentsSourceURI,
-		"content-source-app-name":                    sc.contentSourceAppName,
-		"internal-components-source-app-name":        sc.internalComponentsSourceAppName,
-		"content-source-app-health-uri":              sc.contentSourceAppHealthURI,
-		"internal-components-source-app-health-uri":  sc.internalComponentsSourceAppHealthURI,
-		"content-source-app-panic-guide":             sc.contentSourceAppPanicGuide,
-		"internal-components-source-app-panic-guide": sc.internalComponentsSourceAppPanicGuide,
-		"env-api-host":                               sc.envAPIHost,
-		"graphite-tcp-address":                       sc.graphiteTCPAddress,
-		"graphite-prefix":                            sc.graphitePrefix,
+		"service-name":                                   sc.serviceName,
+		"service-port":                                   sc.appPort,
+		"cache-control-policy":                           sc.cacheControlPolicy,
+		"handler-path":                                   sc.handlerPath,
+		"content-source-uri":                             sc.contentSourceURI,
+		"internal-components-source-uri":                 sc.internalComponentsSourceURI,
+		"content-source-app-name":                        sc.contentSourceAppName,
+		"internal-components-source-app-name":            sc.internalComponentsSourceAppName,
+		"content-source-app-health-uri":                  sc.contentSourceAppHealthURI,
+		"internal-components-source-app-health-uri":      sc.internalComponentsSourceAppHealthURI,
+		"content-source-app-panic-guide":                 sc.contentSourceAppPanicGuide,
+		"internal-components-source-app-panic-guide":     sc.internalComponentsSourceAppPanicGuide,
+		"content-source-app-business-impact":             sc.contentSourceAppBusinessImpact,
+		"internal-components-source-app-business-impact": sc.internalComponentsSourceAppBusinessImpact,
+		"env-api-host":                                   sc.envAPIHost,
+		"graphite-tcp-address":                           sc.graphiteTCPAddress,
+		"graphite-prefix":                                sc.graphitePrefix,
 	}
 }

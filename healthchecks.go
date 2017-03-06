@@ -10,7 +10,7 @@ import (
 
 func (sc *serviceConfig) contentSourceAppCheck() fthealth.Check {
 	return fthealth.Check{
-		BusinessImpact:   "No articles would be available",
+		BusinessImpact:   sc.contentSourceAppBusinessImpact,
 		Name:             sc.contentSourceAppName + " Availabililty Check",
 		PanicGuide:       sc.contentSourceAppPanicGuide,
 		Severity:         1,
@@ -23,7 +23,7 @@ func (sc *serviceConfig) contentSourceAppCheck() fthealth.Check {
 
 func (sc *serviceConfig) internalComponentsSourceAppCheck() fthealth.Check {
 	return fthealth.Check{
-		BusinessImpact:   "Articles won't have the internal components",
+		BusinessImpact:   sc.internalComponentsSourceAppBusinessImpact,
 		Name:             sc.internalComponentsSourceAppName + " Availabililty Check",
 		PanicGuide:       sc.internalComponentsSourceAppPanicGuide,
 		Severity:         2,
