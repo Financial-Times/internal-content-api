@@ -82,14 +82,14 @@ func main() {
 	})
 	contentSourceAppPanicGuide := app.String(cli.StringOpt{
 		Name:   "content-source-app-panic-guide",
-		Value:  "https://sites.google.com/a/ft.com/dynamic-publishing-team/content-public-read-panic-guide",
-		Desc:   "Content source appllication panic guide url for healthcheck. Default panic guide is for content public read.",
+		Value:  "https://dewey.ft.com/enriched-content-read-api.html",
+		Desc:   "Content source appllication panic guide url for healthcheck. Default panic guide is for Enriched Content.",
 		EnvVar: "CONTENT_SOURCE_APP_PANIC_GUIDE",
 	})
 	internalComponentsSourceAppPanicGuide := app.String(cli.StringOpt{
 		Name:   "internal-components-source-app-panic-guide",
-		Value:  "https://sites.google.com/a/ft.com/dynamic-publishing-team/document-store-api-panic-guide",
-		Desc:   "Internal components source application panic guide url for healthcheck. Default panic guide is for document store api",
+		Value:  "https://dewey.ft.com/document-store-api.html",
+		Desc:   "Internal components source application panic guide url for healthcheck. Default panic guide is for Document Store API.",
 		EnvVar: "INTERNAL_COMPONENTS_SOURCE_APP_PANIC_GUIDE",
 	})
 	envAPIHost := app.String(cli.StringOpt{
