@@ -119,6 +119,8 @@ func startInternalContentService() {
 		documentStoreAPIHealthURI,
 		"panic guide",
 		"panic guide",
+		"Source app business impact",
+		"Internal components app business impact",
 		"api.ft.com",
 		"",
 		"",
