@@ -5,16 +5,15 @@ import (
 	"fmt"
 	fthealth "github.com/Financial-Times/go-fthealth/v1a"
 	"net/http"
-	"strings"
 )
 
 func (sc *serviceConfig) contentSourceAppCheck() fthealth.Check {
 	return fthealth.Check{
 		BusinessImpact:   sc.contentSourceAppBusinessImpact,
-		Name:             formattedServiceName(sc.contentSourceAppName) + " Availabililty Check",
+		Name:             sc.contentSourceAppName,
 		PanicGuide:       sc.contentSourceAppPanicGuide,
 		Severity:         1,
-		TechnicalSummary: "Checks that " + formattedServiceName(sc.contentSourceAppName) + " service is reachable. " + formattedServiceName(sc.serviceName) + " requests content from " + formattedServiceName(sc.contentSourceAppName) + " service.",
+		TechnicalSummary: "Checks that " + sc.contentSourceAppName + " is reachable. " + sc.serviceName + " requests content from " + sc.contentSourceAppName,
 		Checker: func() (string, error) {
 			return checkServiceAvailability(sc.contentSourceAppName, sc.contentSourceAppHealthURI)
 		},
@@ -24,10 +23,10 @@ func (sc *serviceConfig) contentSourceAppCheck() fthealth.Check {
 func (sc *serviceConfig) internalComponentsSourceAppCheck() fthealth.Check {
 	return fthealth.Check{
 		BusinessImpact:   sc.internalComponentsSourceAppBusinessImpact,
-		Name:             formattedServiceName(sc.internalComponentsSourceAppName) + " Availabililty Check",
+		Name:             sc.internalComponentsSourceAppName,
 		PanicGuide:       sc.internalComponentsSourceAppPanicGuide,
 		Severity:         2,
-		TechnicalSummary: "Checks that " + formattedServiceName(sc.internalComponentsSourceAppName) + " service is reachable. " + formattedServiceName(sc.serviceName) + " relies on " + formattedServiceName(sc.internalComponentsSourceAppName) + " service to get the internal components.",
+		TechnicalSummary: "Checks that " + sc.internalComponentsSourceAppName + " is reachable. " + sc.serviceName + " relies on " + sc.internalComponentsSourceAppName + " to get the internal components",
 		Checker: func() (string, error) {
 			return checkServiceAvailability(sc.internalComponentsSourceAppName, sc.internalComponentsSourceAppHealthURI)
 		},
@@ -46,8 +45,4 @@ func checkServiceAvailability(serviceName string, healthURI string) (string, err
 		return msg, errors.New(msg)
 	}
 	return "Ok", nil
-}
-
-func formattedServiceName(serviceName string) string {
-	return strings.Title(strings.Replace(serviceName, "-", " ", -1))
 }
