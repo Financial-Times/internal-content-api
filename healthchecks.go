@@ -11,10 +11,10 @@ import (
 func (sc *serviceConfig) contentSourceAppCheck() fthealth.Check {
 	return fthealth.Check{
 		BusinessImpact:   sc.contentSourceAppBusinessImpact,
-		Name:             sc.contentSourceAppName + " Availabililty Check",
+		Name:             formattedServiceName(sc.contentSourceAppName) + " Availabililty Check",
 		PanicGuide:       sc.contentSourceAppPanicGuide,
 		Severity:         1,
-		TechnicalSummary: "Checks that " + sc.contentSourceAppName + " service is reachable. " + formattedServiceName(sc.serviceName) + " requests content from " + sc.contentSourceAppName + " service.",
+		TechnicalSummary: "Checks that " + formattedServiceName(sc.contentSourceAppName) + " service is reachable. " + formattedServiceName(sc.serviceName) + " requests content from " + formattedServiceName(sc.contentSourceAppName) + " service.",
 		Checker: func() (string, error) {
 			return checkServiceAvailability(sc.contentSourceAppName, sc.contentSourceAppHealthURI)
 		},
@@ -24,10 +24,10 @@ func (sc *serviceConfig) contentSourceAppCheck() fthealth.Check {
 func (sc *serviceConfig) internalComponentsSourceAppCheck() fthealth.Check {
 	return fthealth.Check{
 		BusinessImpact:   sc.internalComponentsSourceAppBusinessImpact,
-		Name:             sc.internalComponentsSourceAppName + " Availabililty Check",
+		Name:             formattedServiceName(sc.internalComponentsSourceAppName) + " Availabililty Check",
 		PanicGuide:       sc.internalComponentsSourceAppPanicGuide,
 		Severity:         2,
-		TechnicalSummary: "Checks that " + sc.internalComponentsSourceAppName + " service is reachable. " + formattedServiceName(sc.serviceName) + " relies on " + sc.internalComponentsSourceAppName + " service to get the internal components.",
+		TechnicalSummary: "Checks that " + formattedServiceName(sc.internalComponentsSourceAppName) + " service is reachable. " + formattedServiceName(sc.serviceName) + " relies on " + formattedServiceName(sc.internalComponentsSourceAppName) + " service to get the internal components.",
 		Checker: func() (string, error) {
 			return checkServiceAvailability(sc.internalComponentsSourceAppName, sc.internalComponentsSourceAppHealthURI)
 		},
