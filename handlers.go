@@ -114,6 +114,7 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 	}
 	addInternalComponentsToContent(content, internalComponents)
 	resolveImageURLs(content, handler.serviceConfig.envAPIHost)
+	removeEmptyMapFields(content)
 
 	resultBytes, _ := json.Marshal(content)
 	responseWriter.Write(resultBytes)
