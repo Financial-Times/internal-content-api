@@ -113,12 +113,14 @@ func startInternalContentService() {
 		"no-store",
 		enrichedContentAPIURI,
 		documentStoreAPIURI,
-		"Enriched Content",
-		"Document Store",
+		"enriched-content-read-api",
+		"document-store-api",
 		enrichedContentAPIHealthURI,
 		documentStoreAPIHealthURI,
 		"panic guide",
 		"panic guide",
+		"Source app business impact",
+		"Internal components app business impact",
 		"api.ft.com",
 		"",
 		"",
@@ -279,9 +281,9 @@ func TestShouldBeUnhealthyWhenMethodeApiIsNotHappy(t *testing.T) {
 
 	for i := 0; i < len(res.Checks); i++ {
 		switch res.Checks[i].Name {
-		case "Enriched Content Availabililty Check":
+		case "enriched-content-read-api":
 			assert.Equal(t, false, res.Checks[i].Ok, "The Enriched Content should be unhealthy")
-		case "Document Store Availabililty Check":
+		case "document-store-api":
 			assert.Equal(t, true, res.Checks[i].Ok, "The Document Store should be healthy")
 		default:
 			panic("Not a valid check")
@@ -311,9 +313,9 @@ func TestShouldBeUnhealthyWhenTransformerIsNotHappy(t *testing.T) {
 
 	for i := 0; i < len(res.Checks); i++ {
 		switch res.Checks[i].Name {
-		case "Enriched Content Availabililty Check":
+		case "enriched-content-read-api":
 			assert.Equal(t, true, res.Checks[i].Ok, "The Enriched Content should be unhealthy")
-		case "Document Store Availabililty Check":
+		case "document-store-api":
 			assert.Equal(t, false, res.Checks[i].Ok, "The Document Store should be healthy")
 		default:
 			panic("Not a valid check")

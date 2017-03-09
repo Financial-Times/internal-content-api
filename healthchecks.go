@@ -9,11 +9,11 @@ import (
 
 func (sc *serviceConfig) contentSourceAppCheck() fthealth.Check {
 	return fthealth.Check{
-		BusinessImpact:   "No articles would be available",
-		Name:             sc.contentSourceAppName + " Availabililty Check",
+		BusinessImpact:   sc.contentSourceAppBusinessImpact,
+		Name:             sc.contentSourceAppName,
 		PanicGuide:       sc.contentSourceAppPanicGuide,
 		Severity:         1,
-		TechnicalSummary: "Checks that " + sc.contentSourceAppName + " Service is reachable. Internal Content Service requests content from " + sc.contentSourceAppName + " service.",
+		TechnicalSummary: "Checks that " + sc.contentSourceAppName + " is reachable. " + sc.serviceName + " requests content from " + sc.contentSourceAppName,
 		Checker: func() (string, error) {
 			return checkServiceAvailability(sc.contentSourceAppName, sc.contentSourceAppHealthURI)
 		},
@@ -22,11 +22,11 @@ func (sc *serviceConfig) contentSourceAppCheck() fthealth.Check {
 
 func (sc *serviceConfig) internalComponentsSourceAppCheck() fthealth.Check {
 	return fthealth.Check{
-		BusinessImpact:   "Articles won't have the internal components",
-		Name:             sc.internalComponentsSourceAppName + " Availabililty Check",
+		BusinessImpact:   sc.internalComponentsSourceAppBusinessImpact,
+		Name:             sc.internalComponentsSourceAppName,
 		PanicGuide:       sc.internalComponentsSourceAppPanicGuide,
 		Severity:         2,
-		TechnicalSummary: "Checks that " + sc.internalComponentsSourceAppName + " Service is reachable. Internal Content Service relies on " + sc.internalComponentsSourceAppName + " service to get the internal components.",
+		TechnicalSummary: "Checks that " + sc.internalComponentsSourceAppName + " is reachable. " + sc.serviceName + " relies on " + sc.internalComponentsSourceAppName + " to get the internal components",
 		Checker: func() (string, error) {
 			return checkServiceAvailability(sc.internalComponentsSourceAppName, sc.internalComponentsSourceAppHealthURI)
 		},
