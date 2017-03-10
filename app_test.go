@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	fthealth "github.com/Financial-Times/go-fthealth/v1a"
 	"github.com/gorilla/handlers"
@@ -135,10 +134,10 @@ func startInternalContentService() {
 	internalContentAPI = httptest.NewServer(h)
 }
 
-func getStringFromReader(r io.Reader) string {
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(r)
-	return buf.String()
+func getMapFromReader(r io.Reader) map[string]interface{} {
+	var m map[string]interface{}
+	json.NewDecoder(r).Decode(&m)
+	return m
 }
 
 func TestShouldReturn200AndInternalComponentOutput(t *testing.T) {
@@ -157,8 +156,8 @@ func TestShouldReturn200AndInternalComponentOutput(t *testing.T) {
 	file, _ := os.Open("test-resources/full-internal-content-api-output.json")
 	defer file.Close()
 
-	expectedOutput := getStringFromReader(file)
-	actualOutput := getStringFromReader(resp.Body)
+	expectedOutput := getMapFromReader(file)
+	actualOutput := getMapFromReader(resp.Body)
 
 	assert.Equal(t, expectedOutput, actualOutput, "Response body shoud be equal to transformer response body")
 }
@@ -194,8 +193,8 @@ func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentNotFound(t 
 	file, _ := os.Open("test-resources/partial-internal-content-api-output.json")
 	defer file.Close()
 
-	expectedOutput := getStringFromReader(file)
-	actualOutput := getStringFromReader(resp.Body)
+	expectedOutput := getMapFromReader(file)
+	actualOutput := getMapFromReader(resp.Body)
 
 	assert.Equal(t, expectedOutput, actualOutput, "Response body shoud be equal to transformer response body")
 }
@@ -216,8 +215,8 @@ func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentFailed(t *t
 	file, _ := os.Open("test-resources/partial-internal-content-api-output.json")
 	defer file.Close()
 
-	expectedOutput := getStringFromReader(file)
-	actualOutput := getStringFromReader(resp.Body)
+	expectedOutput := getMapFromReader(file)
+	actualOutput := getMapFromReader(resp.Body)
 
 	assert.Equal(t, expectedOutput, actualOutput, "Response body shoud be equal to transformer response body")
 }

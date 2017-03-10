@@ -61,19 +61,11 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 		responseWriter.WriteHeader(internalComponentsStatusCode)
 		return
 	}
-	// internal components response is nil when is not found
-	if internalComponentsResponse == nil {
-		io.Copy(responseWriter, contentResponse.Body)
-		return
-	}
 	defer cleanupResp(internalComponentsResponse, handler.log.log)
-
-	var content map[string]interface{}
-	var internalComponents map[string]interface{}
 
 	contentEvent := event{
 		handler.serviceConfig.contentSourceAppName,
-		contentResponse.Request.URL.String(),
+		extractRequestURL(contentResponse),
 		transactionID,
 		nil,
 		uuid,
@@ -81,37 +73,26 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 
 	internalComponentsEvent := event{
 		handler.serviceConfig.internalComponentsSourceAppName,
-		contentResponse.Request.URL.String(),
+		extractRequestURL(internalComponentsResponse),
 		transactionID,
 		nil,
 		uuid,
 	}
 
-	contentBytes, err := ioutil.ReadAll(contentResponse.Body)
+	content, err := unmarshalToMap(contentResponse)
 	if err != nil {
 		contentEvent.err = err
-		handler.handleErrorEvent(responseWriter, contentEvent, "Error while handling the response body")
-		return
-	}
-	internalComponentsBytes, err := ioutil.ReadAll(internalComponentsResponse.Body)
-	if err != nil {
-		internalComponentsEvent.err = err
-		handler.handleErrorEvent(responseWriter, internalComponentsEvent, "Error while handling the response body")
+		handler.handleErrorEvent(responseWriter, contentEvent, "Error while unmarshaling the response body")
 		return
 	}
 
-	err = json.Unmarshal(contentBytes, &content)
-	if err != nil {
-		contentEvent.err = err
-		handler.handleErrorEvent(responseWriter, contentEvent, "Error while parsing the response json")
-		return
-	}
-	err = json.Unmarshal(internalComponentsBytes, &internalComponents)
+	internalComponents, err := unmarshalToMap(internalComponentsResponse)
 	if err != nil {
 		internalComponentsEvent.err = err
-		handler.handleErrorEvent(responseWriter, internalComponentsEvent, "Error while parsing the response json")
+		handler.handleErrorEvent(responseWriter, internalComponentsEvent, "Error while unmarshaling the response body")
 		return
 	}
+
 	addInternalComponentsToContent(content, internalComponents)
 	resolveImageURLs(content, handler.serviceConfig.envAPIHost)
 	removeEmptyMapFields(content)
@@ -119,6 +100,33 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 	resultBytes, _ := json.Marshal(content)
 	responseWriter.Write(resultBytes)
 	handler.metrics.recordResponseEvent()
+}
+
+func extractRequestURL(resp *http.Response) string {
+	if resp == nil {
+		return "N/A"
+	}
+
+	return resp.Request.URL.String()
+}
+
+func unmarshalToMap(resp *http.Response) (map[string]interface{}, error) {
+	var content map[string]interface{}
+
+	if resp == nil {
+		return content, nil
+	}
+
+	contentBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return content, err
+	}
+	err = json.Unmarshal(contentBytes, &content)
+	if err != nil {
+		return content, err
+	}
+
+	return content, nil
 }
 
 func addInternalComponentsToContent(content map[string]interface{}, internalComponents map[string]interface{}) {
@@ -219,10 +227,15 @@ func (handler contentHandler) handleResponse(req *http.Request, extResp *http.Re
 }
 
 func cleanupResp(resp *http.Response, log *logrus.Logger) {
+	if resp == nil {
+		return
+	}
+
 	_, err := io.Copy(ioutil.Discard, resp.Body)
 	if err != nil {
 		log.Warningf("[%v]", err)
 	}
+
 	err = resp.Body.Close()
 	if err != nil {
 		log.Warningf("[%v]", err)
