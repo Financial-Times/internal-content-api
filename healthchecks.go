@@ -5,7 +5,22 @@ import (
 	"fmt"
 	fthealth "github.com/Financial-Times/go-fthealth/v1a"
 	"net/http"
+	"github.com/Financial-Times/service-status-go/gtg"
 )
+
+func (sc *serviceConfig) gtgCheck() gtg.Status {
+	err := sc.contentSourceAppCheck()
+	if err != nil {
+		return gtg.Status{GoodToGo:false, Message:fmt.Sprintf("%s is not reachable", sc.contentSourceAppName)}
+	}
+
+	err = sc.internalComponentsSourceAppCheck()
+	if err != nil {
+		return gtg.Status{GoodToGo:false, Message:fmt.Sprintf("%s is not reachable", sc.internalComponentsSourceAppName)}
+	}
+
+	return gtg.Status{GoodToGo:true}
+}
 
 func (sc *serviceConfig) contentSourceAppCheck() fthealth.Check {
 	return fthealth.Check{
