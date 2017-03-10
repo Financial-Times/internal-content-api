@@ -72,7 +72,7 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 	var internalComponents map[string]interface{}
 
 	contentEvent := event{
-		"h.serviceConfig.contentSourceAppName",
+		handler.serviceConfig.contentSourceAppName,
 		contentResponse.Request.URL.String(),
 		transactionID,
 		nil,
@@ -80,7 +80,7 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 	}
 
 	internalComponentsEvent := event{
-		"h.serviceConfig.internalComponentsSourceAppName",
+		handler.serviceConfig.internalComponentsSourceAppName,
 		contentResponse.Request.URL.String(),
 		transactionID,
 		nil,
@@ -159,14 +159,14 @@ func (handler contentHandler) getContent(ctx context.Context) (ok bool, statusCo
 	handler.log.RequestEvent(handler.serviceConfig.contentSourceAppName, requestURL, transactionID, uuid)
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
-		handler.handleError(err, "h.serviceConfig.contentSourceAppName", "", req.Header.Get(tid.TransactionIDHeader), uuid)
+		handler.handleError(err, handler.serviceConfig.contentSourceAppName, requestURL, req.Header.Get(tid.TransactionIDHeader), uuid)
 		return false, http.StatusInternalServerError, nil
 	}
 	req.Header.Set(tid.TransactionIDHeader, transactionID)
 	req.Header.Set("Content-Type", "application/json")
 	resp, err = client.Do(req)
 
-	return handler.handleResponse(req, resp, err, uuid, "h.serviceConfig.contentSourceAppName", true)
+	return handler.handleResponse(req, resp, err, uuid, handler.serviceConfig.contentSourceAppName, true)
 }
 
 func (handler contentHandler) getInternalComponents(ctx context.Context) (ok bool, statusCode int, resp *http.Response) {
@@ -177,14 +177,14 @@ func (handler contentHandler) getInternalComponents(ctx context.Context) (ok boo
 
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
-		handler.handleError(err, "h.serviceConfig.internalComponentsSourceAppName", "", req.Header.Get(tid.TransactionIDHeader), uuid)
+		handler.handleError(err, handler.serviceConfig.internalComponentsSourceAppName, requestURL, req.Header.Get(tid.TransactionIDHeader), uuid)
 		return false, http.StatusInternalServerError, nil
 	}
 	req.Header.Set(tid.TransactionIDHeader, transactionID)
 	req.Header.Set("Content-Type", "application/json")
 	resp, err = client.Do(req)
 
-	return handler.handleResponse(req, resp, err, uuid, "h.serviceConfig.internalComponentsSourceAppName", false)
+	return handler.handleResponse(req, resp, err, uuid, handler.serviceConfig.internalComponentsSourceAppName, false)
 }
 
 func (handler contentHandler) handleResponse(req *http.Request, extResp *http.Response, err error, uuid string, appName string, doFail bool) (ok bool, statusCode int, resp *http.Response) {
