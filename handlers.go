@@ -94,7 +94,10 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 	}
 
 	addInternalComponentsToContent(content, internalComponents)
-	resolveImageURLs(content, handler.serviceConfig.envAPIHost)
+
+	resolveTopperImageURLs(content, handler.serviceConfig.envAPIHost)
+	resolveLeadImageURLs(content, handler.serviceConfig.envAPIHost)
+
 	removeEmptyMapFields(content)
 
 	resultBytes, _ := json.Marshal(content)
@@ -139,7 +142,7 @@ func addInternalComponentsToContent(content map[string]interface{}, internalComp
 	}
 }
 
-func resolveImageURLs(content map[string]interface{}, APIHost string) {
+func resolveTopperImageURLs(content map[string]interface{}, APIHost string) {
 	topper, ok := content["topper"].(map[string]interface{})
 	if !ok {
 		return
@@ -150,6 +153,20 @@ func resolveImageURLs(content map[string]interface{}, APIHost string) {
 	if !ok {
 		return
 	}
+
+	resolveImageURLs(images, APIHost)
+}
+
+func resolveLeadImageURLs(content map[string]interface{}, APIHost string) {
+	leadImages, ok := content["leadImages"].([]interface{})
+	if !ok {
+		return
+	}
+
+	resolveImageURLs(leadImages, APIHost)
+}
+
+func resolveImageURLs(images []interface{}, APIHost string) {
 	for _, img := range images {
 		img, ok := img.(map[string]interface{})
 		if !ok {
