@@ -9,14 +9,14 @@ import (
 )
 
 func (sc *serviceConfig) gtgCheck() gtg.Status {
-	err := sc.contentSourceAppCheck()
+	msg, err := checkServiceAvailability(sc.contentSourceAppName, sc.contentSourceAppHealthURI)
 	if err != nil {
-		return gtg.Status{GoodToGo:false, Message:fmt.Sprintf("%s is not reachable", sc.contentSourceAppName)}
+		return gtg.Status{GoodToGo:false, Message: msg}
 	}
 
-	err = sc.internalComponentsSourceAppCheck()
+	msg, err = checkServiceAvailability(sc.internalComponentsSourceAppName, sc.internalComponentsSourceAppHealthURI)
 	if err != nil {
-		return gtg.Status{GoodToGo:false, Message:fmt.Sprintf("%s is not reachable", sc.internalComponentsSourceAppName)}
+		return gtg.Status{GoodToGo:false, Message:msg}
 	}
 
 	return gtg.Status{GoodToGo:true}
