@@ -11,6 +11,7 @@ import (
 	tid "github.com/Financial-Times/transactionid-utils-go"
 	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
+	"github.com/satori/go.uuid"
 	"golang.org/x/net/context"
 )
 
@@ -22,13 +23,26 @@ type contentHandler struct {
 	metrics       *Metrics
 }
 
+type ErrorMessage struct {
+	Message string `json:"message"`
+}
+
 func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 	vars := mux.Vars(request)
-	uuid := vars["uuid"]
-	handler.log.TransactionStartedEvent(request.RequestURI, tid.GetTransactionIDFromRequest(request), uuid)
+
+	contentUUID := vars["uuid"]
+	err := validateUUID(contentUUID)
+	if err != nil {
+		responseWriter.WriteHeader(http.StatusBadRequest)
+		msg, _ := json.Marshal(ErrorMessage{fmt.Sprintf("The given uuid is not valid, err=%v", err)})
+		responseWriter.Write([]byte(msg))
+		return
+	}
+
+	handler.log.TransactionStartedEvent(request.RequestURI, tid.GetTransactionIDFromRequest(request), contentUUID)
 	transactionID := request.Header.Get(tid.TransactionIDHeader)
 	ctx := tid.TransactionAwareContext(context.Background(), transactionID)
-	ctx = context.WithValue(ctx, uuidKey, uuid)
+	ctx = context.WithValue(ctx, uuidKey, contentUUID)
 	responseWriter.Header().Set("Content-Type", "application/json; charset=utf-8")
 	responseWriter.Header().Set("Cache-Control", handler.serviceConfig.cacheControlPolicy)
 
@@ -76,7 +90,7 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 		contentResponse.Request.URL.String(),
 		transactionID,
 		nil,
-		uuid,
+		contentUUID,
 	}
 
 	internalComponentsEvent := event{
@@ -84,7 +98,7 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 		contentResponse.Request.URL.String(),
 		transactionID,
 		nil,
-		uuid,
+		contentUUID,
 	}
 
 	contentBytes, err := ioutil.ReadAll(contentResponse.Body)
@@ -113,6 +127,9 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 		return
 	}
 
+	//content["requestUrl"] = createRequestUrl(handler.serviceConfig.envAPIHost, handler.serviceConfig.handlerPath, contentUUID)
+	//content["apiUrl"] = content["requestUrl"]
+
 	addInternalComponentsToContent(content, internalComponents)
 
 	resolveTopperImageURLs(content, handler.serviceConfig.envAPIHost)
@@ -123,6 +140,21 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 	resultBytes, _ := json.Marshal(content)
 	responseWriter.Write(resultBytes)
 	handler.metrics.recordResponseEvent()
+}
+
+func validateUUID(contentUUID string) error {
+	parsedUUID, err := uuid.FromString(contentUUID)
+	if err != nil {
+		return err
+	}
+	if contentUUID != parsedUUID.String() {
+		return fmt.Errorf("Parsed UUID (%v) is different than the given uuid (%v).", parsedUUID, contentUUID)
+	}
+	return nil
+}
+
+func createRequestUrl(APIHost string, handlerPath string, uuid string) string {
+	return "http://" + APIHost + "/" + handlerPath + "/" + uuid
 }
 
 func addInternalComponentsToContent(content map[string]interface{}, internalComponents map[string]interface{}) {
