@@ -5,7 +5,22 @@ import (
 	"fmt"
 	fthealth "github.com/Financial-Times/go-fthealth/v1a"
 	"net/http"
+	"github.com/Financial-Times/service-status-go/gtg"
 )
+
+func (sc *serviceConfig) gtgCheck() gtg.Status {
+	msg, err := checkServiceAvailability(sc.contentSourceAppName, sc.contentSourceAppHealthURI)
+	if err != nil {
+		return gtg.Status{GoodToGo:false, Message: msg}
+	}
+
+	msg, err = checkServiceAvailability(sc.internalComponentsSourceAppName, sc.internalComponentsSourceAppHealthURI)
+	if err != nil {
+		return gtg.Status{GoodToGo:false, Message:msg}
+	}
+
+	return gtg.Status{GoodToGo:true}
+}
 
 func (sc *serviceConfig) contentSourceAppCheck() fthealth.Check {
 	return fthealth.Check{
