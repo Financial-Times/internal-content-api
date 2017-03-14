@@ -127,8 +127,8 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 		return
 	}
 
-	//content["requestUrl"] = createRequestUrl(handler.serviceConfig.envAPIHost, handler.serviceConfig.handlerPath, contentUUID)
-	//content["apiUrl"] = content["requestUrl"]
+	content["requestUrl"] = createRequestUrl(handler.serviceConfig.envAPIHost, handler.serviceConfig.handlerPath, contentUUID)
+	content["apiUrl"] = content["requestUrl"]
 
 	addInternalComponentsToContent(content, internalComponents)
 
