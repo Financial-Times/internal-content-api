@@ -155,9 +155,9 @@ func validateUUID(contentUUID string) error {
 }
 
 func createRequestUrl(APIHost string, handlerPath string, uuid string) string {
-	previewSuffix := "-preview";
-	if (strings.HasSuffix(handlerPath, previewSuffix)) {
-		handlerPath = strings.TrimSuffix(handlerPath, previewSuffix);
+	previewSuffix := "-preview"
+	if strings.HasSuffix(handlerPath, previewSuffix) {
+		handlerPath = strings.TrimSuffix(handlerPath, previewSuffix)
 	}
 	return "http://" + APIHost + "/" + handlerPath + "/" + uuid
 }
