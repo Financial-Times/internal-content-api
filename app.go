@@ -1,17 +1,18 @@
 package main
 
 import (
+	"net/http"
+	"os"
+	"time"
+
 	fthealth "github.com/Financial-Times/go-fthealth/v1a"
 	oldhttphandlers "github.com/Financial-Times/http-handlers-go/httphandlers"
-	"github.com/Financial-Times/service-status-go/httphandlers"
 	"github.com/Financial-Times/service-status-go/gtg"
+	"github.com/Financial-Times/service-status-go/httphandlers"
 	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jawher/mow.cli"
-	"net/http"
-	"os"
-	"time"
 )
 
 const serviceDescription = "A RESTful API for retrieving and transforming internal content"
@@ -171,7 +172,7 @@ func setupServiceHandler(sc serviceConfig, metricsHandler Metrics, contentHandle
 	r.Path(httphandlers.PingPath).HandlerFunc(httphandlers.PingHandler)
 	r.Path("/__health").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(fthealth.Handler(sc.serviceName, serviceDescription, sc.contentSourceAppCheck(), sc.internalComponentsSourceAppCheck()))})
 	gtgHandler := httphandlers.NewGoodToGoHandler(gtg.StatusChecker(sc.gtgCheck))
-	r.Path("/__health").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(gtgHandler)})
+	r.Path("/__gtg").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(gtgHandler)})
 	r.Path("/__metrics").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(metricsHTTPEndpoint)})
 	return r
 }
