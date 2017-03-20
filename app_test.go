@@ -12,7 +12,6 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
-	"time"
 )
 
 var internalContentAPI *httptest.Server
@@ -106,9 +105,6 @@ func startInternalContentService() {
 	enrichedContentAPIHealthURI := enrichedContentAPIMock.URL + "/__health"
 	documentStoreAPIURI := documentStoreAPIMock.URL + "/internalcomponents/"
 	documentStoreAPIHealthURI := documentStoreAPIMock.URL + "/__health"
-	httpClient := &http.Client{
-		Timeout: 10 * time.Second,
-	}
 	sc := serviceConfig{
 		"internal-content-api",
 		"8084",
@@ -127,7 +123,7 @@ func startInternalContentService() {
 		"api.ft.com",
 		"",
 		"",
-		httpClient,
+		http.DefaultClient,
 	}
 
 	appLogger := newAppLogger()
@@ -326,4 +322,47 @@ func TestShouldBeUnhealthyWhenTransformerIsNotHappy(t *testing.T) {
 		}
 	}
 
+}
+
+func TestShouldBeGoodToGo(t *testing.T) {
+	startEnrichedContentAPIMock("happy")
+	startDocumentStoreAPIMock("happy")
+	startInternalContentService()
+	defer stopServices()
+
+	resp, err := http.Get(internalContentAPI.URL + "/__gtg")
+	if err != nil {
+		panic(err)
+	}
+
+	assert.Equal(t, http.StatusOK, resp.StatusCode, "Response status should be 200")
+}
+
+func TestShouldNotBeGoodToGoWhenMethodeApiIsNotHappy(t *testing.T) {
+	startEnrichedContentAPIMock("unhappy")
+	startDocumentStoreAPIMock("happy")
+	startInternalContentService()
+	defer stopServices()
+
+	resp, err := http.Get(internalContentAPI.URL + "/__gtg")
+	if err != nil {
+		panic(err)
+	}
+
+	assert.Equal(t, http.StatusServiceUnavailable, resp.StatusCode, "Response status should be 503")
+}
+
+
+func TestShouldNotBeGoodToGoWhenTransformerIsNotHappy(t *testing.T) {
+	startEnrichedContentAPIMock("happy")
+	startDocumentStoreAPIMock("unhappy")
+	startInternalContentService()
+	defer stopServices()
+
+	resp, err := http.Get(internalContentAPI.URL + "/__gtg")
+	if err != nil {
+		panic(err)
+	}
+
+	assert.Equal(t, http.StatusServiceUnavailable, resp.StatusCode, "Response status should be 503")
 }
