@@ -12,6 +12,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 )
 
 var internalContentAPI *httptest.Server
@@ -105,7 +106,9 @@ func startInternalContentService() {
 	enrichedContentAPIHealthURI := enrichedContentAPIMock.URL + "/__health"
 	documentStoreAPIURI := documentStoreAPIMock.URL + "/internalcomponents/"
 	documentStoreAPIHealthURI := documentStoreAPIMock.URL + "/__health"
-
+	httpClient := &http.Client{
+		Timeout: 10 * time.Second,
+	}
 	sc := serviceConfig{
 		"internal-content-api",
 		"8084",
@@ -124,6 +127,7 @@ func startInternalContentService() {
 		"api.ft.com",
 		"",
 		"",
+		httpClient,
 	}
 
 	appLogger := newAppLogger()
