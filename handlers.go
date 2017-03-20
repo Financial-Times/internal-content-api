@@ -174,10 +174,7 @@ func resolveApiUrl(content map[string]interface{}, handler contentHandler, conte
 }
 
 func isPreview(handlerPath string) bool {
-	if strings.HasSuffix(handlerPath, previewSuffix) {
-		return true
-	}
-	return false
+	return strings.HasSuffix(handlerPath, previewSuffix)
 }
 
 func addInternalComponentsToContent(content map[string]interface{}, internalComponents map[string]interface{}) {
