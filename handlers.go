@@ -182,7 +182,7 @@ func (handler contentHandler) getContent(ctx context.Context) (ok bool, statusCo
 	}
 	req.Header.Set(tid.TransactionIDHeader, transactionID)
 	req.Header.Set("Content-Type", "application/json")
-	resp, err = client.Do(req)
+	resp, err = handler.serviceConfig.httpClient.Do(req)
 
 	return handler.handleResponse(req, resp, err, uuid, "h.serviceConfig.contentSourceAppName", true)
 }
@@ -200,7 +200,7 @@ func (handler contentHandler) getInternalComponents(ctx context.Context) (ok boo
 	}
 	req.Header.Set(tid.TransactionIDHeader, transactionID)
 	req.Header.Set("Content-Type", "application/json")
-	resp, err = client.Do(req)
+	resp, err = handler.serviceConfig.httpClient.Do(req)
 
 	return handler.handleResponse(req, resp, err, uuid, "h.serviceConfig.internalComponentsSourceAppName", false)
 }

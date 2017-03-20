@@ -12,12 +12,10 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"net"
 )
 
 const serviceDescription = "A RESTful API for retrieving and transforming internal content"
-
-var timeout = 10 * time.Second
-var client = &http.Client{Timeout: timeout}
 
 func main() {
 	app := cli.App("internal-content-api", serviceDescription)
@@ -130,6 +128,15 @@ func main() {
 		EnvVar: "LOG_METRICS",
 	})
 	app.Action = func() {
+		httpClient := &http.Client{
+			Timeout: 10 * time.Second,
+			Transport: &http.Transport{
+				MaxIdleConnsPerHost: 100,
+				Dial: (&net.Dialer{
+					KeepAlive: 30 * time.Second,
+				}).Dial,
+			},
+		}
 		sc := serviceConfig{
 			*serviceName,
 			*appPort,
@@ -148,6 +155,7 @@ func main() {
 			*envAPIHost,
 			*graphiteTCPAddress,
 			*graphitePrefix,
+			httpClient,
 		}
 		appLogger := newAppLogger()
 		metricsHandler := NewMetrics()
@@ -194,6 +202,7 @@ type serviceConfig struct {
 	envAPIHost                                string
 	graphiteTCPAddress                        string
 	graphitePrefix                            string
+	httpClient                                *http.Client
 }
 
 func (sc serviceConfig) asMap() map[string]interface{} {
