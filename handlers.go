@@ -17,6 +17,7 @@ import (
 )
 
 const uuidKey = "uuid"
+const previewSuffix = "-preview"
 
 type contentHandler struct {
 	serviceConfig *serviceConfig
@@ -128,13 +129,13 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 		return
 	}
 
-	content["requestUrl"] = createRequestUrl(handler.serviceConfig.envAPIHost, handler.serviceConfig.handlerPath, contentUUID)
-	content["apiUrl"] = content["requestUrl"]
-
 	addInternalComponentsToContent(content, internalComponents)
 
 	resolveTopperImageURLs(content, handler.serviceConfig.envAPIHost)
 	resolveLeadImageURLs(content, handler.serviceConfig.envAPIHost)
+
+	resolveRequestUrl(content, handler, contentUUID)
+	resolveApiUrl(content, handler, contentUUID)
 
 	removeEmptyMapFields(content)
 
@@ -154,12 +155,29 @@ func validateUUID(contentUUID string) error {
 	return nil
 }
 
+func resolveRequestUrl(content map[string]interface{}, handler contentHandler, contentUUID string) {
+	content["requestUrl"] = createRequestUrl(handler.serviceConfig.envAPIHost, handler.serviceConfig.handlerPath, contentUUID)
+}
+
 func createRequestUrl(APIHost string, handlerPath string, uuid string) string {
-	previewSuffix := "-preview"
-	if strings.HasSuffix(handlerPath, previewSuffix) {
+	if isPreview(handlerPath) {
 		handlerPath = strings.TrimSuffix(handlerPath, previewSuffix)
 	}
 	return "http://" + APIHost + "/" + handlerPath + "/" + uuid
+}
+
+func resolveApiUrl(content map[string]interface{}, handler contentHandler, contentUUID string) {
+	handlerPath := handler.serviceConfig.handlerPath
+	if !isPreview(handlerPath) {
+		content["apiUrl"] = createRequestUrl(handler.serviceConfig.envAPIHost, handlerPath, contentUUID)
+	}
+}
+
+func isPreview(handlerPath string) bool {
+	if strings.HasSuffix(handlerPath, previewSuffix) {
+		return true
+	}
+	return false
 }
 
 func addInternalComponentsToContent(content map[string]interface{}, internalComponents map[string]interface{}) {
