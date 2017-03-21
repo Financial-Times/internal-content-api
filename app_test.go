@@ -148,7 +148,7 @@ func TestShouldReturn200AndInternalComponentOutput(t *testing.T) {
 	defer stopServices()
 	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
 	if err != nil {
-		panic(err)
+		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
 	}
 	defer resp.Body.Close()
 
@@ -171,7 +171,7 @@ func TestShouldReturn404(t *testing.T) {
 
 	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
 	if err != nil {
-		panic(err)
+		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
 	}
 	defer resp.Body.Close()
 
@@ -185,7 +185,7 @@ func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentNotFound(t 
 	defer stopServices()
 	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
 	if err != nil {
-		panic(err)
+		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
 	}
 	defer resp.Body.Close()
 
@@ -207,7 +207,7 @@ func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentFailed(t *t
 	defer stopServices()
 	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
 	if err != nil {
-		panic(err)
+		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
 	}
 	defer resp.Body.Close()
 
@@ -231,7 +231,7 @@ func TestShouldReturn503whenEnrichedContentApiIsNotAvailable(t *testing.T) {
 	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
 
 	if err != nil {
-		panic(err)
+		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
 	}
 	defer resp.Body.Close()
 
@@ -246,7 +246,7 @@ func TestShouldBeHealthy(t *testing.T) {
 
 	resp, err := http.Get(internalContentAPI.URL + "/__health")
 	if err != nil {
-		panic(err)
+		assert.FailNow(t, "Cannot send request to health endpoint", err.Error())
 	}
 	defer resp.Body.Close()
 
@@ -267,7 +267,7 @@ func TestShouldBeUnhealthyWhenMethodeApiIsNotHappy(t *testing.T) {
 
 	resp, err := http.Get(internalContentAPI.URL + "/__health")
 	if err != nil {
-		panic(err)
+		assert.FailNow(t, "Cannot send request to health endpoint", err.Error())
 	}
 	defer resp.Body.Close()
 
@@ -286,7 +286,7 @@ func TestShouldBeUnhealthyWhenMethodeApiIsNotHappy(t *testing.T) {
 		case "document-store-api":
 			assert.Equal(t, true, res.Checks[i].Ok, "The Document Store should be healthy")
 		default:
-			panic("Not a valid check")
+			assert.FailNow(t, "Not a valid check")
 		}
 	}
 }
@@ -299,7 +299,7 @@ func TestShouldBeUnhealthyWhenTransformerIsNotHappy(t *testing.T) {
 
 	resp, err := http.Get(internalContentAPI.URL + "/__health")
 	if err != nil {
-		panic(err)
+		assert.FailNow(t, "Cannot send request to health endpoint", err.Error())
 	}
 	defer resp.Body.Close()
 
@@ -318,7 +318,7 @@ func TestShouldBeUnhealthyWhenTransformerIsNotHappy(t *testing.T) {
 		case "document-store-api":
 			assert.Equal(t, false, res.Checks[i].Ok, "The Document Store should be healthy")
 		default:
-			panic("Not a valid check")
+			assert.FailNow(t, "Not a valid check")
 		}
 	}
 
@@ -332,7 +332,7 @@ func TestShouldBeGoodToGo(t *testing.T) {
 
 	resp, err := http.Get(internalContentAPI.URL + "/__gtg")
 	if err != nil {
-		panic(err)
+		assert.FailNow(t, "Cannot send request to gtg endpoint", err.Error())
 	}
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode, "Response status should be 200")
@@ -346,7 +346,7 @@ func TestShouldNotBeGoodToGoWhenMethodeApiIsNotHappy(t *testing.T) {
 
 	resp, err := http.Get(internalContentAPI.URL + "/__gtg")
 	if err != nil {
-		panic(err)
+		assert.FailNow(t, "Cannot send request to gtg endpoint", err.Error())
 	}
 
 	assert.Equal(t, http.StatusServiceUnavailable, resp.StatusCode, "Response status should be 503")
@@ -361,7 +361,7 @@ func TestShouldNotBeGoodToGoWhenTransformerIsNotHappy(t *testing.T) {
 
 	resp, err := http.Get(internalContentAPI.URL + "/__gtg")
 	if err != nil {
-		panic(err)
+		assert.FailNow(t, "Cannot send request to gtg endpoint", err.Error())
 	}
 
 	assert.Equal(t, http.StatusServiceUnavailable, resp.StatusCode, "Response status should be 503")
