@@ -5,7 +5,22 @@ import (
 	"fmt"
 	fthealth "github.com/Financial-Times/go-fthealth/v1a"
 	"net/http"
+	"github.com/Financial-Times/service-status-go/gtg"
 )
+
+func (sc *serviceConfig) gtgCheck() gtg.Status {
+	msg, err := sc.checkServiceAvailability(sc.contentSourceAppName, sc.contentSourceAppHealthURI)
+	if err != nil {
+		return gtg.Status{GoodToGo:false, Message: msg}
+	}
+
+	msg, err = sc.checkServiceAvailability(sc.internalComponentsSourceAppName, sc.internalComponentsSourceAppHealthURI)
+	if err != nil {
+		return gtg.Status{GoodToGo:false, Message:msg}
+	}
+
+	return gtg.Status{GoodToGo:true}
+}
 
 func (sc *serviceConfig) contentSourceAppCheck() fthealth.Check {
 	return fthealth.Check{
@@ -15,7 +30,7 @@ func (sc *serviceConfig) contentSourceAppCheck() fthealth.Check {
 		Severity:         1,
 		TechnicalSummary: "Checks that " + sc.contentSourceAppName + " is reachable. " + sc.serviceName + " requests content from " + sc.contentSourceAppName,
 		Checker: func() (string, error) {
-			return checkServiceAvailability(sc.contentSourceAppName, sc.contentSourceAppHealthURI)
+			return sc.checkServiceAvailability(sc.contentSourceAppName, sc.contentSourceAppHealthURI)
 		},
 	}
 }
@@ -28,14 +43,14 @@ func (sc *serviceConfig) internalComponentsSourceAppCheck() fthealth.Check {
 		Severity:         2,
 		TechnicalSummary: "Checks that " + sc.internalComponentsSourceAppName + " is reachable. " + sc.serviceName + " relies on " + sc.internalComponentsSourceAppName + " to get the internal components",
 		Checker: func() (string, error) {
-			return checkServiceAvailability(sc.internalComponentsSourceAppName, sc.internalComponentsSourceAppHealthURI)
+			return sc.checkServiceAvailability(sc.internalComponentsSourceAppName, sc.internalComponentsSourceAppHealthURI)
 		},
 	}
 }
 
-func checkServiceAvailability(serviceName string, healthURI string) (string, error) {
+func (sc *serviceConfig) checkServiceAvailability(serviceName string, healthURI string) (string, error) {
 	req, err := http.NewRequest("GET", healthURI, nil)
-	resp, err := client.Do(req)
+	resp, err := sc.httpClient.Do(req)
 	if err != nil {
 		msg := fmt.Sprintf("%s service is unreachable: %v", serviceName, err)
 		return msg, errors.New(msg)
