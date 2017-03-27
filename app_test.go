@@ -351,7 +351,6 @@ func TestShouldNotBeGoodToGoWhenMethodeApiIsNotHappy(t *testing.T) {
 	assert.Equal(t, http.StatusServiceUnavailable, resp.StatusCode, "Response status should be 503")
 }
 
-
 func TestShouldNotBeGoodToGoWhenTransformerIsNotHappy(t *testing.T) {
 	startEnrichedContentAPIMock("happy")
 	startDocumentStoreAPIMock("unhappy")

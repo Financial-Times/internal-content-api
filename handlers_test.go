@@ -50,7 +50,7 @@ func TestResolveLeadImgURLs(t *testing.T) {
 func TestServeHTTP_CacheControlHeaderIsSet(t *testing.T) {
 	sc := serviceConfig{
 		cacheControlPolicy: "max-age=10",
-		httpClient: http.DefaultClient,
+		httpClient:         http.DefaultClient,
 	}
 
 	appLogger := newAppLogger()

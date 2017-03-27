@@ -4,22 +4,22 @@ import (
 	"errors"
 	"fmt"
 	fthealth "github.com/Financial-Times/go-fthealth/v1a"
-	"net/http"
 	"github.com/Financial-Times/service-status-go/gtg"
+	"net/http"
 )
 
 func (sc *serviceConfig) gtgCheck() gtg.Status {
 	msg, err := sc.checkServiceAvailability(sc.contentSourceAppName, sc.contentSourceAppHealthURI)
 	if err != nil {
-		return gtg.Status{GoodToGo:false, Message: msg}
+		return gtg.Status{GoodToGo: false, Message: msg}
 	}
 
 	msg, err = sc.checkServiceAvailability(sc.internalComponentsSourceAppName, sc.internalComponentsSourceAppHealthURI)
 	if err != nil {
-		return gtg.Status{GoodToGo:false, Message:msg}
+		return gtg.Status{GoodToGo: false, Message: msg}
 	}
 
-	return gtg.Status{GoodToGo:true}
+	return gtg.Status{GoodToGo: true}
 }
 
 func (sc *serviceConfig) contentSourceAppCheck() fthealth.Check {
