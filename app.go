@@ -3,6 +3,7 @@ package main
 import (
 	fthealth "github.com/Financial-Times/go-fthealth/v1a"
 	oldhttphandlers "github.com/Financial-Times/http-handlers-go/httphandlers"
+	"github.com/Financial-Times/service-status-go/gtg"
 	"github.com/Financial-Times/service-status-go/httphandlers"
 	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/handlers"
@@ -11,12 +12,10 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"net"
 )
 
 const serviceDescription = "A RESTful API for retrieving and transforming internal content"
-
-var timeout = 10 * time.Second
-var client = &http.Client{Timeout: timeout}
 
 func main() {
 	app := cli.App("internal-content-api", serviceDescription)
@@ -129,6 +128,15 @@ func main() {
 		EnvVar: "LOG_METRICS",
 	})
 	app.Action = func() {
+		httpClient := &http.Client{
+			Timeout: 10 * time.Second,
+			Transport: &http.Transport{
+				MaxIdleConnsPerHost: 100,
+				Dial: (&net.Dialer{
+					KeepAlive: 30 * time.Second,
+				}).Dial,
+			},
+		}
 		sc := serviceConfig{
 			*serviceName,
 			*appPort,
@@ -147,6 +155,7 @@ func main() {
 			*envAPIHost,
 			*graphiteTCPAddress,
 			*graphitePrefix,
+			httpClient,
 		}
 		appLogger := newAppLogger()
 		metricsHandler := NewMetrics()
@@ -169,6 +178,8 @@ func setupServiceHandler(sc serviceConfig, metricsHandler Metrics, contentHandle
 	r.Path(httphandlers.BuildInfoPath).HandlerFunc(httphandlers.BuildInfoHandler)
 	r.Path(httphandlers.PingPath).HandlerFunc(httphandlers.PingHandler)
 	r.Path("/__health").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(fthealth.Handler(sc.serviceName, serviceDescription, sc.contentSourceAppCheck(), sc.internalComponentsSourceAppCheck()))})
+	gtgHandler := httphandlers.NewGoodToGoHandler(gtg.StatusChecker(sc.gtgCheck))
+	r.Path("/__gtg").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(gtgHandler)})
 	r.Path("/__metrics").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(metricsHTTPEndpoint)})
 	return r
 }
@@ -191,6 +202,7 @@ type serviceConfig struct {
 	envAPIHost                                string
 	graphiteTCPAddress                        string
 	graphitePrefix                            string
+	httpClient                                *http.Client
 }
 
 func (sc serviceConfig) asMap() map[string]interface{} {

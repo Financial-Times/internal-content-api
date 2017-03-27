@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	fthealth "github.com/Financial-Times/go-fthealth/v1a"
 	"github.com/gorilla/handlers"
@@ -105,7 +104,6 @@ func startInternalContentService() {
 	enrichedContentAPIHealthURI := enrichedContentAPIMock.URL + "/__health"
 	documentStoreAPIURI := documentStoreAPIMock.URL + "/internalcomponents/"
 	documentStoreAPIHealthURI := documentStoreAPIMock.URL + "/__health"
-
 	sc := serviceConfig{
 		"internal-content-api",
 		"8084",
@@ -124,6 +122,7 @@ func startInternalContentService() {
 		"api.ft.com",
 		"",
 		"",
+		http.DefaultClient,
 	}
 
 	appLogger := newAppLogger()
@@ -135,10 +134,10 @@ func startInternalContentService() {
 	internalContentAPI = httptest.NewServer(h)
 }
 
-func getStringFromReader(r io.Reader) string {
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(r)
-	return buf.String()
+func getMapFromReader(r io.Reader) map[string]interface{} {
+	var m map[string]interface{}
+	json.NewDecoder(r).Decode(&m)
+	return m
 }
 
 func TestShouldReturn200AndInternalComponentOutput(t *testing.T) {
@@ -148,7 +147,7 @@ func TestShouldReturn200AndInternalComponentOutput(t *testing.T) {
 	defer stopServices()
 	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
 	if err != nil {
-		panic(err)
+		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
 	}
 	defer resp.Body.Close()
 
@@ -157,8 +156,8 @@ func TestShouldReturn200AndInternalComponentOutput(t *testing.T) {
 	file, _ := os.Open("test-resources/full-internal-content-api-output.json")
 	defer file.Close()
 
-	expectedOutput := getStringFromReader(file)
-	actualOutput := getStringFromReader(resp.Body)
+	expectedOutput := getMapFromReader(file)
+	actualOutput := getMapFromReader(resp.Body)
 
 	assert.Equal(t, expectedOutput, actualOutput, "Response body shoud be equal to transformer response body")
 }
@@ -171,7 +170,7 @@ func TestShouldReturn404(t *testing.T) {
 
 	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
 	if err != nil {
-		panic(err)
+		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
 	}
 	defer resp.Body.Close()
 
@@ -185,7 +184,7 @@ func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentNotFound(t 
 	defer stopServices()
 	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
 	if err != nil {
-		panic(err)
+		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
 	}
 	defer resp.Body.Close()
 
@@ -194,8 +193,8 @@ func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentNotFound(t 
 	file, _ := os.Open("test-resources/partial-internal-content-api-output.json")
 	defer file.Close()
 
-	expectedOutput := getStringFromReader(file)
-	actualOutput := getStringFromReader(resp.Body)
+	expectedOutput := getMapFromReader(file)
+	actualOutput := getMapFromReader(resp.Body)
 
 	assert.Equal(t, expectedOutput, actualOutput, "Response body shoud be equal to transformer response body")
 }
@@ -207,7 +206,7 @@ func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentFailed(t *t
 	defer stopServices()
 	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
 	if err != nil {
-		panic(err)
+		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
 	}
 	defer resp.Body.Close()
 
@@ -216,8 +215,8 @@ func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentFailed(t *t
 	file, _ := os.Open("test-resources/partial-internal-content-api-output.json")
 	defer file.Close()
 
-	expectedOutput := getStringFromReader(file)
-	actualOutput := getStringFromReader(resp.Body)
+	expectedOutput := getMapFromReader(file)
+	actualOutput := getMapFromReader(resp.Body)
 
 	assert.Equal(t, expectedOutput, actualOutput, "Response body shoud be equal to transformer response body")
 }
@@ -231,7 +230,7 @@ func TestShouldReturn503whenEnrichedContentApiIsNotAvailable(t *testing.T) {
 	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
 
 	if err != nil {
-		panic(err)
+		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
 	}
 	defer resp.Body.Close()
 
@@ -246,7 +245,7 @@ func TestShouldBeHealthy(t *testing.T) {
 
 	resp, err := http.Get(internalContentAPI.URL + "/__health")
 	if err != nil {
-		panic(err)
+		assert.FailNow(t, "Cannot send request to health endpoint", err.Error())
 	}
 	defer resp.Body.Close()
 
@@ -267,7 +266,7 @@ func TestShouldBeUnhealthyWhenMethodeApiIsNotHappy(t *testing.T) {
 
 	resp, err := http.Get(internalContentAPI.URL + "/__health")
 	if err != nil {
-		panic(err)
+		assert.FailNow(t, "Cannot send request to health endpoint", err.Error())
 	}
 	defer resp.Body.Close()
 
@@ -286,7 +285,7 @@ func TestShouldBeUnhealthyWhenMethodeApiIsNotHappy(t *testing.T) {
 		case "document-store-api":
 			assert.Equal(t, true, res.Checks[i].Ok, "The Document Store should be healthy")
 		default:
-			panic("Not a valid check")
+			assert.FailNow(t, "Not a valid check")
 		}
 	}
 }
@@ -299,7 +298,7 @@ func TestShouldBeUnhealthyWhenTransformerIsNotHappy(t *testing.T) {
 
 	resp, err := http.Get(internalContentAPI.URL + "/__health")
 	if err != nil {
-		panic(err)
+		assert.FailNow(t, "Cannot send request to health endpoint", err.Error())
 	}
 	defer resp.Body.Close()
 
@@ -318,10 +317,53 @@ func TestShouldBeUnhealthyWhenTransformerIsNotHappy(t *testing.T) {
 		case "document-store-api":
 			assert.Equal(t, false, res.Checks[i].Ok, "The Document Store should be healthy")
 		default:
-			panic("Not a valid check")
+			assert.FailNow(t, "Not a valid check")
 		}
 	}
 
+}
+
+func TestShouldBeGoodToGo(t *testing.T) {
+	startEnrichedContentAPIMock("happy")
+	startDocumentStoreAPIMock("happy")
+	startInternalContentService()
+	defer stopServices()
+
+	resp, err := http.Get(internalContentAPI.URL + "/__gtg")
+	if err != nil {
+		assert.FailNow(t, "Cannot send request to gtg endpoint", err.Error())
+	}
+
+	assert.Equal(t, http.StatusOK, resp.StatusCode, "Response status should be 200")
+}
+
+func TestShouldNotBeGoodToGoWhenMethodeApiIsNotHappy(t *testing.T) {
+	startEnrichedContentAPIMock("unhappy")
+	startDocumentStoreAPIMock("happy")
+	startInternalContentService()
+	defer stopServices()
+
+	resp, err := http.Get(internalContentAPI.URL + "/__gtg")
+	if err != nil {
+		assert.FailNow(t, "Cannot send request to gtg endpoint", err.Error())
+	}
+
+	assert.Equal(t, http.StatusServiceUnavailable, resp.StatusCode, "Response status should be 503")
+}
+
+
+func TestShouldNotBeGoodToGoWhenTransformerIsNotHappy(t *testing.T) {
+	startEnrichedContentAPIMock("happy")
+	startDocumentStoreAPIMock("unhappy")
+	startInternalContentService()
+	defer stopServices()
+
+	resp, err := http.Get(internalContentAPI.URL + "/__gtg")
+	if err != nil {
+		assert.FailNow(t, "Cannot send request to gtg endpoint", err.Error())
+	}
+
+	assert.Equal(t, http.StatusServiceUnavailable, resp.StatusCode, "Response status should be 503")
 }
 
 func TestShouldReturn400WhenInvalidUUID(t *testing.T) {
