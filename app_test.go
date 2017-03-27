@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	fthealth "github.com/Financial-Times/go-fthealth/v1a"
+	fthealth "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
@@ -107,6 +107,7 @@ func startInternalContentService() {
 	documentStoreAPIHealthURI := documentStoreAPIMock.URL + "/__health"
 	sc := serviceConfig{
 		"internal-content-api",
+		"Internal Content API",
 		"8084",
 		"internalcontent",
 		"no-store",
@@ -351,7 +352,6 @@ func TestShouldNotBeGoodToGoWhenMethodeApiIsNotHappy(t *testing.T) {
 
 	assert.Equal(t, http.StatusServiceUnavailable, resp.StatusCode, "Response status should be 503")
 }
-
 
 func TestShouldNotBeGoodToGoWhenTransformerIsNotHappy(t *testing.T) {
 	startEnrichedContentAPIMock("happy")
