@@ -1,7 +1,7 @@
-internal-content-api.exe
+*.exe
 *.log
 *.html
 *coverage.*
 *.iml
 .idea/
-internal-content-api
+vendor/*/**
