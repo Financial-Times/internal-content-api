@@ -9,10 +9,10 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jawher/mow.cli"
+	"net"
 	"net/http"
 	"os"
 	"time"
-	"net"
 )
 
 const serviceDescription = "A RESTful API for retrieving and transforming internal content"

@@ -351,7 +351,6 @@ func TestShouldNotBeGoodToGoWhenMethodeApiIsNotHappy(t *testing.T) {
 	assert.Equal(t, http.StatusServiceUnavailable, resp.StatusCode, "Response status should be 503")
 }
 
-
 func TestShouldNotBeGoodToGoWhenTransformerIsNotHappy(t *testing.T) {
 	startEnrichedContentAPIMock("happy")
 	startDocumentStoreAPIMock("unhappy")
@@ -364,4 +363,20 @@ func TestShouldNotBeGoodToGoWhenTransformerIsNotHappy(t *testing.T) {
 	}
 
 	assert.Equal(t, http.StatusServiceUnavailable, resp.StatusCode, "Response status should be 503")
+}
+
+func TestShouldReturn400WhenInvalidUUID(t *testing.T) {
+	startEnrichedContentAPIMock("happy")
+	startDocumentStoreAPIMock("happy")
+	startInternalContentService()
+	defer stopServices()
+
+	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/123-invalid-uuid")
+
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusBadRequest, resp.StatusCode, "Response status should be 400")
 }
