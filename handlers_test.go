@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -56,9 +57,11 @@ func TestServeHTTP_CacheControlHeaderIsSet(t *testing.T) {
 	metricsHandler := NewMetrics()
 	contentHandler := contentHandler{&sc, appLogger, &metricsHandler}
 
-	req, _ := http.NewRequest("GET", "http://internalcontentapi.ft.com/internalcontent/foobar", nil)
+	req, _ := http.NewRequest("GET", "http://unit-test.ft.com/internalcontent/56aed7e7-485f-303d-9605-b885b86e947e", nil)
 	w := httptest.NewRecorder()
-	contentHandler.ServeHTTP(w, req)
+	r := mux.NewRouter()
+	r.HandleFunc("/internalcontent/{uuid}", contentHandler.ServeHTTP).Methods("GET")
+	r.ServeHTTP(w, req)
 
-	assert.Equal(t, w.Header().Get("Cache-Control"), "max-age=10")
+	assert.Equal(t, "max-age=10", w.Header().Get("Cache-Control"))
 }
