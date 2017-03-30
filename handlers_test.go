@@ -55,12 +55,12 @@ func TestServeHTTP_CacheControlHeaderIsSet(t *testing.T) {
 
 	appLogger := newAppLogger()
 	metricsHandler := NewMetrics()
-	contentHandler := contentHandler{&sc, appLogger, &metricsHandler}
+	contentHandler := internalContentHandler{&sc, appLogger, &metricsHandler}
 
 	req, _ := http.NewRequest("GET", "http://unit-test.ft.com/internalcontent/56aed7e7-485f-303d-9605-b885b86e947e", nil)
 	w := httptest.NewRecorder()
 	r := mux.NewRouter()
-	r.HandleFunc("/internalcontent/{uuid}", contentHandler.ServeHTTP).Methods("GET")
+	r.HandleFunc("/internalcontent/{uuid}", contentHandler.handleInternalContent).Methods("GET")
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, "max-age=10", w.Header().Get("Cache-Control"))

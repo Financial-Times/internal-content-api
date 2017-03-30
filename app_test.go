@@ -128,7 +128,7 @@ func startInternalContentService() {
 
 	appLogger := newAppLogger()
 	metricsHandler := NewMetrics()
-	contentHandler := contentHandler{&sc, appLogger, &metricsHandler}
+	contentHandler := internalContentHandler{&sc, appLogger, &metricsHandler}
 
 	h := setupServiceHandler(sc, metricsHandler, contentHandler)
 

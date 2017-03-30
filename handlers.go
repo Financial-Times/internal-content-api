@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"sync"
 
-	tid "github.com/Financial-Times/transactionid-utils-go"
+	transactionidutils "github.com/Financial-Times/transactionid-utils-go"
 	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
-	"github.com/satori/go.uuid"
+	gouuid "github.com/satori/go.uuid"
 	"golang.org/x/net/context"
 	"strings"
 )
@@ -19,7 +19,7 @@ import (
 const uuidKey = "uuid"
 const previewSuffix = "-preview"
 
-type contentHandler struct {
+type internalContentHandler struct {
 	serviceConfig *serviceConfig
 	log           *appLogger
 	metrics       *Metrics
@@ -29,103 +29,131 @@ type ErrorMessage struct {
 	Message string `json:"message"`
 }
 
-func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
-	vars := mux.Vars(request)
+type responsePart struct {
+	isOk       bool
+	statusCode int
+	response   *http.Response
+}
+
+func (h internalContentHandler) handleInternalContent(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
 
 	contentUUID := vars["uuid"]
 	err := validateUUID(contentUUID)
 	if err != nil {
-		responseWriter.WriteHeader(http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(http.StatusBadRequest)
 		msg, _ := json.Marshal(ErrorMessage{fmt.Sprintf("The given uuid is not valid, err=%v", err)})
-		responseWriter.Write([]byte(msg))
+		w.Write([]byte(msg))
 		return
 	}
 
-	handler.log.TransactionStartedEvent(request.RequestURI, tid.GetTransactionIDFromRequest(request), contentUUID)
-	transactionID := request.Header.Get(tid.TransactionIDHeader)
-	ctx := tid.TransactionAwareContext(context.Background(), transactionID)
+	tid := transactionidutils.GetTransactionIDFromRequest(r)
+	h.log.TransactionStartedEvent(r.RequestURI, tid, contentUUID)
+
+	ctx := transactionidutils.TransactionAwareContext(context.Background(), tid)
 	ctx = context.WithValue(ctx, uuidKey, contentUUID)
-	responseWriter.Header().Set("Content-Type", "application/json; charset=utf-8")
-	responseWriter.Header().Set("Cache-Control", handler.serviceConfig.cacheControlPolicy)
 
-	var waitGroup sync.WaitGroup
-	waitGroup.Add(2)
-	var contentIsOK bool
-	var contentStatusCode int
-	var contentResponse *http.Response
-	go func() {
-		defer waitGroup.Done()
-		contentIsOK, contentStatusCode, contentResponse = handler.getContent(ctx)
-	}()
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Cache-Control", h.serviceConfig.cacheControlPolicy)
 
-	var internalComponentsAreOK bool
-	var internalComponentsStatusCode int
-	var internalComponentsResponse *http.Response
-	go func() {
-		defer waitGroup.Done()
-		internalComponentsAreOK, internalComponentsStatusCode, internalComponentsResponse = handler.getInternalComponents(ctx)
-	}()
+	parts := h.asyncContentAndComponents(ctx)
 
-	waitGroup.Wait()
 	if !contentIsOK {
-		responseWriter.WriteHeader(contentStatusCode)
+		w.WriteHeader(contentStatusCode)
 		return
 	}
-	defer cleanupResp(contentResponse, handler.log.log)
+	defer cleanupResp(contentResponse, h.log.log)
 
 	if !internalComponentsAreOK {
-		responseWriter.WriteHeader(internalComponentsStatusCode)
+		w.WriteHeader(internalComponentsStatusCode)
 		return
 	}
-	defer cleanupResp(internalComponentsResponse, handler.log.log)
+	defer cleanupResp(internalComponentsResponse, h.log.log)
+
+
 
 	contentEvent := event{
-		handler.serviceConfig.contentSourceAppName,
+		h.serviceConfig.contentSourceAppName,
 		extractRequestURL(contentResponse),
-		transactionID,
+		tid,
 		nil,
 		contentUUID,
 	}
 
 	internalComponentsEvent := event{
-		handler.serviceConfig.internalComponentsSourceAppName,
+		h.serviceConfig.internalComponentsSourceAppName,
 		extractRequestURL(internalComponentsResponse),
-		transactionID,
+		tid,
 		nil,
 		contentUUID,
 	}
 
-	content, err := unmarshalToMap(contentResponse)
+	content, err := unmarshalToMap(parts[0].response)
 	if err != nil {
 		contentEvent.err = err
-		handler.handleErrorEvent(responseWriter, contentEvent, "Error while unmarshaling the response body")
+		h.handleErrorEvent(w, contentEvent, "Error while unmarshaling the response body")
 		return
 	}
 
-	internalComponents, err := unmarshalToMap(internalComponentsResponse)
+	internalComponents, err := unmarshalToMap(parts[1].response)
 	if err != nil {
 		internalComponentsEvent.err = err
-		handler.handleErrorEvent(responseWriter, internalComponentsEvent, "Error while unmarshaling the response body")
+		h.handleErrorEvent(w, internalComponentsEvent, "Error while unmarshaling the response body")
 		return
 	}
 
 	addInternalComponentsToContent(content, internalComponents)
 
-	resolveTopperImageURLs(content, handler.serviceConfig.envAPIHost)
-	resolveLeadImageURLs(content, handler.serviceConfig.envAPIHost)
+	resolveTopperImageURLs(content, h.serviceConfig.envAPIHost)
+	resolveLeadImageURLs(content, h.serviceConfig.envAPIHost)
 
-	resolveRequestUrl(content, handler, contentUUID)
-	resolveApiUrl(content, handler, contentUUID)
+	resolveRequestUrl(content, h, contentUUID)
+	resolveApiUrl(content, h, contentUUID)
 
 	removeEmptyMapFields(content)
 
 	resultBytes, _ := json.Marshal(content)
-	responseWriter.Write(resultBytes)
-	handler.metrics.recordResponseEvent()
+	w.Write(resultBytes)
+	h.metrics.recordResponseEvent()
+}
+
+func (h internalContentHandler) asyncContentAndComponents(ctx context.Context) []responsePart {
+	var waitGroup sync.WaitGroup
+	waitGroup.Add(2)
+	var contentPart responsePart
+	go func() {
+		defer waitGroup.Done()
+		contentPart = h.getContent(ctx)
+	}()
+	var internalComponentsPart responsePart
+	go func() {
+		defer waitGroup.Done()
+		internalComponentsPart = h.getInternalComponents(ctx)
+	}()
+	waitGroup.Wait()
+	return []responsePart{contentPart, internalComponentsPart}
+}
+
+func (h internalContentHandler) unmarshalls(parts []responsePart, contentUUID string, tid string) []event {
+	var events []event
+	for _, part := range parts {
+		partEvent := event{
+			h.serviceConfig.contentSourceAppName,
+			extractRequestURL(part.response),
+			tid,
+			nil,
+			contentUUID,
+		}
+		events = append(events, partEvent)
+		// will have to unmarshall here and memorize result and error and events here and return as a struct then above to handle the errors with writes to writer.
+	}
+
+	return events
 }
 
 func validateUUID(contentUUID string) error {
-	parsedUUID, err := uuid.FromString(contentUUID)
+	parsedUUID, err := gouuid.FromString(contentUUID)
 	if err != nil {
 		return err
 	}
@@ -135,7 +163,7 @@ func validateUUID(contentUUID string) error {
 	return nil
 }
 
-func resolveRequestUrl(content map[string]interface{}, handler contentHandler, contentUUID string) {
+func resolveRequestUrl(content map[string]interface{}, handler internalContentHandler, contentUUID string) {
 	content["requestUrl"] = createRequestUrl(handler.serviceConfig.envAPIHost, handler.serviceConfig.handlerPath, contentUUID)
 }
 
@@ -146,7 +174,7 @@ func createRequestUrl(APIHost string, handlerPath string, uuid string) string {
 	return "http://" + APIHost + "/" + handlerPath + "/" + uuid
 }
 
-func resolveApiUrl(content map[string]interface{}, handler contentHandler, contentUUID string) {
+func resolveApiUrl(content map[string]interface{}, handler internalContentHandler, contentUUID string) {
 	handlerPath := handler.serviceConfig.handlerPath
 	if !isPreview(handlerPath) {
 		content["apiUrl"] = createRequestUrl(handler.serviceConfig.envAPIHost, handlerPath, contentUUID)
@@ -229,69 +257,68 @@ func resolveImageURLs(images []interface{}, APIHost string) {
 	}
 }
 
-func (handler contentHandler) getContent(ctx context.Context) (ok bool, statusCode int, resp *http.Response) {
+func (h internalContentHandler) getContent(ctx context.Context) (responsePart ) {
 	uuid := ctx.Value(uuidKey).(string)
-	requestURL := fmt.Sprintf("%s%s", handler.serviceConfig.contentSourceURI, uuid)
-	transactionID, _ := tid.GetTransactionIDFromContext(ctx)
-	handler.log.RequestEvent(handler.serviceConfig.contentSourceAppName, requestURL, transactionID, uuid)
+	requestURL := fmt.Sprintf("%s%s", h.serviceConfig.contentSourceURI, uuid)
+	transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
+	h.log.RequestEvent(h.serviceConfig.contentSourceAppName, requestURL, transactionID, uuid)
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
-		handler.handleError(err, handler.serviceConfig.contentSourceAppName, requestURL, req.Header.Get(tid.TransactionIDHeader), uuid)
-		return false, http.StatusInternalServerError, nil
+		h.handleError(err, h.serviceConfig.contentSourceAppName, requestURL, req.Header.Get(transactionidutils.TransactionIDHeader), uuid)
+		return responsePart{false, http.StatusInternalServerError, nil}
 	}
-	req.Header.Set(tid.TransactionIDHeader, transactionID)
+	req.Header.Set(transactionidutils.TransactionIDHeader, transactionID)
 	req.Header.Set("Content-Type", "application/json")
-	resp, err = handler.serviceConfig.httpClient.Do(req)
+	resp, err := h.serviceConfig.httpClient.Do(req)
 
-	return handler.handleResponse(req, resp, err, uuid, handler.serviceConfig.contentSourceAppName, true)
+	return h.handleResponse(req, resp, err, uuid, h.serviceConfig.contentSourceAppName, true)
 }
 
-func (handler contentHandler) getInternalComponents(ctx context.Context) (ok bool, statusCode int, resp *http.Response) {
+func (h internalContentHandler) getInternalComponents(ctx context.Context) responsePart {
 	uuid := ctx.Value(uuidKey).(string)
-	requestURL := fmt.Sprintf("%s%s", handler.serviceConfig.internalComponentsSourceURI, uuid)
-	transactionID, _ := tid.GetTransactionIDFromContext(ctx)
-	handler.log.RequestEvent(handler.serviceConfig.internalComponentsSourceAppName, requestURL, transactionID, uuid)
+	requestURL := fmt.Sprintf("%s%s", h.serviceConfig.internalComponentsSourceURI, uuid)
+	transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
+	h.log.RequestEvent(h.serviceConfig.internalComponentsSourceAppName, requestURL, transactionID, uuid)
 
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
-		handler.handleError(err, handler.serviceConfig.internalComponentsSourceAppName, requestURL, req.Header.Get(tid.TransactionIDHeader), uuid)
-		return false, http.StatusInternalServerError, nil
+		h.handleError(err, h.serviceConfig.internalComponentsSourceAppName, requestURL, req.Header.Get(transactionidutils.TransactionIDHeader), uuid)
+		return responsePart{false, http.StatusInternalServerError, nil}
 	}
-	req.Header.Set(tid.TransactionIDHeader, transactionID)
+	req.Header.Set(transactionidutils.TransactionIDHeader, transactionID)
 	req.Header.Set("Content-Type", "application/json")
-	resp, err = handler.serviceConfig.httpClient.Do(req)
+	resp, err := h.serviceConfig.httpClient.Do(req)
 
-	return handler.handleResponse(req, resp, err, uuid, handler.serviceConfig.internalComponentsSourceAppName, false)
+	return h.handleResponse(req, resp, err, uuid, h.serviceConfig.internalComponentsSourceAppName, false)
 }
 
-func (handler contentHandler) handleResponse(req *http.Request, extResp *http.Response, err error, uuid string, appName string, doFail bool) (ok bool, statusCode int, resp *http.Response) {
+func (h internalContentHandler) handleResponse(req *http.Request, extResp *http.Response, err error, uuid string, appName string, doFail bool) responsePart {
 	//this happens when hostname cannot be resolved or host is not accessible
 	if err != nil {
-		handler.handleError(err, appName, req.URL.String(), req.Header.Get(tid.TransactionIDHeader), uuid)
-		return false, http.StatusServiceUnavailable, nil
+		h.handleError(err, appName, req.URL.String(), req.Header.Get(transactionidutils.TransactionIDHeader), uuid)
+		return responsePart{false, http.StatusServiceUnavailable, nil}
 	}
 	switch extResp.StatusCode {
 	case http.StatusOK:
-		handler.log.ResponseEvent(appName, req.URL.String(), extResp, uuid)
-		return true, http.StatusOK, extResp
+		h.log.ResponseEvent(appName, req.URL.String(), extResp, uuid)
+		return responsePart{true, http.StatusOK, extResp}
 	case http.StatusNotFound:
 		if doFail {
-			handler.handleNotFound(extResp, appName, req.URL.String(), uuid)
-			return false, http.StatusNotFound, nil
+			h.handleNotFound(extResp, appName, req.URL.String(), uuid)
+			return responsePart{false, http.StatusNotFound, nil}
 		}
-		handler.log.RequestFailedEvent(appName, req.URL.String(), extResp, uuid)
-		handler.metrics.recordRequestFailedEvent()
-		return true, http.StatusNotFound, nil
+		h.log.RequestFailedEvent(appName, req.URL.String(), extResp, uuid)
+		h.metrics.recordRequestFailedEvent()
+		return responsePart{true, http.StatusNotFound, nil}
 
 	default:
 		if doFail {
-			handler.handleFailedRequest(extResp, appName, req.URL.String(), uuid)
-			return false, http.StatusServiceUnavailable, nil
+			h.handleFailedRequest(extResp, appName, req.URL.String(), uuid)
+			return responsePart{false, http.StatusServiceUnavailable, nil}
 		}
-		handler.log.RequestFailedEvent(appName, req.URL.String(), extResp, uuid)
-		handler.metrics.recordRequestFailedEvent()
-		return true, http.StatusOK, nil
-
+		h.log.RequestFailedEvent(appName, req.URL.String(), extResp, uuid)
+		h.metrics.recordRequestFailedEvent()
+		return responsePart{true, http.StatusOK, nil}
 	}
 }
 
@@ -311,23 +338,23 @@ func cleanupResp(resp *http.Response, log *logrus.Logger) {
 	}
 }
 
-func (handler contentHandler) handleErrorEvent(w http.ResponseWriter, event event, errMessage string) {
+func (h internalContentHandler) handleErrorEvent(w http.ResponseWriter, event event, errMessage string) {
 	w.WriteHeader(http.StatusInternalServerError)
-	handler.log.Error(event, errMessage)
-	handler.metrics.recordErrorEvent()
+	h.log.Error(event, errMessage)
+	h.metrics.recordErrorEvent()
 }
 
-func (handler contentHandler) handleError(err error, serviceName string, url string, transactionID string, uuid string) {
-	handler.log.ErrorEvent(serviceName, url, transactionID, err, uuid)
-	handler.metrics.recordErrorEvent()
+func (h internalContentHandler) handleError(err error, serviceName string, url string, transactionID string, uuid string) {
+	h.log.ErrorEvent(serviceName, url, transactionID, err, uuid)
+	h.metrics.recordErrorEvent()
 }
 
-func (handler contentHandler) handleFailedRequest(resp *http.Response, serviceName string, url string, uuid string) {
-	handler.log.RequestFailedEvent(serviceName, url, resp, uuid)
-	handler.metrics.recordRequestFailedEvent()
+func (h internalContentHandler) handleFailedRequest(resp *http.Response, serviceName string, url string, uuid string) {
+	h.log.RequestFailedEvent(serviceName, url, resp, uuid)
+	h.metrics.recordRequestFailedEvent()
 }
 
-func (handler contentHandler) handleNotFound(resp *http.Response, serviceName string, url string, uuid string) {
-	handler.log.RequestFailedEvent(serviceName, url, resp, uuid)
-	handler.metrics.recordRequestFailedEvent()
+func (h internalContentHandler) handleNotFound(resp *http.Response, serviceName string, url string, uuid string) {
+	h.log.RequestFailedEvent(serviceName, url, resp, uuid)
+	h.metrics.recordRequestFailedEvent()
 }

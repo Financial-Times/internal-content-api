@@ -166,7 +166,7 @@ func main() {
 		}
 		appLogger := newAppLogger()
 		metricsHandler := NewMetrics()
-		contentHandler := contentHandler{&sc, appLogger, &metricsHandler}
+		contentHandler := internalContentHandler{&sc, appLogger, &metricsHandler}
 		h := setupServiceHandler(sc, metricsHandler, contentHandler)
 		appLogger.ServiceStartedEvent(*appSystemCode, sc.asMap())
 		metricsHandler.OutputMetricsIfRequired(*graphiteTCPAddress, *graphitePrefix, *logMetrics)
@@ -178,7 +178,7 @@ func main() {
 	app.Run(os.Args)
 }
 
-func setupServiceHandler(sc serviceConfig, metricsHandler Metrics, contentHandler contentHandler) *mux.Router {
+func setupServiceHandler(sc serviceConfig, metricsHandler Metrics, contentHandler internalContentHandler) *mux.Router {
 	r := mux.NewRouter()
 	r.Path("/" + sc.handlerPath + "/{uuid}").Handler(handlers.MethodHandler{"GET": oldhttphandlers.HTTPMetricsHandler(metricsHandler.registry,
 		oldhttphandlers.TransactionAwareRequestLoggingHandler(logrus.StandardLogger(), contentHandler))})
