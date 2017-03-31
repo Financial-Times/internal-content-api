@@ -18,6 +18,7 @@ import (
 
 const uuidKey = "uuid"
 const previewSuffix = "-preview"
+var excludedAttributes = map[string]bool{"uuid": true, "lastModified": true, "publishReference": true}
 
 type internalContentHandler struct {
 	serviceConfig *serviceConfig
@@ -33,13 +34,16 @@ type responsePart struct {
 	isOk       bool
 	statusCode int
 	response   *http.Response
+	event1     event
+	content    map[string]interface{}
 }
+
+type retriever func(context.Context) responsePart
 
 func (h internalContentHandler) handleInternalContent(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-
-	contentUUID := vars["uuid"]
-	err := validateUUID(contentUUID)
+	uuid := vars["uuid"]
+	err := validateUUID(uuid)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusBadRequest)
@@ -47,109 +51,64 @@ func (h internalContentHandler) handleInternalContent(w http.ResponseWriter, r *
 		w.Write([]byte(msg))
 		return
 	}
-
 	tid := transactionidutils.GetTransactionIDFromRequest(r)
-	h.log.TransactionStartedEvent(r.RequestURI, tid, contentUUID)
-
+	h.log.TransactionStartedEvent(r.RequestURI, tid, uuid)
 	ctx := transactionidutils.TransactionAwareContext(context.Background(), tid)
-	ctx = context.WithValue(ctx, uuidKey, contentUUID)
-
+	ctx = context.WithValue(ctx, uuidKey, uuid)
+	parts := h.asyncRetrievalsAndUnmarshalls(ctx, []retriever{h.getContent, h.getInternalComponents}, uuid, tid)
+	for _, p := range parts {
+		if !p.isOk {
+			w.WriteHeader(p.statusCode)
+			return
+		}
+		defer cleanupResp(p.response, h.log.log)
+		if p.event1.err != nil {
+			h.handleErrorEvent(w, p.event1, "Error while unmarshaling the response body")
+			return
+		}
+	}
+	mergedContent := mergeParts(parts)
+	resolveTopperImageURLs(mergedContent, h.serviceConfig.envAPIHost)
+	resolveLeadImageURLs(mergedContent, h.serviceConfig.envAPIHost)
+	resolveRequestUrl(mergedContent, h, uuid)
+	resolveApiUrl(mergedContent, h, uuid)
+	removeEmptyMapFields(mergedContent)
+	resultBytes, _ := json.Marshal(mergedContent)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("Cache-Control", h.serviceConfig.cacheControlPolicy)
-
-	parts := h.asyncContentAndComponents(ctx)
-
-	if !contentIsOK {
-		w.WriteHeader(contentStatusCode)
-		return
-	}
-	defer cleanupResp(contentResponse, h.log.log)
-
-	if !internalComponentsAreOK {
-		w.WriteHeader(internalComponentsStatusCode)
-		return
-	}
-	defer cleanupResp(internalComponentsResponse, h.log.log)
-
-
-
-	contentEvent := event{
-		h.serviceConfig.contentSourceAppName,
-		extractRequestURL(contentResponse),
-		tid,
-		nil,
-		contentUUID,
-	}
-
-	internalComponentsEvent := event{
-		h.serviceConfig.internalComponentsSourceAppName,
-		extractRequestURL(internalComponentsResponse),
-		tid,
-		nil,
-		contentUUID,
-	}
-
-	content, err := unmarshalToMap(parts[0].response)
-	if err != nil {
-		contentEvent.err = err
-		h.handleErrorEvent(w, contentEvent, "Error while unmarshaling the response body")
-		return
-	}
-
-	internalComponents, err := unmarshalToMap(parts[1].response)
-	if err != nil {
-		internalComponentsEvent.err = err
-		h.handleErrorEvent(w, internalComponentsEvent, "Error while unmarshaling the response body")
-		return
-	}
-
-	addInternalComponentsToContent(content, internalComponents)
-
-	resolveTopperImageURLs(content, h.serviceConfig.envAPIHost)
-	resolveLeadImageURLs(content, h.serviceConfig.envAPIHost)
-
-	resolveRequestUrl(content, h, contentUUID)
-	resolveApiUrl(content, h, contentUUID)
-
-	removeEmptyMapFields(content)
-
-	resultBytes, _ := json.Marshal(content)
 	w.Write(resultBytes)
 	h.metrics.recordResponseEvent()
 }
 
-func (h internalContentHandler) asyncContentAndComponents(ctx context.Context) []responsePart {
-	var waitGroup sync.WaitGroup
-	waitGroup.Add(2)
-	var contentPart responsePart
-	go func() {
-		defer waitGroup.Done()
-		contentPart = h.getContent(ctx)
-	}()
-	var internalComponentsPart responsePart
-	go func() {
-		defer waitGroup.Done()
-		internalComponentsPart = h.getInternalComponents(ctx)
-	}()
-	waitGroup.Wait()
-	return []responsePart{contentPart, internalComponentsPart}
+func (h internalContentHandler) asyncRetrievalsAndUnmarshalls(ctx context.Context, getters []retriever, uuid string, tid string) []responsePart {
+	responseParts := make([]responsePart, 0, len(getters))
+	m := sync.RWMutex{}
+	var wg sync.WaitGroup
+	wg.Add(len(getters))
+	for _, g := range getters {
+		go func() {
+			part := h.retrieveAndUnmarshall(ctx, wg, g, uuid, tid)
+			m.Lock()
+			defer m.Unlock()
+			responseParts = append(responseParts, part)
+		}()
+	}
+	wg.Wait()
+	return responseParts
 }
 
-func (h internalContentHandler) unmarshalls(parts []responsePart, contentUUID string, tid string) []event {
-	var events []event
-	for _, part := range parts {
-		partEvent := event{
-			h.serviceConfig.contentSourceAppName,
-			extractRequestURL(part.response),
-			tid,
-			nil,
-			contentUUID,
-		}
-		events = append(events, partEvent)
-		// will have to unmarshall here and memorize result and error and events here and return as a struct then above to handle the errors with writes to writer.
+func (h internalContentHandler) retrieveAndUnmarshall(ctx context.Context, wg sync.WaitGroup, r retriever, uuid string, tid string) responsePart {
+	defer wg.Done()
+	part := r(ctx)
+	part.event1 = event{
+		h.serviceConfig.contentSourceAppName,
+		extractRequestURL(part.response),
+		tid,
+		nil,
+		uuid,
 	}
-
-	return events
+	part.content, part.event1.err = unmarshalToMap(part.response)
+	return part
 }
 
 func validateUUID(contentUUID string) error {
@@ -212,14 +171,17 @@ func unmarshalToMap(resp *http.Response) (map[string]interface{}, error) {
 	return content, nil
 }
 
-func addInternalComponentsToContent(content map[string]interface{}, internalComponents map[string]interface{}) {
-	excludedAttributes := map[string]bool{"uuid": true, "lastModified": true, "publishReference": true}
-	for key, value := range internalComponents {
-		_, found := excludedAttributes[key]
-		if !found {
-			content[key] = value
+func mergeParts(parts []responsePart) map[string]interface{} {
+	content := make(map[string]interface{})
+	for _, p := range parts {
+		for key, value := range p.content {
+			_, found := excludedAttributes[key]
+			if !found {
+				content[key] = value
+			}
 		}
 	}
+	return content
 }
 
 func resolveTopperImageURLs(content map[string]interface{}, APIHost string) {
@@ -257,7 +219,7 @@ func resolveImageURLs(images []interface{}, APIHost string) {
 	}
 }
 
-func (h internalContentHandler) getContent(ctx context.Context) (responsePart ) {
+func (h internalContentHandler) getContent(ctx context.Context) responsePart {
 	uuid := ctx.Value(uuidKey).(string)
 	requestURL := fmt.Sprintf("%s%s", h.serviceConfig.contentSourceURI, uuid)
 	transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
@@ -265,7 +227,7 @@ func (h internalContentHandler) getContent(ctx context.Context) (responsePart ) 
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
 		h.handleError(err, h.serviceConfig.contentSourceAppName, requestURL, req.Header.Get(transactionidutils.TransactionIDHeader), uuid)
-		return responsePart{false, http.StatusInternalServerError, nil}
+		return responsePart{isOk: false, statusCode: http.StatusInternalServerError}
 	}
 	req.Header.Set(transactionidutils.TransactionIDHeader, transactionID)
 	req.Header.Set("Content-Type", "application/json")
@@ -283,7 +245,7 @@ func (h internalContentHandler) getInternalComponents(ctx context.Context) respo
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
 		h.handleError(err, h.serviceConfig.internalComponentsSourceAppName, requestURL, req.Header.Get(transactionidutils.TransactionIDHeader), uuid)
-		return responsePart{false, http.StatusInternalServerError, nil}
+		return responsePart{isOk: false, statusCode: http.StatusInternalServerError}
 	}
 	req.Header.Set(transactionidutils.TransactionIDHeader, transactionID)
 	req.Header.Set("Content-Type", "application/json")
@@ -296,29 +258,29 @@ func (h internalContentHandler) handleResponse(req *http.Request, extResp *http.
 	//this happens when hostname cannot be resolved or host is not accessible
 	if err != nil {
 		h.handleError(err, appName, req.URL.String(), req.Header.Get(transactionidutils.TransactionIDHeader), uuid)
-		return responsePart{false, http.StatusServiceUnavailable, nil}
+		return responsePart{isOk: false, statusCode: http.StatusServiceUnavailable}
 	}
 	switch extResp.StatusCode {
 	case http.StatusOK:
 		h.log.ResponseEvent(appName, req.URL.String(), extResp, uuid)
-		return responsePart{true, http.StatusOK, extResp}
+		return responsePart{isOk: true, statusCode: http.StatusOK, response: extResp}
 	case http.StatusNotFound:
 		if doFail {
 			h.handleNotFound(extResp, appName, req.URL.String(), uuid)
-			return responsePart{false, http.StatusNotFound, nil}
+			return responsePart{isOk: false, statusCode: http.StatusNotFound}
 		}
 		h.log.RequestFailedEvent(appName, req.URL.String(), extResp, uuid)
 		h.metrics.recordRequestFailedEvent()
-		return responsePart{true, http.StatusNotFound, nil}
+		return responsePart{isOk: true, statusCode: http.StatusNotFound}
 
 	default:
 		if doFail {
 			h.handleFailedRequest(extResp, appName, req.URL.String(), uuid)
-			return responsePart{false, http.StatusServiceUnavailable, nil}
+			return responsePart{isOk: false, statusCode: http.StatusServiceUnavailable}
 		}
 		h.log.RequestFailedEvent(appName, req.URL.String(), extResp, uuid)
 		h.metrics.recordRequestFailedEvent()
-		return responsePart{true, http.StatusOK, nil}
+		return responsePart{isOk: true, statusCode: http.StatusOK}
 	}
 }
 
