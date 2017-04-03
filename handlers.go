@@ -11,10 +11,13 @@ import (
 	tid "github.com/Financial-Times/transactionid-utils-go"
 	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
+	"github.com/satori/go.uuid"
 	"golang.org/x/net/context"
+	"strings"
 )
 
 const uuidKey = "uuid"
+const previewSuffix = "-preview"
 
 type contentHandler struct {
 	serviceConfig *serviceConfig
@@ -22,13 +25,26 @@ type contentHandler struct {
 	metrics       *Metrics
 }
 
+type ErrorMessage struct {
+	Message string `json:"message"`
+}
+
 func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 	vars := mux.Vars(request)
-	uuid := vars["uuid"]
-	handler.log.TransactionStartedEvent(request.RequestURI, tid.GetTransactionIDFromRequest(request), uuid)
+
+	contentUUID := vars["uuid"]
+	err := validateUUID(contentUUID)
+	if err != nil {
+		responseWriter.WriteHeader(http.StatusBadRequest)
+		msg, _ := json.Marshal(ErrorMessage{fmt.Sprintf("The given uuid is not valid, err=%v", err)})
+		responseWriter.Write([]byte(msg))
+		return
+	}
+
+	handler.log.TransactionStartedEvent(request.RequestURI, tid.GetTransactionIDFromRequest(request), contentUUID)
 	transactionID := request.Header.Get(tid.TransactionIDHeader)
 	ctx := tid.TransactionAwareContext(context.Background(), transactionID)
-	ctx = context.WithValue(ctx, uuidKey, uuid)
+	ctx = context.WithValue(ctx, uuidKey, contentUUID)
 	responseWriter.Header().Set("Content-Type", "application/json; charset=utf-8")
 	responseWriter.Header().Set("Cache-Control", handler.serviceConfig.cacheControlPolicy)
 
@@ -61,55 +77,35 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 		responseWriter.WriteHeader(internalComponentsStatusCode)
 		return
 	}
-	// internal components response is nil when is not found
-	if internalComponentsResponse == nil {
-		io.Copy(responseWriter, contentResponse.Body)
-		return
-	}
 	defer cleanupResp(internalComponentsResponse, handler.log.log)
 
-	var content map[string]interface{}
-	var internalComponents map[string]interface{}
-
 	contentEvent := event{
-		"h.serviceConfig.contentSourceAppName",
-		contentResponse.Request.URL.String(),
+		handler.serviceConfig.contentSourceAppName,
+		extractRequestURL(contentResponse),
 		transactionID,
 		nil,
-		uuid,
+		contentUUID,
 	}
 
 	internalComponentsEvent := event{
-		"h.serviceConfig.internalComponentsSourceAppName",
-		contentResponse.Request.URL.String(),
+		handler.serviceConfig.internalComponentsSourceAppName,
+		extractRequestURL(internalComponentsResponse),
 		transactionID,
 		nil,
-		uuid,
+		contentUUID,
 	}
 
-	contentBytes, err := ioutil.ReadAll(contentResponse.Body)
+	content, err := unmarshalToMap(contentResponse)
 	if err != nil {
 		contentEvent.err = err
-		handler.handleErrorEvent(responseWriter, contentEvent, "Error while handling the response body")
-		return
-	}
-	internalComponentsBytes, err := ioutil.ReadAll(internalComponentsResponse.Body)
-	if err != nil {
-		internalComponentsEvent.err = err
-		handler.handleErrorEvent(responseWriter, internalComponentsEvent, "Error while handling the response body")
+		handler.handleErrorEvent(responseWriter, contentEvent, "Error while unmarshaling the response body")
 		return
 	}
 
-	err = json.Unmarshal(contentBytes, &content)
-	if err != nil {
-		contentEvent.err = err
-		handler.handleErrorEvent(responseWriter, contentEvent, "Error while parsing the response json")
-		return
-	}
-	err = json.Unmarshal(internalComponentsBytes, &internalComponents)
+	internalComponents, err := unmarshalToMap(internalComponentsResponse)
 	if err != nil {
 		internalComponentsEvent.err = err
-		handler.handleErrorEvent(responseWriter, internalComponentsEvent, "Error while parsing the response json")
+		handler.handleErrorEvent(responseWriter, internalComponentsEvent, "Error while unmarshaling the response body")
 		return
 	}
 
@@ -118,11 +114,74 @@ func (handler contentHandler) ServeHTTP(responseWriter http.ResponseWriter, requ
 	resolveTopperImageURLs(content, handler.serviceConfig.envAPIHost)
 	resolveLeadImageURLs(content, handler.serviceConfig.envAPIHost)
 
+	resolveRequestUrl(content, handler, contentUUID)
+	resolveApiUrl(content, handler, contentUUID)
+
 	removeEmptyMapFields(content)
 
 	resultBytes, _ := json.Marshal(content)
 	responseWriter.Write(resultBytes)
 	handler.metrics.recordResponseEvent()
+}
+
+func validateUUID(contentUUID string) error {
+	parsedUUID, err := uuid.FromString(contentUUID)
+	if err != nil {
+		return err
+	}
+	if contentUUID != parsedUUID.String() {
+		return fmt.Errorf("Parsed UUID (%v) is different than the given uuid (%v).", parsedUUID, contentUUID)
+	}
+	return nil
+}
+
+func resolveRequestUrl(content map[string]interface{}, handler contentHandler, contentUUID string) {
+	content["requestUrl"] = createRequestUrl(handler.serviceConfig.envAPIHost, handler.serviceConfig.handlerPath, contentUUID)
+}
+
+func createRequestUrl(APIHost string, handlerPath string, uuid string) string {
+	if isPreview(handlerPath) {
+		handlerPath = strings.TrimSuffix(handlerPath, previewSuffix)
+	}
+	return "http://" + APIHost + "/" + handlerPath + "/" + uuid
+}
+
+func resolveApiUrl(content map[string]interface{}, handler contentHandler, contentUUID string) {
+	handlerPath := handler.serviceConfig.handlerPath
+	if !isPreview(handlerPath) {
+		content["apiUrl"] = createRequestUrl(handler.serviceConfig.envAPIHost, handlerPath, contentUUID)
+	}
+}
+
+func isPreview(handlerPath string) bool {
+	return strings.HasSuffix(handlerPath, previewSuffix)
+}
+
+func extractRequestURL(resp *http.Response) string {
+	if resp == nil {
+		return "N/A"
+	}
+
+	return resp.Request.URL.String()
+}
+
+func unmarshalToMap(resp *http.Response) (map[string]interface{}, error) {
+	var content map[string]interface{}
+
+	if resp == nil {
+		return content, nil
+	}
+
+	contentBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return content, err
+	}
+	err = json.Unmarshal(contentBytes, &content)
+	if err != nil {
+		return content, err
+	}
+
+	return content, nil
 }
 
 func addInternalComponentsToContent(content map[string]interface{}, internalComponents map[string]interface{}) {
@@ -177,14 +236,14 @@ func (handler contentHandler) getContent(ctx context.Context) (ok bool, statusCo
 	handler.log.RequestEvent(handler.serviceConfig.contentSourceAppName, requestURL, transactionID, uuid)
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
-		handler.handleError(err, "h.serviceConfig.contentSourceAppName", "", req.Header.Get(tid.TransactionIDHeader), uuid)
+		handler.handleError(err, handler.serviceConfig.contentSourceAppName, requestURL, req.Header.Get(tid.TransactionIDHeader), uuid)
 		return false, http.StatusInternalServerError, nil
 	}
 	req.Header.Set(tid.TransactionIDHeader, transactionID)
 	req.Header.Set("Content-Type", "application/json")
 	resp, err = handler.serviceConfig.httpClient.Do(req)
 
-	return handler.handleResponse(req, resp, err, uuid, "h.serviceConfig.contentSourceAppName", true)
+	return handler.handleResponse(req, resp, err, uuid, handler.serviceConfig.contentSourceAppName, true)
 }
 
 func (handler contentHandler) getInternalComponents(ctx context.Context) (ok bool, statusCode int, resp *http.Response) {
@@ -195,14 +254,14 @@ func (handler contentHandler) getInternalComponents(ctx context.Context) (ok boo
 
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
-		handler.handleError(err, "h.serviceConfig.internalComponentsSourceAppName", "", req.Header.Get(tid.TransactionIDHeader), uuid)
+		handler.handleError(err, handler.serviceConfig.internalComponentsSourceAppName, requestURL, req.Header.Get(tid.TransactionIDHeader), uuid)
 		return false, http.StatusInternalServerError, nil
 	}
 	req.Header.Set(tid.TransactionIDHeader, transactionID)
 	req.Header.Set("Content-Type", "application/json")
 	resp, err = handler.serviceConfig.httpClient.Do(req)
 
-	return handler.handleResponse(req, resp, err, uuid, "h.serviceConfig.internalComponentsSourceAppName", false)
+	return handler.handleResponse(req, resp, err, uuid, handler.serviceConfig.internalComponentsSourceAppName, false)
 }
 
 func (handler contentHandler) handleResponse(req *http.Request, extResp *http.Response, err error, uuid string, appName string, doFail bool) (ok bool, statusCode int, resp *http.Response) {
@@ -237,10 +296,15 @@ func (handler contentHandler) handleResponse(req *http.Request, extResp *http.Re
 }
 
 func cleanupResp(resp *http.Response, log *logrus.Logger) {
+	if resp == nil {
+		return
+	}
+
 	_, err := io.Copy(ioutil.Discard, resp.Body)
 	if err != nil {
 		log.Warningf("[%v]", err)
 	}
+
 	err = resp.Body.Close()
 	if err != nil {
 		log.Warningf("[%v]", err)

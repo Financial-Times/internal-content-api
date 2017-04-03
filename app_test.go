@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	fthealth "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/gorilla/handlers"
@@ -136,10 +135,10 @@ func startInternalContentService() {
 	internalContentAPI = httptest.NewServer(h)
 }
 
-func getStringFromReader(r io.Reader) string {
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(r)
-	return buf.String()
+func getMapFromReader(r io.Reader) map[string]interface{} {
+	var m map[string]interface{}
+	json.NewDecoder(r).Decode(&m)
+	return m
 }
 
 func TestShouldReturn200AndInternalComponentOutput(t *testing.T) {
@@ -158,8 +157,8 @@ func TestShouldReturn200AndInternalComponentOutput(t *testing.T) {
 	file, _ := os.Open("test-resources/full-internal-content-api-output.json")
 	defer file.Close()
 
-	expectedOutput := getStringFromReader(file)
-	actualOutput := getStringFromReader(resp.Body)
+	expectedOutput := getMapFromReader(file)
+	actualOutput := getMapFromReader(resp.Body)
 
 	assert.Equal(t, expectedOutput, actualOutput, "Response body shoud be equal to transformer response body")
 }
@@ -195,8 +194,8 @@ func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentNotFound(t 
 	file, _ := os.Open("test-resources/partial-internal-content-api-output.json")
 	defer file.Close()
 
-	expectedOutput := getStringFromReader(file)
-	actualOutput := getStringFromReader(resp.Body)
+	expectedOutput := getMapFromReader(file)
+	actualOutput := getMapFromReader(resp.Body)
 
 	assert.Equal(t, expectedOutput, actualOutput, "Response body shoud be equal to transformer response body")
 }
@@ -217,8 +216,8 @@ func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentFailed(t *t
 	file, _ := os.Open("test-resources/partial-internal-content-api-output.json")
 	defer file.Close()
 
-	expectedOutput := getStringFromReader(file)
-	actualOutput := getStringFromReader(resp.Body)
+	expectedOutput := getMapFromReader(file)
+	actualOutput := getMapFromReader(resp.Body)
 
 	assert.Equal(t, expectedOutput, actualOutput, "Response body shoud be equal to transformer response body")
 }
@@ -365,4 +364,20 @@ func TestShouldNotBeGoodToGoWhenTransformerIsNotHappy(t *testing.T) {
 	}
 
 	assert.Equal(t, http.StatusServiceUnavailable, resp.StatusCode, "Response status should be 503")
+}
+
+func TestShouldReturn400WhenInvalidUUID(t *testing.T) {
+	startEnrichedContentAPIMock("happy")
+	startDocumentStoreAPIMock("happy")
+	startInternalContentService()
+	defer stopServices()
+
+	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/123-invalid-uuid")
+
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusBadRequest, resp.StatusCode, "Response status should be 400")
 }
