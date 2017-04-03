@@ -38,11 +38,10 @@ type responsePart struct {
 	content    map[string]interface{}
 }
 
-type retrieverFunc  func(context.Context) responsePart
-
 type retriever struct {
+	uri           string
 	sourceAppName string
-	retrieverF    retrieverFunc
+	doFail        bool
 }
 
 func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -59,8 +58,8 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 	h.log.TransactionStartedEvent(r.RequestURI, tid, uuid)
 	ctx := context.WithValue(transactionidutils.TransactionAwareContext(context.Background(), tid), uuidKey, uuid)
 	retrievers := []retriever{
-		{h.serviceConfig.contentSourceAppName, h.getContent },
-		{h.serviceConfig.internalComponentsSourceAppName, h.getInternalComponents },
+		{h.serviceConfig.contentSourceURI, h.serviceConfig.contentSourceAppName, true},
+		{h.serviceConfig.internalComponentsSourceURI, h.serviceConfig.internalComponentsSourceAppName, false },
 	}
 	parts := h.asyncRetrievalsAndUnmarshalls(ctx, retrievers, uuid, tid)
 	for _, p := range parts {
@@ -111,7 +110,7 @@ func (h internalContentHandler) asyncRetrievalsAndUnmarshalls(ctx context.Contex
 }
 
 func (h internalContentHandler) retrieveAndUnmarshall(ctx context.Context, r retriever, uuid string, tid string) responsePart {
-	part := r.retrieverF(ctx)
+	part := h.callService(ctx, r)
 	part.event1 = event{
 		serviceName: r.sourceAppName,
 		requestURL: extractRequestURL(part.response),
@@ -231,39 +230,20 @@ func resolveImageURLs(images []interface{}, APIHost string) {
 	}
 }
 
-func (h internalContentHandler) getContent(ctx context.Context) responsePart {
+func (h internalContentHandler) callService(ctx context.Context, r retriever) responsePart {
 	uuid := ctx.Value(uuidKey).(string)
-	requestURL := fmt.Sprintf("%s%s", h.serviceConfig.contentSourceURI, uuid)
+	requestURL := fmt.Sprintf("%s%s", r.uri, uuid)
 	transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
-	h.log.RequestEvent(h.serviceConfig.contentSourceAppName, requestURL, transactionID, uuid)
+	h.log.RequestEvent(r.sourceAppName, requestURL, transactionID, uuid)
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
-		h.handleError(err, h.serviceConfig.contentSourceAppName, requestURL, req.Header.Get(transactionidutils.TransactionIDHeader), uuid)
+		h.handleError(err, r.sourceAppName, requestURL, req.Header.Get(transactionidutils.TransactionIDHeader), uuid)
 		return responsePart{isOk: false, statusCode: http.StatusInternalServerError}
 	}
 	req.Header.Set(transactionidutils.TransactionIDHeader, transactionID)
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := h.serviceConfig.httpClient.Do(req)
-
-	return h.handleResponse(req, resp, err, uuid, h.serviceConfig.contentSourceAppName, true)
-}
-
-func (h internalContentHandler) getInternalComponents(ctx context.Context) responsePart {
-	uuid := ctx.Value(uuidKey).(string)
-	requestURL := fmt.Sprintf("%s%s", h.serviceConfig.internalComponentsSourceURI, uuid)
-	transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
-	h.log.RequestEvent(h.serviceConfig.internalComponentsSourceAppName, requestURL, transactionID, uuid)
-
-	req, err := http.NewRequest("GET", requestURL, nil)
-	if err != nil {
-		h.handleError(err, h.serviceConfig.internalComponentsSourceAppName, requestURL, req.Header.Get(transactionidutils.TransactionIDHeader), uuid)
-		return responsePart{isOk: false, statusCode: http.StatusInternalServerError}
-	}
-	req.Header.Set(transactionidutils.TransactionIDHeader, transactionID)
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := h.serviceConfig.httpClient.Do(req)
-
-	return h.handleResponse(req, resp, err, uuid, h.serviceConfig.internalComponentsSourceAppName, false)
+	return h.handleResponse(req, resp, err, uuid, r.sourceAppName, r.doFail)
 }
 
 func (h internalContentHandler) handleResponse(req *http.Request, extResp *http.Response, err error, uuid string, appName string, doFail bool) responsePart {
