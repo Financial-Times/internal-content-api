@@ -2,7 +2,7 @@
 
 # Internal Content API (internal-content-api)
 
-__Internal Content API serves published content that includes the internal component besides the normal content__
+__Internal Content API serves published content that includes the internal components beside the enriched content fields__
 
 ## Installation
 
@@ -71,12 +71,11 @@ When deployed locally arguments are optional.
 Example
 `curl -v http://localhost:8084/internalcontent/9358ba1e-c07f-11e5-846f-79b0e3d20eaf`
 
-The read should return the internal content of an article (i.e. an aggregation of content plus internal components)
+The read should return the internal content of an article (i.e. an aggregation of enriched content plus internal components).
 
 404 if article with given uuid does not exist.
 
 503 when one of the collaborating mandatory services is inaccessible.
-
 
 In case `handler-path` / `HANDLER_PATH` is set to something else other than `internalcontent`,
 for example to `internalcontent-preview`, the endpoint will change accordingly to:
@@ -86,12 +85,17 @@ for example to `internalcontent-preview`, the endpoint will change accordingly t
 Example in this case will be:
 `curl -v http://localhost:8084/internalcontent-preview/9358ba1e-c07f-11e5-846f-79b0e3d20eaf`
 
-
 ### Admin endpoints
 Healthchecks: [http://localhost:8084/__health](http://localhost:8084/__health)
 
 Ping: [http://localhost:8084/__ping](http://localhost:8084/__ping)
 
-Build-info: [http://localhost:8084/__build-info](http://localhost:8084/__ping)  -  [Documentation on how to generate build-info] (https://github.com/Financial-Times/service-status-go) 
+Build-info: [http://localhost:8084/__build-info](http://localhost:8084/__build-info)  -  [Documentation on how to generate build-info] (https://github.com/Financial-Times/service-status-go) 
  
 Metrics:  [http://localhost:8084/__metrics](http://localhost:8084/__metrics)
+
+## Model
+
+For the model spec please refer to:
+* [enriched-content-read-api](http://git.svc.ft.com/projects/CP/repos/enriched-content-read-api/browse) - complements the content model with content & concept relationships
+* [methode-article-internal-components-mapper](https://github.com/Financial-Times/methode-article-internal-components-mapper) - transforms the internal components of a story (this part of the model is subject to continuous change, hence for the latest model it's recommended to check the [spec](https://github.com/Financial-Times/methode-article-internal-components-mapper/blob/master/api.md))
