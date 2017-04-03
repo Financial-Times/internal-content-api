@@ -89,6 +89,7 @@ func (h internalContentHandler) asyncRetrievalsAndUnmarshalls(ctx context.Contex
 			m.Lock()
 			defer m.Unlock()
 			responseParts = append(responseParts, part)
+			wg.Done()
 		}()
 	}
 	wg.Wait()
