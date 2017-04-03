@@ -40,9 +40,8 @@ type responsePart struct {
 
 type retriever func(context.Context) responsePart
 
-func (h internalContentHandler) handleInternalContent(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	uuid := vars["uuid"]
+func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	uuid := mux.Vars(r)["uuid"]
 	err := validateUUID(uuid)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -53,8 +52,7 @@ func (h internalContentHandler) handleInternalContent(w http.ResponseWriter, r *
 	}
 	tid := transactionidutils.GetTransactionIDFromRequest(r)
 	h.log.TransactionStartedEvent(r.RequestURI, tid, uuid)
-	ctx := transactionidutils.TransactionAwareContext(context.Background(), tid)
-	ctx = context.WithValue(ctx, uuidKey, uuid)
+	ctx := context.WithValue(transactionidutils.TransactionAwareContext(context.Background(), tid), uuidKey, uuid)
 	parts := h.asyncRetrievalsAndUnmarshalls(ctx, []retriever{h.getContent, h.getInternalComponents}, uuid, tid)
 	for _, p := range parts {
 		if !p.isOk {
