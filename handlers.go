@@ -38,7 +38,12 @@ type responsePart struct {
 	content    map[string]interface{}
 }
 
-type retriever func(context.Context) responsePart
+type retrieverFunc  func(context.Context) responsePart
+
+type retriever struct {
+	sourceAppName string
+	retrieverF    retrieverFunc
+}
 
 func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	uuid := mux.Vars(r)["uuid"]
@@ -53,7 +58,11 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 	tid := transactionidutils.GetTransactionIDFromRequest(r)
 	h.log.TransactionStartedEvent(r.RequestURI, tid, uuid)
 	ctx := context.WithValue(transactionidutils.TransactionAwareContext(context.Background(), tid), uuidKey, uuid)
-	parts := h.asyncRetrievalsAndUnmarshalls(ctx, []retriever{h.getContent, h.getInternalComponents}, uuid, tid)
+	retrievers := []retriever{
+		{h.serviceConfig.contentSourceAppName, h.getContent },
+		{h.serviceConfig.internalComponentsSourceAppName, h.getInternalComponents },
+	}
+	parts := h.asyncRetrievalsAndUnmarshalls(ctx, retrievers, uuid, tid)
 	for _, p := range parts {
 		if !p.isOk {
 			w.WriteHeader(p.statusCode)
@@ -65,46 +74,49 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 			return
 		}
 	}
+	mergedContent := h.resolveAdditionalFields(parts, uuid)
+	resultBytes, _ := json.Marshal(mergedContent)
+	w.Header().Set("Cache-Control", h.serviceConfig.cacheControlPolicy)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Write(resultBytes)
+	h.metrics.recordResponseEvent()
+}
+
+func (h internalContentHandler) resolveAdditionalFields(parts map[int]responsePart, uuid string) map[string]interface{} {
 	mergedContent := mergeParts(parts)
 	resolveTopperImageURLs(mergedContent, h.serviceConfig.envAPIHost)
 	resolveLeadImageURLs(mergedContent, h.serviceConfig.envAPIHost)
 	resolveRequestUrl(mergedContent, h, uuid)
 	resolveApiUrl(mergedContent, h, uuid)
 	removeEmptyMapFields(mergedContent)
-	resultBytes, _ := json.Marshal(mergedContent)
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.Header().Set("Cache-Control", h.serviceConfig.cacheControlPolicy)
-	w.Write(resultBytes)
-	h.metrics.recordResponseEvent()
+	return mergedContent
 }
 
-func (h internalContentHandler) asyncRetrievalsAndUnmarshalls(ctx context.Context, getters []retriever, uuid string, tid string) []responsePart {
-	responseParts := make([]responsePart, 0, len(getters))
+func (h internalContentHandler) asyncRetrievalsAndUnmarshalls(ctx context.Context, retrievers []retriever, uuid string, tid string) map[int]responsePart {
+	responseParts := make(map[int]responsePart)
 	m := sync.RWMutex{}
 	var wg sync.WaitGroup
-	wg.Add(len(getters))
-	for _, g := range getters {
-		go func() {
-			part := h.retrieveAndUnmarshall(ctx, wg, g, uuid, tid)
+	wg.Add(len(retrievers))
+	for i, r := range retrievers {
+		go func(i int, r retriever) {
+			part := h.retrieveAndUnmarshall(ctx, r, uuid, tid)
 			m.Lock()
 			defer m.Unlock()
-			responseParts = append(responseParts, part)
-			wg.Done()
-		}()
+			defer wg.Done()
+			responseParts[i] = part
+		}(i, r)
 	}
 	wg.Wait()
 	return responseParts
 }
 
-func (h internalContentHandler) retrieveAndUnmarshall(ctx context.Context, wg sync.WaitGroup, r retriever, uuid string, tid string) responsePart {
-	defer wg.Done()
-	part := r(ctx)
+func (h internalContentHandler) retrieveAndUnmarshall(ctx context.Context, r retriever, uuid string, tid string) responsePart {
+	part := r.retrieverF(ctx)
 	part.event1 = event{
-		h.serviceConfig.contentSourceAppName,
-		extractRequestURL(part.response),
-		tid,
-		nil,
-		uuid,
+		serviceName: r.sourceAppName,
+		requestURL: extractRequestURL(part.response),
+		transactionID: tid,
+		uuid: uuid,
 	}
 	part.content, part.event1.err = unmarshalToMap(part.response)
 	return part
@@ -170,9 +182,10 @@ func unmarshalToMap(resp *http.Response) (map[string]interface{}, error) {
 	return content, nil
 }
 
-func mergeParts(parts []responsePart) map[string]interface{} {
-	content := make(map[string]interface{})
-	for _, p := range parts {
+func mergeParts(parts map[int]responsePart) map[string]interface{} {
+	content := parts[0].content
+	for i := 1; i < len(parts); i++ {
+		p := parts[i]
 		for key, value := range p.content {
 			_, found := excludedAttributes[key]
 			if !found {

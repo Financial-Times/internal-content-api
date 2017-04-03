@@ -1,1 +1,29 @@
-{"topper":{"theme":"split-text-left","bgColor":"black","headline":"Topper headline","standfirst":"Topper standfirst","images":[{"id":"f3add2e0-dbfa-11e6-a7d5-ce30ecef69c7","type":"square","width":90,"height":90},{"id":"35059e34-dc33-11e6-86ac-f253db7791c6","type":"standard","width":90,"height":160},{"id":"c374c260-dd84-11e6-9d7c-be108f1c1dce","type":"wide","width":77,"height":180}]},"uuid":"5c3cae78-dbef-11e6-9d7c-be108f1c1dce"}
+{
+  "topper": {
+    "theme": "split-text-left",
+    "bgColor": "black",
+    "headline": "Topper headline",
+    "standfirst": "Topper standfirst",
+    "images": [
+      {
+        "id": "f3add2e0-dbfa-11e6-a7d5-ce30ecef69c7",
+        "type": "square",
+        "width": 90,
+        "height": 90
+      },
+      {
+        "id": "35059e34-dc33-11e6-86ac-f253db7791c6",
+        "type": "standard",
+        "width": 90,
+        "height": 160
+      },
+      {
+        "id": "c374c260-dd84-11e6-9d7c-be108f1c1dce",
+        "type": "wide",
+        "width": 77,
+        "height": 180
+      }
+    ]
+  },
+  "uuid": "5c3cae78-dbef-11e6-9d7c-be108f1c1dce"
+}

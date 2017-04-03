@@ -109,7 +109,7 @@ func startInternalContentService() {
 		"Internal Content API",
 		"8084",
 		"internalcontent",
-		"no-store",
+		"max-age=10",
 		enrichedContentAPIURI,
 		documentStoreAPIURI,
 		"enriched-content-read-api",
@@ -161,7 +161,10 @@ func TestShouldReturn200AndInternalComponentOutput(t *testing.T) {
 	actualOutput := getMapFromReader(resp.Body)
 
 	assert.Equal(t, expectedOutput, actualOutput, "Response body shoud be equal to transformer response body")
+	assert.Equal(t, "max-age=10", resp.Header.Get("Cache-Control"), "Should have cache control set")
 }
+
+
 
 func TestShouldReturn404(t *testing.T) {
 	startEnrichedContentAPIMock("notFound")
