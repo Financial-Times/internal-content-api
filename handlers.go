@@ -83,14 +83,15 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 	h.metrics.recordResponseEvent()
 }
 
-func (h internalContentHandler) resolveAdditionalFields(parts []responsePart, uuid string) map[string]interface{} {
-	mergedContent := mergeParts(parts)
-	resolveTopperImageURLs(mergedContent, h.serviceConfig.envAPIHost)
-	resolveLeadImageURLs(mergedContent, h.serviceConfig.envAPIHost)
-	resolveRequestUrl(mergedContent, h, uuid)
-	resolveApiUrl(mergedContent, h, uuid)
-	removeEmptyMapFields(mergedContent)
-	return mergedContent
+func validateUUID(contentUUID string) error {
+	parsedUUID, err := gouuid.FromString(contentUUID)
+	if err != nil {
+		return err
+	}
+	if contentUUID != parsedUUID.String() {
+		return fmt.Errorf("Parsed UUID (%v) is different than the given uuid (%v).", parsedUUID, contentUUID)
+	}
+	return nil
 }
 
 func (h internalContentHandler) asyncRetrievalsAndUnmarshalls(ctx context.Context, retrievers []retriever, uuid string, tid string) []responsePart {
@@ -125,64 +126,13 @@ func (h internalContentHandler) retrieveAndUnmarshall(ctx context.Context, r ret
 	return part
 }
 
-func validateUUID(contentUUID string) error {
-	parsedUUID, err := gouuid.FromString(contentUUID)
-	if err != nil {
-		return err
-	}
-	if contentUUID != parsedUUID.String() {
-		return fmt.Errorf("Parsed UUID (%v) is different than the given uuid (%v).", parsedUUID, contentUUID)
-	}
-	return nil
-}
-
-func resolveRequestUrl(content map[string]interface{}, handler internalContentHandler, contentUUID string) {
-	content["requestUrl"] = createRequestUrl(handler.serviceConfig.envAPIHost, handler.serviceConfig.handlerPath, contentUUID)
-}
-
-func createRequestUrl(APIHost string, handlerPath string, uuid string) string {
-	if isPreview(handlerPath) {
-		handlerPath = strings.TrimSuffix(handlerPath, previewSuffix)
-	}
-	return "http://" + APIHost + "/" + handlerPath + "/" + uuid
-}
-
-func resolveApiUrl(content map[string]interface{}, handler internalContentHandler, contentUUID string) {
-	handlerPath := handler.serviceConfig.handlerPath
-	if !isPreview(handlerPath) {
-		content["apiUrl"] = createRequestUrl(handler.serviceConfig.envAPIHost, handlerPath, contentUUID)
-	}
-}
-
-func isPreview(handlerPath string) bool {
-	return strings.HasSuffix(handlerPath, previewSuffix)
-}
-
-func extractRequestURL(resp *http.Response) string {
-	if resp == nil {
-		return "N/A"
-	}
-
-	return resp.Request.URL.String()
-}
-
-func unmarshallToMap(resp *http.Response) (map[string]interface{}, error) {
-	var content map[string]interface{}
-
-	if resp == nil || resp.StatusCode != http.StatusOK {
-		return content, nil
-	}
-
-	contentBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return content, err
-	}
-	err = json.Unmarshal(contentBytes, &content)
-	if err != nil {
-		return content, err
-	}
-
-	return content, nil
+func (h internalContentHandler) resolveAdditionalFields(parts []responsePart, uuid string) map[string]interface{} {
+	mergedContent := mergeParts(parts)
+	resolveLeadImageURLs(mergedContent, h.serviceConfig.envAPIHost)
+	resolveRequestUrl(mergedContent, h, uuid)
+	resolveApiUrl(mergedContent, h, uuid)
+	removeEmptyMapFields(mergedContent)
+	return mergedContent
 }
 
 func mergeParts(parts []responsePart) map[string]interface{} {
@@ -199,32 +149,13 @@ func mergeParts(parts []responsePart) map[string]interface{} {
 	return content
 }
 
-func resolveTopperImageURLs(content map[string]interface{}, APIHost string) {
-	topper, ok := content["topper"].(map[string]interface{})
-	if !ok {
-		return
-	}
-
-	ii := topper["images"]
-	images, ok := ii.([]interface{})
-	if !ok {
-		return
-	}
-
-	resolveImageURLs(images, APIHost)
-}
-
 func resolveLeadImageURLs(content map[string]interface{}, APIHost string) {
 	leadImages, ok := content["leadImages"].([]interface{})
 	if !ok {
 		return
 	}
 
-	resolveImageURLs(leadImages, APIHost)
-}
-
-func resolveImageURLs(images []interface{}, APIHost string) {
-	for _, img := range images {
+	for _, img := range leadImages {
 		img, ok := img.(map[string]interface{})
 		if !ok {
 			continue
@@ -232,6 +163,28 @@ func resolveImageURLs(images []interface{}, APIHost string) {
 		imgURL := "http://" + APIHost + "/content/" + img["id"].(string)
 		img["id"] = imgURL
 	}
+}
+
+func resolveRequestUrl(content map[string]interface{}, handler internalContentHandler, contentUUID string) {
+	content["requestUrl"] = createRequestUrl(handler.serviceConfig.envAPIHost, handler.serviceConfig.handlerPath, contentUUID)
+}
+
+func resolveApiUrl(content map[string]interface{}, handler internalContentHandler, contentUUID string) {
+	handlerPath := handler.serviceConfig.handlerPath
+	if !isPreview(handlerPath) {
+		content["apiUrl"] = createRequestUrl(handler.serviceConfig.envAPIHost, handlerPath, contentUUID)
+	}
+}
+
+func isPreview(handlerPath string) bool {
+	return strings.HasSuffix(handlerPath, previewSuffix)
+}
+
+func createRequestUrl(APIHost string, handlerPath string, uuid string) string {
+	if isPreview(handlerPath) {
+		handlerPath = strings.TrimSuffix(handlerPath, previewSuffix)
+	}
+	return "http://" + APIHost + "/" + handlerPath + "/" + uuid
 }
 
 func (h internalContentHandler) callService(ctx context.Context, r retriever) (responsePart, *http.Response) {
@@ -283,6 +236,33 @@ func (h internalContentHandler) handleResponse(req *http.Request, resp *http.Res
 		h.metrics.recordRequestFailedEvent()
 		return responsePart{isOk: true, statusCode: http.StatusOK}
 	}
+}
+
+func unmarshallToMap(resp *http.Response) (map[string]interface{}, error) {
+	var content map[string]interface{}
+
+	if resp == nil || resp.StatusCode != http.StatusOK {
+		return content, nil
+	}
+
+	contentBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return content, err
+	}
+	err = json.Unmarshal(contentBytes, &content)
+	if err != nil {
+		return content, err
+	}
+
+	return content, nil
+}
+
+func extractRequestURL(resp *http.Response) string {
+	if resp == nil {
+		return "N/A"
+	}
+
+	return resp.Request.URL.String()
 }
 
 func cleanupResp(resp *http.Response, log *logrus.Logger) {
