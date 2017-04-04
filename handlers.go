@@ -33,7 +33,6 @@ type ErrorMessage struct {
 type responsePart struct {
 	isOk       bool
 	statusCode int
-	response   *http.Response
 	e	   event
 	content    map[string]interface{}
 }
@@ -54,9 +53,11 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		w.Write([]byte(msg))
 		return
 	}
+
 	tid := transactionidutils.GetTransactionIDFromRequest(r)
 	h.log.TransactionStartedEvent(r.RequestURI, tid, uuid)
 	ctx := context.WithValue(transactionidutils.TransactionAwareContext(context.Background(), tid), uuidKey, uuid)
+
 	retrievers := []retriever{
 		{h.serviceConfig.contentSourceURI, h.serviceConfig.contentSourceAppName, true},
 		{h.serviceConfig.internalComponentsSourceURI, h.serviceConfig.internalComponentsSourceAppName, false },
@@ -67,7 +68,6 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 			w.WriteHeader(p.statusCode)
 			return
 		}
-		defer cleanupResp(p.response, h.log.log)
 		if p.e.err != nil {
 			h.handleErrorEvent(p.e, "Error while unmarshaling the response body")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -75,6 +75,7 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		}
 	}
 	mergedContent := h.resolveAdditionalFields(parts, uuid)
+
 	resultBytes, _ := json.Marshal(mergedContent)
 	w.Header().Set("Cache-Control", h.serviceConfig.cacheControlPolicy)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -111,14 +112,16 @@ func (h internalContentHandler) asyncRetrievalsAndUnmarshalls(ctx context.Contex
 }
 
 func (h internalContentHandler) retrieveAndUnmarshall(ctx context.Context, r retriever, uuid string, tid string) responsePart {
-	part := h.callService(ctx, r)
+	part, resp := h.callService(ctx, r)
+	defer cleanupResp(resp, h.log.log)
+
 	part.e = event{
 		serviceName: r.sourceAppName,
-		requestURL: extractRequestURL(part.response),
+		requestURL: extractRequestURL(resp),
 		transactionID: tid,
 		uuid: uuid,
 	}
-	part.content, part.e.err = unmarshalToMap(part.response)
+	part.content, part.e.err = unmarshallToMap(resp)
 	return part
 }
 
@@ -163,10 +166,10 @@ func extractRequestURL(resp *http.Response) string {
 	return resp.Request.URL.String()
 }
 
-func unmarshalToMap(resp *http.Response) (map[string]interface{}, error) {
+func unmarshallToMap(resp *http.Response) (map[string]interface{}, error) {
 	var content map[string]interface{}
 
-	if resp == nil {
+	if resp == nil || resp.StatusCode != http.StatusOK {
 		return content, nil
 	}
 
@@ -231,47 +234,52 @@ func resolveImageURLs(images []interface{}, APIHost string) {
 	}
 }
 
-func (h internalContentHandler) callService(ctx context.Context, r retriever) responsePart {
+func (h internalContentHandler) callService(ctx context.Context, r retriever) (responsePart, *http.Response) {
 	uuid := ctx.Value(uuidKey).(string)
 	requestURL := fmt.Sprintf("%s%s", r.uri, uuid)
 	transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
 	h.log.RequestEvent(r.sourceAppName, requestURL, transactionID, uuid)
+
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
 		h.handleError(err, r.sourceAppName, requestURL, req.Header.Get(transactionidutils.TransactionIDHeader), uuid)
-		return responsePart{isOk: false, statusCode: http.StatusInternalServerError}
+		return responsePart{isOk: false, statusCode: http.StatusInternalServerError}, nil
 	}
 	req.Header.Set(transactionidutils.TransactionIDHeader, transactionID)
 	req.Header.Set("Content-Type", "application/json")
-	resp, err := h.serviceConfig.httpClient.Do(req)
-	return h.handleResponse(req, resp, err, uuid, r.sourceAppName, r.doFail)
-}
 
-func (h internalContentHandler) handleResponse(req *http.Request, extResp *http.Response, err error, uuid string, appName string, doFail bool) responsePart {
+	resp, err := h.serviceConfig.httpClient.Do(req)
 	//this happens when hostname cannot be resolved or host is not accessible
 	if err != nil {
-		h.handleError(err, appName, req.URL.String(), req.Header.Get(transactionidutils.TransactionIDHeader), uuid)
-		return responsePart{isOk: false, statusCode: http.StatusServiceUnavailable}
+		h.handleError(err, r.sourceAppName, req.URL.String(), req.Header.Get(transactionidutils.TransactionIDHeader), uuid)
+		return responsePart{isOk: false, statusCode: http.StatusServiceUnavailable}, nil
 	}
-	switch extResp.StatusCode {
+
+	return h.handleResponse(req, resp, uuid, r.sourceAppName, r.doFail), resp
+}
+
+func (h internalContentHandler) handleResponse(req *http.Request, resp *http.Response, uuid string, appName string, doFail bool) responsePart {
+	switch resp.StatusCode {
+
 	case http.StatusOK:
-		h.log.ResponseEvent(appName, req.URL.String(), extResp, uuid)
-		return responsePart{isOk: true, statusCode: http.StatusOK, response: extResp}
+		h.log.ResponseEvent(appName, req.URL.String(), resp, uuid)
+		return responsePart{isOk: true, statusCode: http.StatusOK}
+
 	case http.StatusNotFound:
 		if doFail {
-			h.handleNotFound(extResp, appName, req.URL.String(), uuid)
+			h.handleNotFound(resp, appName, req.URL.String(), uuid)
 			return responsePart{isOk: false, statusCode: http.StatusNotFound}
 		}
-		h.log.RequestFailedEvent(appName, req.URL.String(), extResp, uuid)
+		h.log.RequestFailedEvent(appName, req.URL.String(), resp, uuid)
 		h.metrics.recordRequestFailedEvent()
 		return responsePart{isOk: true, statusCode: http.StatusNotFound}
 
 	default:
 		if doFail {
-			h.handleFailedRequest(extResp, appName, req.URL.String(), uuid)
+			h.handleFailedRequest(resp, appName, req.URL.String(), uuid)
 			return responsePart{isOk: false, statusCode: http.StatusServiceUnavailable}
 		}
-		h.log.RequestFailedEvent(appName, req.URL.String(), extResp, uuid)
+		h.log.RequestFailedEvent(appName, req.URL.String(), resp, uuid)
 		h.metrics.recordRequestFailedEvent()
 		return responsePart{isOk: true, statusCode: http.StatusOK}
 	}
