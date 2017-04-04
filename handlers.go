@@ -34,7 +34,7 @@ type responsePart struct {
 	isOk       bool
 	statusCode int
 	response   *http.Response
-	event1     event
+	e	   event
 	content    map[string]interface{}
 }
 
@@ -68,8 +68,9 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 			return
 		}
 		defer cleanupResp(p.response, h.log.log)
-		if p.event1.err != nil {
-			h.handleErrorEvent(w, p.event1, "Error while unmarshaling the response body")
+		if p.e.err != nil {
+			h.handleErrorEvent(p.e, "Error while unmarshaling the response body")
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 	}
@@ -81,7 +82,7 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 	h.metrics.recordResponseEvent()
 }
 
-func (h internalContentHandler) resolveAdditionalFields(parts map[int]responsePart, uuid string) map[string]interface{} {
+func (h internalContentHandler) resolveAdditionalFields(parts []responsePart, uuid string) map[string]interface{} {
 	mergedContent := mergeParts(parts)
 	resolveTopperImageURLs(mergedContent, h.serviceConfig.envAPIHost)
 	resolveLeadImageURLs(mergedContent, h.serviceConfig.envAPIHost)
@@ -91,8 +92,8 @@ func (h internalContentHandler) resolveAdditionalFields(parts map[int]responsePa
 	return mergedContent
 }
 
-func (h internalContentHandler) asyncRetrievalsAndUnmarshalls(ctx context.Context, retrievers []retriever, uuid string, tid string) map[int]responsePart {
-	responseParts := make(map[int]responsePart)
+func (h internalContentHandler) asyncRetrievalsAndUnmarshalls(ctx context.Context, retrievers []retriever, uuid string, tid string) []responsePart {
+	responseParts := make([]responsePart, len(retrievers), len(retrievers))
 	m := sync.RWMutex{}
 	var wg sync.WaitGroup
 	wg.Add(len(retrievers))
@@ -111,13 +112,13 @@ func (h internalContentHandler) asyncRetrievalsAndUnmarshalls(ctx context.Contex
 
 func (h internalContentHandler) retrieveAndUnmarshall(ctx context.Context, r retriever, uuid string, tid string) responsePart {
 	part := h.callService(ctx, r)
-	part.event1 = event{
+	part.e = event{
 		serviceName: r.sourceAppName,
 		requestURL: extractRequestURL(part.response),
 		transactionID: tid,
 		uuid: uuid,
 	}
-	part.content, part.event1.err = unmarshalToMap(part.response)
+	part.content, part.e.err = unmarshalToMap(part.response)
 	return part
 }
 
@@ -181,7 +182,7 @@ func unmarshalToMap(resp *http.Response) (map[string]interface{}, error) {
 	return content, nil
 }
 
-func mergeParts(parts map[int]responsePart) map[string]interface{} {
+func mergeParts(parts []responsePart) map[string]interface{} {
 	content := parts[0].content
 	for i := 1; i < len(parts); i++ {
 		p := parts[i]
@@ -292,8 +293,7 @@ func cleanupResp(resp *http.Response, log *logrus.Logger) {
 	}
 }
 
-func (h internalContentHandler) handleErrorEvent(w http.ResponseWriter, event event, errMessage string) {
-	w.WriteHeader(http.StatusInternalServerError)
+func (h internalContentHandler) handleErrorEvent(event event, errMessage string) {
 	h.log.Error(event, errMessage)
 	h.metrics.recordErrorEvent()
 }

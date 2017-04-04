@@ -42,22 +42,3 @@ func TestResolveLeadImgURLs(t *testing.T) {
 	assert.Equal(t, "http://unit-test.ft.com/content/56aed7e7-485f-303d-9605-b885b86e947e", squareImgID.(string))
 	assert.Equal(t, "http://unit-test.ft.com/content/56aed7e7-485f-303d-9605-b885b86e947f", wideImgID.(string))
 }
-
-//func TestServeHTTP_CacheControlHeaderIsSet(t *testing.T) {
-//	sc := serviceConfig{
-//		cacheControlPolicy: "max-age=10",
-//		httpClient:         http.DefaultClient,
-//	}
-//
-//	appLogger := newAppLogger()
-//	metricsHandler := NewMetrics()
-//	contentHandler := internalContentHandler{&sc, appLogger, &metricsHandler}
-//
-//	req, _ := http.NewRequest("GET", "http://unit-test.ft.com/internalcontent/56aed7e7-485f-303d-9605-b885b86e947e", nil)
-//	w := httptest.NewRecorder()
-//	r := mux.NewRouter()
-//	r.HandleFunc("/internalcontent/{uuid}", contentHandler.ServeHTTP).Methods("GET")
-//	r.ServeHTTP(w, req)
-//
-//	assert.Equal(t, "max-age=10", w.Header().Get("Cache-Control"))
-//}
