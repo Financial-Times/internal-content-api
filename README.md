@@ -88,6 +88,10 @@ Example in this case will be:
 ### Admin endpoints
 Healthchecks: [http://localhost:8084/__health](http://localhost:8084/__health)
 
+good-to-go: [http://localhost:8084/__gtg](http://localhost:8084/__gtg)
+
+Health and gtg are based on enriched-content-read-api and document-store-api's health endpoints availability.
+
 Ping: [http://localhost:8084/__ping](http://localhost:8084/__ping)
 
 Build-info: [http://localhost:8084/__build-info](http://localhost:8084/__build-info)  -  [Documentation on how to generate build-info] (https://github.com/Financial-Times/service-status-go) 
