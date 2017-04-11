@@ -1,7 +1,7 @@
 package main
 
 import (
-	fthealth "github.com/Financial-Times/go-fthealth/v1a"
+	fthealth "github.com/Financial-Times/go-fthealth/v1_1"
 	oldhttphandlers "github.com/Financial-Times/http-handlers-go/httphandlers"
 	"github.com/Financial-Times/service-status-go/gtg"
 	"github.com/Financial-Times/service-status-go/httphandlers"
@@ -19,9 +19,15 @@ const serviceDescription = "A RESTful API for retrieving and transforming intern
 
 func main() {
 	app := cli.App("internal-content-api", serviceDescription)
-	serviceName := app.String(cli.StringOpt{
-		Name:   "app-name",
+	appSystemCode := app.String(cli.StringOpt{
+		Name:   "app-system-code",
 		Value:  "internal-content-api",
+		Desc:   "The system code of this service",
+		EnvVar: "APP_SYSTEM_CODE",
+	})
+	appName := app.String(cli.StringOpt{
+		Name:   "app-name",
+		Value:  "Internal Content API",
 		Desc:   "The name of this service",
 		EnvVar: "APP_NAME",
 	})
@@ -138,7 +144,8 @@ func main() {
 			},
 		}
 		sc := serviceConfig{
-			*serviceName,
+			*appSystemCode,
+			*appName,
 			*appPort,
 			*handlerPath,
 			*cacheControlPolicy,
@@ -159,9 +166,9 @@ func main() {
 		}
 		appLogger := newAppLogger()
 		metricsHandler := NewMetrics()
-		contentHandler := contentHandler{&sc, appLogger, &metricsHandler}
+		contentHandler := internalContentHandler{&sc, appLogger, &metricsHandler}
 		h := setupServiceHandler(sc, metricsHandler, contentHandler)
-		appLogger.ServiceStartedEvent(*serviceName, sc.asMap())
+		appLogger.ServiceStartedEvent(*appSystemCode, sc.asMap())
 		metricsHandler.OutputMetricsIfRequired(*graphiteTCPAddress, *graphitePrefix, *logMetrics)
 		err := http.ListenAndServe(":"+*appPort, h)
 		if err != nil {
@@ -171,13 +178,16 @@ func main() {
 	app.Run(os.Args)
 }
 
-func setupServiceHandler(sc serviceConfig, metricsHandler Metrics, contentHandler contentHandler) *mux.Router {
+func setupServiceHandler(sc serviceConfig, metricsHandler Metrics, contentHandler internalContentHandler) *mux.Router {
 	r := mux.NewRouter()
 	r.Path("/" + sc.handlerPath + "/{uuid}").Handler(handlers.MethodHandler{"GET": oldhttphandlers.HTTPMetricsHandler(metricsHandler.registry,
 		oldhttphandlers.TransactionAwareRequestLoggingHandler(logrus.StandardLogger(), contentHandler))})
 	r.Path(httphandlers.BuildInfoPath).HandlerFunc(httphandlers.BuildInfoHandler)
 	r.Path(httphandlers.PingPath).HandlerFunc(httphandlers.PingHandler)
-	r.Path("/__health").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(fthealth.Handler(sc.serviceName, serviceDescription, sc.contentSourceAppCheck(), sc.internalComponentsSourceAppCheck()))})
+
+	hc := fthealth.HealthCheck{SystemCode: sc.appSystemCode, Description: serviceDescription, Name: sc.appName, Checks: []fthealth.Check{sc.contentSourceAppCheck(), sc.internalComponentsSourceAppCheck()}}
+	r.Path("/__health").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(fthealth.Handler(&hc))})
+
 	gtgHandler := httphandlers.NewGoodToGoHandler(gtg.StatusChecker(sc.gtgCheck))
 	r.Path("/__gtg").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(gtgHandler)})
 	r.Path("/__metrics").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(metricsHTTPEndpoint)})
@@ -185,7 +195,8 @@ func setupServiceHandler(sc serviceConfig, metricsHandler Metrics, contentHandle
 }
 
 type serviceConfig struct {
-	serviceName                               string
+	appSystemCode                             string
+	appName                                   string
 	appPort                                   string
 	handlerPath                               string
 	cacheControlPolicy                        string
@@ -207,8 +218,9 @@ type serviceConfig struct {
 
 func (sc serviceConfig) asMap() map[string]interface{} {
 	return map[string]interface{}{
-		"service-name":                                   sc.serviceName,
-		"service-port":                                   sc.appPort,
+		"app-system-code":                                sc.appSystemCode,
+		"app-name":                                       sc.appName,
+		"app-port":                                       sc.appPort,
 		"cache-control-policy":                           sc.cacheControlPolicy,
 		"handler-path":                                   sc.handlerPath,
 		"content-source-uri":                             sc.contentSourceURI,

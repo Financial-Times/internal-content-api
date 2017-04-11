@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	fthealth "github.com/Financial-Times/go-fthealth/v1a"
+	fthealth "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
@@ -106,9 +106,10 @@ func startInternalContentService() {
 	documentStoreAPIHealthURI := documentStoreAPIMock.URL + "/__health"
 	sc := serviceConfig{
 		"internal-content-api",
+		"Internal Content API",
 		"8084",
 		"internalcontent",
-		"no-store",
+		"max-age=10",
 		enrichedContentAPIURI,
 		documentStoreAPIURI,
 		"enriched-content-read-api",
@@ -127,7 +128,7 @@ func startInternalContentService() {
 
 	appLogger := newAppLogger()
 	metricsHandler := NewMetrics()
-	contentHandler := contentHandler{&sc, appLogger, &metricsHandler}
+	contentHandler := internalContentHandler{&sc, appLogger, &metricsHandler}
 
 	h := setupServiceHandler(sc, metricsHandler, contentHandler)
 
@@ -160,7 +161,10 @@ func TestShouldReturn200AndInternalComponentOutput(t *testing.T) {
 	actualOutput := getMapFromReader(resp.Body)
 
 	assert.Equal(t, expectedOutput, actualOutput, "Response body shoud be equal to transformer response body")
+	assert.Equal(t, "max-age=10", resp.Header.Get("Cache-Control"), "Should have cache control set")
 }
+
+
 
 func TestShouldReturn404(t *testing.T) {
 	startEnrichedContentAPIMock("notFound")

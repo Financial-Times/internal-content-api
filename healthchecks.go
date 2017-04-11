@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	fthealth "github.com/Financial-Times/go-fthealth/v1a"
+	fthealth "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/Financial-Times/service-status-go/gtg"
 	"net/http"
 )
@@ -28,7 +28,7 @@ func (sc *serviceConfig) contentSourceAppCheck() fthealth.Check {
 		Name:             sc.contentSourceAppName,
 		PanicGuide:       sc.contentSourceAppPanicGuide,
 		Severity:         1,
-		TechnicalSummary: "Checks that " + sc.contentSourceAppName + " is reachable. " + sc.serviceName + " requests content from " + sc.contentSourceAppName,
+		TechnicalSummary: "Checks that " + sc.contentSourceAppName + " is reachable. " + sc.appName + " requests content from " + sc.contentSourceAppName,
 		Checker: func() (string, error) {
 			return sc.checkServiceAvailability(sc.contentSourceAppName, sc.contentSourceAppHealthURI)
 		},
@@ -41,7 +41,7 @@ func (sc *serviceConfig) internalComponentsSourceAppCheck() fthealth.Check {
 		Name:             sc.internalComponentsSourceAppName,
 		PanicGuide:       sc.internalComponentsSourceAppPanicGuide,
 		Severity:         2,
-		TechnicalSummary: "Checks that " + sc.internalComponentsSourceAppName + " is reachable. " + sc.serviceName + " relies on " + sc.internalComponentsSourceAppName + " to get the internal components",
+		TechnicalSummary: "Checks that " + sc.internalComponentsSourceAppName + " is reachable. " + sc.appName + " relies on " + sc.internalComponentsSourceAppName + " to get the internal components",
 		Checker: func() (string, error) {
 			return sc.checkServiceAvailability(sc.internalComponentsSourceAppName, sc.internalComponentsSourceAppHealthURI)
 		},
