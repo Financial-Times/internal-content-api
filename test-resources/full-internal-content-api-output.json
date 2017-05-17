@@ -55,22 +55,16 @@
   },
   "leadImages": [
     {
-      "height": 90,
       "id": "http://api.ft.com/content/f3add2e0-dbfa-11e6-a7d5-ce30ecef69c7",
-      "type": "square",
-      "width": 90
+      "type": "square"
     },
     {
-      "height": 160,
       "id": "http://api.ft.com/content/35059e34-dc33-11e6-86ac-f253db7791c6",
-      "type": "standard",
-      "width": 90
+      "type": "standard"
     },
     {
-      "height": 180,
       "id": "http://api.ft.com/content/c374c260-dd84-11e6-9d7c-be108f1c1dce",
-      "type": "wide",
-      "width": 77
+      "type": "wide"
     }
   ],
   "types": [
