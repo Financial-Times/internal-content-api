@@ -7,7 +7,7 @@ machine:
 
 checkout:
   post:
-    - mkdir -p $(dirname ${GO_PROJECT_PATH})
+    - mkdir -p "${PROJECT_PARENT_PATH}"
     - ln -fs $HOME/$CIRCLE_PROJECT_REPONAME $GO_PROJECT_PATH
 
 dependencies:
