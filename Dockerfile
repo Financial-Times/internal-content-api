@@ -4,9 +4,9 @@ COPY . /internal-content-api/
 
 RUN apk --update add git go ca-certificates \
   && export GOPATH=/gopath \
-  && REPO_PATH="github.com/Financial-Times/internal-content-api" \
+  && REPO_PATH="github.com/Financial-Times/internal-content-api/" \
   && cd internal-content-api \
-  && BUILDINFO_PACKAGE="github.com/Financial-Times/internal-content-api/buildinfo." \
+  && BUILDINFO_PACKAGE="github.com/Financial-Times/internal-content-api/vendor/github.com/Financial-Times/service-status-go/buildinfo." \
   && VERSION="version=$(git describe --tag --always 2> /dev/null)" \
   && DATETIME="dateTime=$(date -u +%Y%m%d%H%M%S)" \
   && REPOSITORY="repository=$(git config --get remote.origin.url)" \
@@ -17,7 +17,7 @@ RUN apk --update add git go ca-certificates \
   && mkdir -p $GOPATH/src/${REPO_PATH} \
   && mv * $GOPATH/src/${REPO_PATH} \
   && cd $GOPATH/src/${REPO_PATH} \
-  && go get -t ./... \
+  && go get -v \
   && go test ./... \
   && go build -ldflags="${LDFLAGS}" \
   && mv internal-content-api /internal-content-api-app \
