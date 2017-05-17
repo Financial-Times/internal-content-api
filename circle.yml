@@ -1,6 +1,8 @@
 machine:
   environment:
-    GO_PROJECT_PATH: "${HOME}/.go_project/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
+    PROJECT_GOPATH: "${HOME}/.go_project"
+    PROJECT_PARENT_PATH: "${PROJECT_GOPATH}/src/github.com/${CIRCLE_PROJECT_USERNAME}"
+    PROJECT_PATH: "${PROJECT_PARENT_PATH}/${CIRCLE_PROJECT_REPONAME}"
     GOPATH: "${HOME}/.go_workspace:${PROJECT_GOPATH}"
 
 checkout:
