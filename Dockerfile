@@ -17,7 +17,8 @@ RUN apk --update add git go ca-certificates \
   && mkdir -p $GOPATH/src/${REPO_PATH} \
   && mv * $GOPATH/src/${REPO_PATH} \
   && cd $GOPATH/src/${REPO_PATH} \
-  && go get -v \
+  && go get -u github.com/kardianos/govendor \
+  && $GOPATH/bin/govendor sync \
   && go test ./... \
   && go build -ldflags="${LDFLAGS}" \
   && mv internal-content-api /internal-content-api-app \
