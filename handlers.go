@@ -9,14 +9,15 @@ import (
 	"sync"
 
 	"bytes"
+	"errors"
+	"strconv"
+	"strings"
+
 	transactionidutils "github.com/Financial-Times/transactionid-utils-go"
 	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	gouuid "github.com/satori/go.uuid"
 	"golang.org/x/net/context"
-	"strconv"
-	"strings"
-	"errors"
 )
 
 const (
@@ -96,10 +97,7 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	mergedContent := mergeParts(parts)
-	mergedContent = h.resolveLeadImages(mergedContent, h.serviceConfig.envAPIHost, uuid, ctx, expandImages)
-	mergedContent = h.resolveAdditionalFields(mergedContent, uuid, expandImages)
-
+	mergedContent := h.resolveAdditionalFields(ctx, parts)
 	resultBytes, _ := json.Marshal(mergedContent)
 	w.Header().Set("Cache-Control", h.serviceConfig.cacheControlPolicy)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -150,7 +148,10 @@ func (h internalContentHandler) retrieveAndUnmarshall(ctx context.Context, r ret
 	return part
 }
 
-func (h internalContentHandler) resolveAdditionalFields(mergedContent map[string]interface{}, uuid string, expandImages bool) map[string]interface{} {
+func (h internalContentHandler) resolveAdditionalFields(ctx context.Context, parts []responsePart) map[string]interface{} {
+	uuid := ctx.Value(uuidKey).(string)
+	mergedContent := mergeParts(parts)
+	mergedContent = resolveLeadImages(ctx, mergedContent, h)
 	resolveRequestUrl(mergedContent, h, uuid)
 	resolveApiUrl(mergedContent, h, uuid)
 	removeEmptyMapFields(mergedContent)
@@ -171,7 +172,7 @@ func mergeParts(parts []responsePart) map[string]interface{} {
 	return content
 }
 
-func (h internalContentHandler) resolveLeadImages(content map[string]interface{}, APIHost string, uuid string, ctx context.Context, expandImages bool) map[string]interface{} {
+func resolveLeadImages(ctx context.Context, content map[string]interface{}, h internalContentHandler) map[string]interface{} {
 	leadImages, ok := content["leadImages"].([]interface{})
 	if !ok {
 		return content
@@ -182,28 +183,28 @@ func (h internalContentHandler) resolveLeadImages(content map[string]interface{}
 		if !ok {
 			continue
 		}
-		imgURL := "http://" + APIHost + "/content/" + img["id"].(string)
+		imgURL := "http://" + h.serviceConfig.envAPIHost + "/content/" + img["id"].(string)
 		img["id"] = imgURL
 	}
 
-	transformedContent := make(map[string]interface{})
-	for k, v := range content {
-		transformedContent[k] = v
-	}
-
+	var transformedContent map[string]interface{}
+	expandImages := ctx.Value(expandImagesKey).(bool)
 	if expandImages {
 		var err error
-		transformedContent, err = h.getExpandedImages(uuid, ctx, content)
+		uuid := ctx.Value(uuidKey).(string)
+		transformedContent, err = h.getExpandedImages(ctx, content)
 		if err != nil {
 			transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
 			h.handleError(err, h.serviceConfig.imageResolverAppName, h.serviceConfig.imageResolverSourceURI, transactionID, uuid)
 			return content
 		}
+	} else {
+		return content
 	}
 	return transformedContent
 }
 
-func (h internalContentHandler) getExpandedImages(uuid string, ctx context.Context, content map[string]interface{}) (map[string]interface{}, error) {
+func (h internalContentHandler) getExpandedImages(ctx context.Context, content map[string]interface{}) (map[string]interface{}, error) {
 	var expandedContent map[string]interface{}
 	transactionID, err := transactionidutils.GetTransactionIDFromContext(ctx)
 	if err != nil {
@@ -227,6 +228,7 @@ func (h internalContentHandler) getExpandedImages(uuid string, ctx context.Conte
 	}
 	defer resp.Body.Close()
 
+	uuid := ctx.Value(uuidKey).(string)
 	if resp.StatusCode != http.StatusOK {
 		h.log.RequestFailedEvent(h.serviceConfig.imageResolverAppName, req.URL.String(), resp, uuid)
 		h.metrics.recordRequestFailedEvent()
