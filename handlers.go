@@ -8,16 +8,24 @@ import (
 	"net/http"
 	"sync"
 
+	"bytes"
+	"errors"
+	"strconv"
+	"strings"
+
 	transactionidutils "github.com/Financial-Times/transactionid-utils-go"
 	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	gouuid "github.com/satori/go.uuid"
 	"golang.org/x/net/context"
-	"strings"
 )
 
-const uuidKey = "uuid"
-const previewSuffix = "-preview"
+const (
+	previewSuffix              = "-preview"
+	uuidKey         contextKey = "uuid"
+	expandImagesKey contextKey = "expandImages"
+)
+
 var excludedAttributes = map[string]bool{"uuid": true, "lastModified": true, "publishReference": true}
 
 type internalContentHandler struct {
@@ -33,7 +41,7 @@ type ErrorMessage struct {
 type responsePart struct {
 	isOk       bool
 	statusCode int
-	e	   event
+	e          event
 	content    map[string]interface{}
 }
 
@@ -41,6 +49,12 @@ type retriever struct {
 	uri           string
 	sourceAppName string
 	doFail        bool
+}
+
+type contextKey string
+
+func (c contextKey) String() string {
+	return string(c)
 }
 
 func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -56,11 +70,19 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 
 	tid := transactionidutils.GetTransactionIDFromRequest(r)
 	h.log.TransactionStartedEvent(r.RequestURI, tid, uuid)
+
+	expandImagesParam := r.URL.Query().Get(expandImagesKey.String())
+	expandImages, err := strconv.ParseBool(expandImagesParam)
+	if err != nil {
+		expandImages = false
+	}
+
 	ctx := context.WithValue(transactionidutils.TransactionAwareContext(context.Background(), tid), uuidKey, uuid)
+	ctx = context.WithValue(ctx, expandImagesKey, expandImages)
 
 	retrievers := []retriever{
 		{h.serviceConfig.contentSourceURI, h.serviceConfig.contentSourceAppName, true},
-		{h.serviceConfig.internalComponentsSourceURI, h.serviceConfig.internalComponentsSourceAppName, false },
+		{h.serviceConfig.internalComponentsSourceURI, h.serviceConfig.internalComponentsSourceAppName, false},
 	}
 	parts := h.asyncRetrievalsAndUnmarshalls(ctx, retrievers, uuid, tid)
 	for _, p := range parts {
@@ -74,8 +96,8 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 			return
 		}
 	}
-	mergedContent := h.resolveAdditionalFields(parts, uuid)
 
+	mergedContent := h.resolveAdditionalFields(ctx, parts)
 	resultBytes, _ := json.Marshal(mergedContent)
 	w.Header().Set("Cache-Control", h.serviceConfig.cacheControlPolicy)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -117,18 +139,19 @@ func (h internalContentHandler) retrieveAndUnmarshall(ctx context.Context, r ret
 	defer cleanupResp(resp, h.log.log)
 
 	part.e = event{
-		serviceName: r.sourceAppName,
-		requestURL: extractRequestURL(resp),
+		serviceName:   r.sourceAppName,
+		requestURL:    extractRequestURL(resp),
 		transactionID: tid,
-		uuid: uuid,
+		uuid:          uuid,
 	}
 	part.content, part.e.err = unmarshallToMap(resp)
 	return part
 }
 
-func (h internalContentHandler) resolveAdditionalFields(parts []responsePart, uuid string) map[string]interface{} {
+func (h internalContentHandler) resolveAdditionalFields(ctx context.Context, parts []responsePart) map[string]interface{} {
+	uuid := ctx.Value(uuidKey).(string)
 	mergedContent := mergeParts(parts)
-	resolveLeadImageURLs(mergedContent, h.serviceConfig.envAPIHost)
+	mergedContent = resolveLeadImages(ctx, mergedContent, h)
 	resolveRequestUrl(mergedContent, h, uuid)
 	resolveApiUrl(mergedContent, h, uuid)
 	removeEmptyMapFields(mergedContent)
@@ -149,10 +172,10 @@ func mergeParts(parts []responsePart) map[string]interface{} {
 	return content
 }
 
-func resolveLeadImageURLs(content map[string]interface{}, APIHost string) {
+func resolveLeadImages(ctx context.Context, content map[string]interface{}, h internalContentHandler) map[string]interface{} {
 	leadImages, ok := content["leadImages"].([]interface{})
 	if !ok {
-		return
+		return content
 	}
 
 	for _, img := range leadImages {
@@ -160,9 +183,105 @@ func resolveLeadImageURLs(content map[string]interface{}, APIHost string) {
 		if !ok {
 			continue
 		}
-		imgURL := "http://" + APIHost + "/content/" + img["id"].(string)
+		imgURL := "http://" + h.serviceConfig.envAPIHost + "/content/" + img["id"].(string)
 		img["id"] = imgURL
 	}
+
+	var transformedContent map[string]interface{}
+	expandImages := ctx.Value(expandImagesKey).(bool)
+	if expandImages {
+		var err error
+		uuid := ctx.Value(uuidKey).(string)
+		transformedContent, err = h.getExpandedImages(ctx, content)
+		if err != nil {
+			transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
+			h.handleError(err, h.serviceConfig.imageResolverAppName, h.serviceConfig.imageResolverSourceURI, transactionID, uuid)
+			return content
+		}
+	} else {
+		return content
+	}
+	return transformedContent
+}
+
+func (h internalContentHandler) getExpandedImages(ctx context.Context, content map[string]interface{}) (map[string]interface{}, error) {
+	var expandedContent map[string]interface{}
+	transactionID, err := transactionidutils.GetTransactionIDFromContext(ctx)
+	if err != nil {
+		transactionID = transactionidutils.NewTransactionID()
+	}
+	body, err := json.Marshal(content)
+	if err != nil {
+		return expandedContent, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, h.serviceConfig.imageResolverSourceURI, bytes.NewReader(body))
+	if err != nil {
+		return expandedContent, err
+	}
+	req.Header.Set(transactionidutils.TransactionIDHeader, transactionID)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := h.serviceConfig.httpClient.Do(req)
+	if err != nil {
+		return expandedContent, err
+	}
+	defer resp.Body.Close()
+
+	uuid := ctx.Value(uuidKey).(string)
+	if resp.StatusCode != http.StatusOK {
+		h.log.RequestFailedEvent(h.serviceConfig.imageResolverAppName, req.URL.String(), resp, uuid)
+		h.metrics.recordRequestFailedEvent()
+		errMsg := fmt.Sprintf("Received status code %d from %v.", resp.StatusCode, h.serviceConfig.imageResolverAppName)
+		return expandedContent, errors.New(errMsg)
+	}
+	h.log.ResponseEvent(h.serviceConfig.imageResolverAppName, req.URL.String(), resp, uuid)
+
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return expandedContent, err
+	}
+
+	err = json.Unmarshal(body, &expandedContent)
+	if err != nil {
+		return expandedContent, err
+	}
+
+	leadImages, found := expandedContent["leadImages"]
+	if !found {
+		return expandedContent, errors.New("Cannot find leadImages in response.")
+	}
+
+	leadImagesAsArray := (leadImages).([]interface{})
+	for i := 0; i < len(leadImagesAsArray); i++ {
+		leadImageAsMap := leadImagesAsArray[i].(map[string]interface{})
+		transformLeadImage(leadImageAsMap)
+	}
+	return expandedContent, nil
+}
+
+func transformLeadImage(leadImage map[string]interface{}) {
+	imageModel, found := leadImage["image"]
+	if !found {
+		//if image field is not found inside the image, continue the processing
+		return
+	}
+
+	var apiURL interface{}
+	imageModelAsMap := imageModel.(map[string]interface{})
+	if apiURL, found = imageModelAsMap["requestUrl"]; !found {
+		if apiURL, found = leadImage["id"]; !found {
+			return
+		}
+	}
+
+	apiURLAsString, ok := apiURL.(string)
+	if !ok {
+		return
+	}
+	imageModelAsMap["id"] = apiURLAsString
+	imageModelAsMap["apiUrl"] = apiURLAsString
+	delete(imageModelAsMap, "requestUrl")
 }
 
 func resolveRequestUrl(content map[string]interface{}, handler internalContentHandler, contentUUID string) {
@@ -193,13 +312,20 @@ func (h internalContentHandler) callService(ctx context.Context, r retriever) (r
 	transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
 	h.log.RequestEvent(r.sourceAppName, requestURL, transactionID, uuid)
 
-	req, err := http.NewRequest("GET", requestURL, nil)
+	req, err := http.NewRequest(http.MethodGet, requestURL, nil)
 	if err != nil {
 		h.handleError(err, r.sourceAppName, requestURL, req.Header.Get(transactionidutils.TransactionIDHeader), uuid)
 		return responsePart{isOk: false, statusCode: http.StatusInternalServerError}, nil
 	}
 	req.Header.Set(transactionidutils.TransactionIDHeader, transactionID)
 	req.Header.Set("Content-Type", "application/json")
+
+	expandImages, ok := ctx.Value(expandImagesKey).(bool)
+	if ok && r.sourceAppName == h.serviceConfig.contentSourceAppName {
+		q := req.URL.Query()
+		q.Add(expandImagesKey.String(), strconv.FormatBool(expandImages))
+		req.URL.RawQuery = q.Encode()
+	}
 
 	resp, err := h.serviceConfig.httpClient.Do(req)
 	//this happens when hostname cannot be resolved or host is not accessible

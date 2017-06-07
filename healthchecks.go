@@ -19,6 +19,11 @@ func (sc *serviceConfig) gtgCheck() gtg.Status {
 		return gtg.Status{GoodToGo: false, Message: msg}
 	}
 
+	msg, err = sc.checkServiceAvailability(sc.imageResolverAppName, sc.imageResolverAppHealthURI)
+	if err != nil {
+		return gtg.Status{GoodToGo: false, Message: msg}
+	}
+
 	return gtg.Status{GoodToGo: true}
 }
 
@@ -44,6 +49,19 @@ func (sc *serviceConfig) internalComponentsSourceAppCheck() fthealth.Check {
 		TechnicalSummary: "Checks that " + sc.internalComponentsSourceAppName + " is reachable. " + sc.appName + " relies on " + sc.internalComponentsSourceAppName + " to get the internal components",
 		Checker: func() (string, error) {
 			return sc.checkServiceAvailability(sc.internalComponentsSourceAppName, sc.internalComponentsSourceAppHealthURI)
+		},
+	}
+}
+
+func (sc *serviceConfig) imageResolverAppCheck() fthealth.Check {
+	return fthealth.Check{
+		BusinessImpact:   sc.imageResolverAppBusinessImpact,
+		Name:             sc.imageResolverAppName,
+		PanicGuide:       sc.imageResolverAppPanicGuide,
+		Severity:         2,
+		TechnicalSummary: "Checks that " + sc.imageResolverAppName + " is reachable. " + sc.appName + " relies on " + sc.imageResolverAppName + " to get the expanded images",
+		Checker: func() (string, error) {
+			return sc.checkServiceAvailability(sc.imageResolverAppName, sc.imageResolverAppHealthURI)
 		},
 	}
 }

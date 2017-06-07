@@ -1,6 +1,11 @@
 package main
 
 import (
+	"net"
+	"net/http"
+	"os"
+	"time"
+
 	fthealth "github.com/Financial-Times/go-fthealth/v1_1"
 	oldhttphandlers "github.com/Financial-Times/http-handlers-go/httphandlers"
 	"github.com/Financial-Times/service-status-go/gtg"
@@ -9,10 +14,6 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jawher/mow.cli"
-	"net"
-	"net/http"
-	"os"
-	"time"
 )
 
 const serviceDescription = "A RESTful API for retrieving and transforming internal content"
@@ -109,6 +110,36 @@ func main() {
 		Desc:   "Describe the business impact the internal components source app would produce if it is broken.",
 		EnvVar: "INTERNAL_COMPONENTS_SOURCE_APP_BUSINESS_IMPACT",
 	})
+	imageResolverURI := app.String(cli.StringOpt{
+		Name:   "image-resolver-uri",
+		Value:  "http://localhost:8080/__image-resolver/internalcontent/image",
+		Desc:   "URI of the image resolver application",
+		EnvVar: "IMAGE_RESOLVER_URI",
+	})
+	imageResolverAppName := app.String(cli.StringOpt{
+		Name:   "image-resolver-app-name",
+		Value:  "image-resolver",
+		Desc:   "Service of the image resolver application",
+		EnvVar: "IMAGE_RESOLVER_APP_NAME",
+	})
+	imageResolverAppHealthURI := app.String(cli.StringOpt{
+		Name:   "image-resolver-app-health-uri",
+		Value:  "http://localhost:8080/__image-resolver/__health",
+		Desc:   "URI of the Image Resolver service health endpoint",
+		EnvVar: "IMAGE_RESOLVER_APP_HEALTH_URI",
+	})
+	imageResolverAppPanicGuide := app.String(cli.StringOpt{
+		Name:   "image-resolver-app-panic-guide",
+		Value:  "https://dewey.ft.com/image-resolver.html",
+		Desc:   "Image Resolver application panic guide url for healthcheck.",
+		EnvVar: "IMAGE_RESOLVER_APP_PANIC_GUIDE",
+	})
+	imageResolverAppBusinessImpact := app.String(cli.StringOpt{
+		Name:   "image-resolver-app-business-impact",
+		Value:  "Expanded images would not be available",
+		Desc:   "Describe the business impact the image resolver app would produce if it is broken.",
+		EnvVar: "IMAGE_RESOLVER_APP_BUSINESS_IMPACT",
+	})
 	envAPIHost := app.String(cli.StringOpt{
 		Name:   "env-api-host",
 		Value:  "api.ft.com",
@@ -150,15 +181,20 @@ func main() {
 			*handlerPath,
 			*cacheControlPolicy,
 			*contentSourceURI,
-			*internalComponentsSourceURI,
 			*contentSourceAppName,
-			*internalComponentsSourceAppName,
 			*contentSourceAppHealthURI,
-			*internalComponentsSourceAppHealthURI,
 			*contentSourceAppPanicGuide,
-			*internalComponentsSourceAppPanicGuide,
 			*contentSourceAppBusinessImpact,
+			*internalComponentsSourceURI,
+			*internalComponentsSourceAppName,
+			*internalComponentsSourceAppHealthURI,
+			*internalComponentsSourceAppPanicGuide,
 			*internalComponentsSourceAppBusinessImpact,
+			*imageResolverURI,
+			*imageResolverAppName,
+			*imageResolverAppHealthURI,
+			*imageResolverAppPanicGuide,
+			*imageResolverAppBusinessImpact,
 			*envAPIHost,
 			*graphiteTCPAddress,
 			*graphitePrefix,
@@ -185,7 +221,7 @@ func setupServiceHandler(sc serviceConfig, metricsHandler Metrics, contentHandle
 	r.Path(httphandlers.BuildInfoPath).HandlerFunc(httphandlers.BuildInfoHandler)
 	r.Path(httphandlers.PingPath).HandlerFunc(httphandlers.PingHandler)
 
-	hc := fthealth.HealthCheck{SystemCode: sc.appSystemCode, Description: serviceDescription, Name: sc.appName, Checks: []fthealth.Check{sc.contentSourceAppCheck(), sc.internalComponentsSourceAppCheck()}}
+	hc := fthealth.HealthCheck{SystemCode: sc.appSystemCode, Description: serviceDescription, Name: sc.appName, Checks: []fthealth.Check{sc.contentSourceAppCheck(), sc.internalComponentsSourceAppCheck(), sc.imageResolverAppCheck()}}
 	r.Path("/__health").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(fthealth.Handler(&hc))})
 
 	gtgHandler := httphandlers.NewGoodToGoHandler(gtg.StatusChecker(sc.gtgCheck))
@@ -201,15 +237,20 @@ type serviceConfig struct {
 	handlerPath                               string
 	cacheControlPolicy                        string
 	contentSourceURI                          string
-	internalComponentsSourceURI               string
 	contentSourceAppName                      string
-	internalComponentsSourceAppName           string
 	contentSourceAppHealthURI                 string
-	internalComponentsSourceAppHealthURI      string
 	contentSourceAppPanicGuide                string
-	internalComponentsSourceAppPanicGuide     string
 	contentSourceAppBusinessImpact            string
+	internalComponentsSourceURI               string
+	internalComponentsSourceAppName           string
+	internalComponentsSourceAppHealthURI      string
+	internalComponentsSourceAppPanicGuide     string
 	internalComponentsSourceAppBusinessImpact string
+	imageResolverSourceURI                    string
+	imageResolverAppName                      string
+	imageResolverAppHealthURI                 string
+	imageResolverAppPanicGuide                string
+	imageResolverAppBusinessImpact            string
 	envAPIHost                                string
 	graphiteTCPAddress                        string
 	graphitePrefix                            string
@@ -224,15 +265,20 @@ func (sc serviceConfig) asMap() map[string]interface{} {
 		"cache-control-policy":                           sc.cacheControlPolicy,
 		"handler-path":                                   sc.handlerPath,
 		"content-source-uri":                             sc.contentSourceURI,
-		"internal-components-source-uri":                 sc.internalComponentsSourceURI,
 		"content-source-app-name":                        sc.contentSourceAppName,
-		"internal-components-source-app-name":            sc.internalComponentsSourceAppName,
 		"content-source-app-health-uri":                  sc.contentSourceAppHealthURI,
-		"internal-components-source-app-health-uri":      sc.internalComponentsSourceAppHealthURI,
 		"content-source-app-panic-guide":                 sc.contentSourceAppPanicGuide,
-		"internal-components-source-app-panic-guide":     sc.internalComponentsSourceAppPanicGuide,
 		"content-source-app-business-impact":             sc.contentSourceAppBusinessImpact,
+		"internal-components-source-uri":                 sc.internalComponentsSourceURI,
+		"internal-components-source-app-name":            sc.internalComponentsSourceAppName,
+		"internal-components-source-app-health-uri":      sc.internalComponentsSourceAppHealthURI,
+		"internal-components-source-app-panic-guide":     sc.internalComponentsSourceAppPanicGuide,
 		"internal-components-source-app-business-impact": sc.internalComponentsSourceAppBusinessImpact,
+		"image-resolver-source-uri":                      sc.imageResolverSourceURI,
+		"image-resolver-app-name":                        sc.imageResolverAppName,
+		"image-resolver-app-health-uri":                  sc.imageResolverAppHealthURI,
+		"image-resolver-app-panic-guide":                 sc.imageResolverAppPanicGuide,
+		"image-resolver-app-bussines-impact":             sc.imageResolverAppBusinessImpact,
 		"env-api-host":                                   sc.envAPIHost,
 		"graphite-tcp-address":                           sc.graphiteTCPAddress,
 		"graphite-prefix":                                sc.graphitePrefix,

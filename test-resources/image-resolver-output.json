@@ -1,0 +1,142 @@
+{
+  "annotations": [
+    {
+      "apiUrl": "http://api.ft.com/brands/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54",
+      "directType": "http://www.ft.com/ontology/product/Brand",
+      "id": "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54",
+      "predicate": "http://www.ft.com/ontology/classification/isClassifiedBy",
+      "prefLabel": "Financial Times",
+      "type": "BRAND",
+      "types": [
+        "http://www.ft.com/ontology/core/Thing",
+        "http://www.ft.com/ontology/concept/Concept",
+        "http://www.ft.com/ontology/classification/Classification",
+        "http://www.ft.com/ontology/product/Brand"
+      ]
+    }
+  ],
+  "apiUrl": "http://api.ft.com/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce",
+  "bodyXML": "<body><ft-content type=\"http://www.ft.com/ontology/content/ImageSet\" url=\"http://api.ft.com/content/6299d4b0-d110-11e6-2e0d-ff9693c01f89\" data-embedded=\"true\"></ft-content><p>Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi.</p>\n<p>Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi.</p>\n</body>",
+  "brands": [
+    "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
+  ],
+  "byline": "By ",
+  "canBeSyndicated": "yes",
+  "comments": {
+    "enabled": true
+  },
+  "id": "http://www.ft.com/thing/5c3cae78-dbef-11e6-9d7c-be108f1c1dce",
+  "identifiers": [
+    {
+      "authority": "http://api.ft.com/system/FTCOM-METHODE",
+      "identifierValue": "5c3cae78-dbef-11e6-9d7c-be108f1c1dce"
+    }
+  ],
+  "lastModified": "2017-01-23T11:09:38.723Z",
+  "leadImages": [
+    {
+      "id": "http://api.ft.com/content/f3add2e0-dbfa-11e6-a7d5-ce30ecef69c7",
+      "image": {
+        "alternativeImages": {},
+        "alternativeStandfirsts": {},
+        "alternativeTitles": {},
+        "binaryUrl": "http://com.ft.imagepublish.prod-us.s3.amazonaws.com/f3add2e0-dbfa-11e6-a7d5-ce30ecef69c7",
+        "description": "",
+        "id": "http://www.ft.com/thing/f3add2e0-dbfa-11e6-a7d5-ce30ecef69c7",
+        "identifiers": [
+          {
+            "authority": "http://api.ft.com/system/FTCOM-METHODE",
+            "identifierValue": "f3add2e0-dbfa-11e6-a7d5-ce30ecef69c7"
+          }
+        ],
+        "lastModified": "2017-01-18T13:51:28.937Z",
+        "pixelHeight": 2000,
+        "pixelWidth": 2000,
+        "publishReference": "tid_q28ejle8pa",
+        "publishedDate": "2017-01-18T13:51:00.000Z",
+        "requestUrl": "http://api.ft.com/content/f3add2e0-dbfa-11e6-a7d5-ce30ecef69c7",
+        "title": "",
+        "type": "http://www.ft.com/ontology/content/MediaResource"
+      },
+      "type": "square"
+    },
+    {
+      "id": "http://api.ft.com/content/35059e34-dc33-11e6-86ac-f253db7791c6",
+      "image": {
+        "alternativeImages": {},
+        "alternativeStandfirsts": {},
+        "alternativeTitles": {},
+        "binaryUrl": "http://com.ft.imagepublish.prod-us.s3.amazonaws.com/35059e34-dc33-11e6-86ac-f253db7791c6",
+        "copyright": {
+          "notice": "© FT montage; Bloomberg"
+        },
+        "description": "",
+        "id": "http://www.ft.com/thing/35059e34-dc33-11e6-86ac-f253db7791c6",
+        "identifiers": [
+          {
+            "authority": "http://api.ft.com/system/FTCOM-METHODE",
+            "identifierValue": "35059e34-dc33-11e6-86ac-f253db7791c6"
+          }
+        ],
+        "lastModified": "2017-01-16T21:57:36.648Z",
+        "pixelHeight": 1152,
+        "pixelWidth": 2048,
+        "publishReference": "tid_e5b5wextjx",
+        "publishedDate": "2017-01-16T21:57:00.000Z",
+        "requestUrl": "http://api.ft.com/content/35059e34-dc33-11e6-86ac-f253db7791c6",
+        "title": "Larry Fink",
+        "type": "http://www.ft.com/ontology/content/MediaResource"
+      },
+      "type": "standard"
+    },
+    {
+      "id": "http://api.ft.com/content/c374c260-dd84-11e6-9d7c-be108f1c1dce",
+      "image": {
+        "alternativeImages": {},
+        "alternativeStandfirsts": {},
+        "alternativeTitles": {},
+        "binaryUrl": "http://com.ft.imagepublish.prod-us.s3.amazonaws.com/c374c260-dd84-11e6-9d7c-be108f1c1dce",
+        "description": "",
+        "id": "http://www.ft.com/thing/c374c260-dd84-11e6-9d7c-be108f1c1dce",
+        "identifiers": [
+          {
+            "authority": "http://api.ft.com/system/FTCOM-METHODE",
+            "identifierValue": "c374c260-dd84-11e6-9d7c-be108f1c1dce"
+          }
+        ],
+        "lastModified": "2017-01-18T13:51:29.113Z",
+        "pixelHeight": 1000,
+        "pixelWidth": 2350,
+        "publishReference": "tid_kibxeork42",
+        "publishedDate": "2017-01-18T13:51:00.000Z",
+        "requestUrl": "http://api.ft.com/content/c374c260-dd84-11e6-9d7c-be108f1c1dce",
+        "title": "",
+        "type": "http://www.ft.com/ontology/content/MediaResource"
+      },
+      "type": "wide"
+    }
+  ],
+  "mainImage": {
+    "id": "http://api.ft.com/content/6299d4b0-d110-11e6-2e0d-ff9693c01f89"
+  },
+  "prefLabel": "Lorem ipsum dolor sit amet",
+  "publishReference": "tid_9h0oph0oil",
+  "publishedDate": "2014-01-29T12:39:06.000Z",
+  "requestUrl": "http://api.ft.com/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce",
+  "standfirst": "Curabitur accumsan elit luctus nunc condimentum",
+  "standout": {
+    "editorsChoice": false,
+    "exclusive": false,
+    "scoop": false
+  },
+  "title": "Lorem ipsum dolor sit amet",
+  "topper": {
+    "bgColor": "black",
+    "headline": "Topper headline",
+    "standfirst": "Topper standfirst",
+    "theme": "split-text-left"
+  },
+  "types": [
+    "http://www.ft.com/ontology/content/Article"
+  ]
+}
