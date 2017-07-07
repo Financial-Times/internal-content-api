@@ -1,0 +1,23 @@
+# Values used for the deployed application.
+replicaCount: 2
+service:
+  name: internal-content-api
+env:
+  HANDLER_PATH: "internalcontent"
+  CONTENT_SOURCE_URI: "http://enriched-content-read-api:8080/enrichedcontent"
+  INTERNAL_COMPONENTS_SOURCE_URI: "http://document-store-api:8080/internalcomponents"
+  CONTENT_SOURCE_APP_HEALTH_URI: "http://enriched-content-read-api:8080/__health"
+  INTERNAL_COMPONENTS_SOURCE_APP_HEALTH_URI: "http://document-store-api:8080/__health"
+  CONTENT_SOURCE_APP_NAME: "enriched-content-read-api"
+  INTERNAL_COMPONENTS_SOURCE_APP_NAME: "document-store-api"
+  CONTENT_SOURCE_APP_PANIC_GUIDE: "https://dewey.ft.com/enriched-content-read-api.html"
+  INTERNAL_COMPONENTS_SOURCE_APP_PANIC_GUIDE: "https://dewey.ft.com/document-store-api.html"
+  CONTENT_SOURCE_APP_BUSINESS_IMPACT: "No articles would be available"
+  INTERNAL_COMPONENTS_SOURCE_APP_BUSINESS_IMPACT: "Articles won't have the internal components"
+  CACHE_CONTROL_POLICY: "max-age=10"
+  IMAGE_RESOLVER_URI: "http://image-resolver:8080/internalcontent/image" 
+  IMAGE_RESOLVER_APP_NAME: "image-resolver"
+  IMAGE_RESOLVER_APP_HEALTH_URI: "http://image-resolver:8080/__health"
+  IMAGE_RESOLVER_APP_PANIC_GUIDE: "https://dewey.ft.com/image-resolver.html"
+  IMAGE_RESOLVER_APP_BUSINESS_IMPACT: "Image related data won’t be available in the response"
+  APP_SYSTEM_CODE: "up-ica"
