@@ -189,6 +189,88 @@ func TestMergeEmbeddedMapsWithOverlappingFields(t *testing.T) {
 
 }
 
+func TestFilterKeys(t *testing.T) {
+	data := []struct {
+		name            string
+		content         map[string]interface{}
+		filter          map[string]interface{}
+		filteredContent map[string]interface{}
+	}{
+		{
+			"simple",
+			map[string]interface{}{
+				"a": "1",
+				"b": "2",
+			},
+			map[string]interface{}{
+				"a": "",
+			},
+			map[string]interface{}{
+				"b": "2",
+			},
+		},
+		{
+			"embedded",
+			map[string]interface{}{
+				"a": map[string]interface{}{
+					"a": "11",
+					"b": "22",
+				},
+				"b": "2",
+			},
+			map[string]interface{}{
+				"a": map[string]interface{}{
+					"a": "",
+				},
+			},
+			map[string]interface{}{
+				"a": map[string]interface{}{
+					"b": "22",
+				},
+				"b": "2",
+			},
+
+		},
+		{
+			"empty filter",
+			map[string]interface{}{
+				"a": map[string]interface{}{
+					"a": "11",
+					"b": "22",
+				},
+				"b": "2",
+			},
+			map[string]interface{}{},
+			map[string]interface{}{
+				"a": map[string]interface{}{
+					"a": "11",
+					"b": "22",
+				},
+				"b": "2",
+			},
+
+		},
+		{
+			"empty content",
+			map[string]interface{}{},
+			map[string]interface{}{
+				"a": map[string]interface{}{
+					"a": "11",
+					"b": "22",
+				},
+				"b": "2",
+			},
+			map[string]interface{}{},
+
+		},
+	}
+
+	for _, row := range data {
+		res := filterKeys(row.content, row.filter)
+		assert.True(t, reflect.DeepEqual(row.filteredContent, res), "Expected and actual filtered content differs.\n Expected: %v\n Actual %v\n", row.filteredContent, res)
+	}
+}
+
 func TestResolvingOverlappingMergesFullContent(t *testing.T) {
 
 	contentJson := `{"uuid":"uuid1","title":"title1","alternativeStandfirsts":{"promotionalStandfirst":"stand first"},"alternativeTitles":{"promotionalTitle":"promo title","contentPackageTitle":null},"type":"Article","byline":"","brands":[{"id":"http://api.ft.com/things/brandid1"}],"identifiers":[{"authority":"id_key","identifierValue":"id_value"}],"publishedDate":"2017-08-24T07:47:10.000Z","standfirst":"standfirst","body":"<body> some text <\/body>","description":null,"mediaType":null,"pixelWidth":null,"pixelHeight":null,"internalBinaryUrl":null,"externalBinaryUrl":null,"members":null,"mainImage":null,"standout":{"editorsChoice":false,"exclusive":false,"scoop":false},"comments":{"enabled":true},"copyright":null,"webUrl":null,"publishReference":"tid_1","lastModified":"2017-08-30T11:12:42.772Z","canBeSyndicated":"verify","firstPublishedDate":"2017-08-24T07:47:10.000Z","accessLevel":"subscribed","canBeDistributed":"yes"}`
