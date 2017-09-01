@@ -1,0 +1,33 @@
+# Default values for internal-content-api.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+service:
+  name: "" # The name of the service, should be defined in the specific app-configs folder.
+  hasHealthcheck: "true"
+replicaCount: 2
+image:
+  repository: coco/internal-content-api
+  pullPolicy: IfNotPresent
+resources:
+  limits:
+    memory: 256Mi
+env: # environment variable for the app
+  APP_PORT: ""
+  HANDLER_PATH: ""
+  CONTENT_SOURCE_URI: ""
+  INTERNAL_COMPONENTS_SOURCE_URI: ""
+  CONTENT_SOURCE_APP_HEALTH_URI: ""
+  INTERNAL_COMPONENTS_SOURCE_APP_HEALTH_URI: ""
+  CONTENT_SOURCE_APP_NAME: ""
+  INTERNAL_COMPONENTS_SOURCE_APP_NAME: ""
+  CONTENT_SOURCE_APP_PANIC_GUIDE: ""
+  INTERNAL_COMPONENTS_SOURCE_APP_PANIC_GUIDE: ""
+  CONTENT_SOURCE_APP_BUSINESS_IMPACT: ""
+  INTERNAL_COMPONENTS_SOURCE_APP_BUSINESS_IMPACT: ""
+  CACHE_CONTROL_POLICY: ""
+  IMAGE_RESOLVER_URI: ""
+  IMAGE_RESOLVER_APP_NAME: ""
+  IMAGE_RESOLVER_APP_HEALTH_URI: ""
+  IMAGE_RESOLVER_APP_PANIC_GUIDE: ""
+  IMAGE_RESOLVER_APP_BUSINESS_IMPACT: ""
+  APP_SYSTEM_CODE: ""

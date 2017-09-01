@@ -5,4 +5,4 @@
 *.iml
 .idea/
 vendor/*/**
-internal-content-api
+/internal-content-api
