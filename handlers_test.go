@@ -3,9 +3,11 @@ package main
 import (
 	"testing"
 
+	"encoding/json"
 	"github.com/Financial-Times/transactionid-utils-go"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
+	"reflect"
 )
 
 func TestResolveLeadImgURLs(t *testing.T) {
@@ -32,4 +34,179 @@ func TestResolveLeadImgURLs(t *testing.T) {
 
 	assert.Equal(t, "http://unit-test.ft.com/content/56aed7e7-485f-303d-9605-b885b86e947e", squareImgID.(string))
 	assert.Equal(t, "http://unit-test.ft.com/content/56aed7e7-485f-303d-9605-b885b86e947f", wideImgID.(string))
+}
+
+func TestMergeEmbeddedMapsWithOverlappingFields(t *testing.T) {
+	data := []struct {
+		name          string
+		content       map[string]interface{}
+		component     map[string]interface{}
+		mergedContent map[string]interface{}
+	}{
+		{
+			"Simple fields",
+			map[string]interface{}{
+				"field_c1": "value_c1",
+			},
+			map[string]interface{}{
+				"field_ic1": "value_ic1",
+			},
+			map[string]interface{}{
+				"field_c1":  "value_c1",
+				"field_ic1": "value_ic1",
+			},
+		},
+		{
+			"Empty map as destination",
+			map[string]interface{}{},
+			map[string]interface{}{
+				"field_ic1": "value_ic1",
+			},
+			map[string]interface{}{
+				"field_ic1": "value_ic1",
+			},
+		},
+		{
+			"Empty map as argument",
+			map[string]interface{}{
+				"field_c1": "value_c1",
+			},
+			map[string]interface{}{},
+			map[string]interface{}{
+				"field_c1": "value_c1",
+			},
+		},
+		{
+			"Embedded fields as destination",
+			map[string]interface{}{
+				"field_c1": map[string]interface{}{
+					"field_embed_c1": "value_c1",
+				},
+			},
+			map[string]interface{}{
+				"field_ic1": "value_ic1",
+			},
+			map[string]interface{}{
+				"field_c1": map[string]interface{}{
+					"field_embed_c1": "value_c1",
+				},
+				"field_ic1": "value_ic1",
+			},
+		},
+		{
+			"Embedded fields as agument",
+			map[string]interface{}{
+				"field_c1": "value_c1",
+			},
+			map[string]interface{}{
+				"field_ic1": map[string]interface{}{
+					"field_embed_ic1": "value_ic1",
+				},
+			},
+			map[string]interface{}{
+				"field_c1": "value_c1",
+				"field_ic1": map[string]interface{}{
+					"field_embed_ic1": "value_ic1",
+				},
+			},
+		},
+		{
+			"Overlapping embedded fields",
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": "value_1",
+				},
+			},
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_2": "value_2",
+				},
+			},
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": "value_1",
+					"field_2": "value_2",
+				},
+			},
+		},
+		{
+			"Overlapping embedded fields - same names still overwritten",
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": "value_1",
+				},
+				"field_c2": "value_c2",
+			},
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": "value_2",
+				},
+				"field_c2": map[string]interface{}{
+					"field_1": "value_c2",
+				},
+			},
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": "value_2",
+				},
+				"field_c2": map[string]interface{}{
+					"field_1": "value_c2",
+				},
+			},
+		},
+		{
+			"Complex example",
+			map[string]interface{}{
+				"field_c": "value_c",
+				"field": map[string]interface{}{
+					"field_1": "value_1",
+					"field_2": "value_2",
+				},
+			},
+			map[string]interface{}{
+				"field": map[string]interface{}{
+					"field_1": "value_2",
+					"field_3": "value_3",
+				},
+				"field_ic": "value_ic",
+			},
+			map[string]interface{}{
+				"field_c": "value_c",
+				"field": map[string]interface{}{
+					"field_1": "value_2",
+					"field_2": "value_2",
+					"field_3": "value_3",
+				},
+				"field_ic": "value_ic",
+			},
+		},
+	}
+
+	for _, row := range data {
+		res := mergeParts([]responsePart{{content: row.content}, {content: row.component}})
+		assert.True(t, reflect.DeepEqual(row.mergedContent, res), "Expected and actual merged content differs.\n Expected: %v\n Actual %v\n", row.mergedContent, res)
+	}
+
+}
+
+func TestResolvingOverlappingMergesFullContent(t *testing.T) {
+
+	contentJson := `{"uuid":"uuid1","title":"title1","alternativeStandfirsts":{"promotionalStandfirst":"stand first"},"alternativeTitles":{"promotionalTitle":"promo title","contentPackageTitle":null},"type":"Article","byline":"","brands":[{"id":"http://api.ft.com/things/brandid1"}],"identifiers":[{"authority":"id_key","identifierValue":"id_value"}],"publishedDate":"2017-08-24T07:47:10.000Z","standfirst":"standfirst","body":"<body> some text <\/body>","description":null,"mediaType":null,"pixelWidth":null,"pixelHeight":null,"internalBinaryUrl":null,"externalBinaryUrl":null,"members":null,"mainImage":null,"standout":{"editorsChoice":false,"exclusive":false,"scoop":false},"comments":{"enabled":true},"copyright":null,"webUrl":null,"publishReference":"tid_1","lastModified":"2017-08-30T11:12:42.772Z","canBeSyndicated":"verify","firstPublishedDate":"2017-08-24T07:47:10.000Z","accessLevel":"subscribed","canBeDistributed":"yes"}`
+	internalComponentJson := `{"design":null,"tableOfContents":null,"topper":null,"leadImages":[],"unpublishedContentDescription":null,"bodyXML":"<body> some text <\/body>","uuid":"uuid1","lastModified":"2017-08-30T11:12:42.772Z","publishReference":"tid_1","alternativeTitles":{"shortTeaser":"short teaser"}}`
+	var content, internalComponent map[string]interface{}
+
+	err := json.Unmarshal([]byte(contentJson), &content)
+	assert.Equal(t, nil, err, "Error %v", err)
+	err = json.Unmarshal([]byte(internalComponentJson), &internalComponent)
+	assert.Equal(t, nil, err, "Error %v", err)
+
+	results := mergeParts([]responsePart{{content: content}, {content: internalComponent}})
+
+	promotionalTitle := results["alternativeTitles"].(map[string]interface{})["promotionalTitle"]
+	shortTeaser := results["alternativeTitles"].(map[string]interface{})["shortTeaser"]
+	alternativeStandfirsts := results["alternativeStandfirsts"].(map[string]interface{})["promotionalStandfirst"]
+
+	assert.Equal(t, "promo title", promotionalTitle)
+	assert.Equal(t, "short teaser", shortTeaser)
+	assert.Equal(t, "stand first", alternativeStandfirsts)
 }

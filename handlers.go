@@ -165,7 +165,19 @@ func mergeParts(parts []responsePart) map[string]interface{} {
 		for key, value := range p.content {
 			_, found := excludedAttributes[key]
 			if !found {
-				content[key] = value
+				// merge values - even if value represents a map
+				// Note: no need to check more than 1 level deep for our model/use cases
+				if p_map, ok := value.(map[string]interface{}); ok {
+					if c_map, ok := content[key].(map[string]interface{}); ok {
+						for k2, v2 := range p_map {
+							c_map[k2] = v2
+						}
+					} else {
+						content[key] = value
+					}
+				} else {
+					content[key] = value
+				}
 			}
 		}
 	}
