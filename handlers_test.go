@@ -155,6 +155,62 @@ func TestMergeEmbeddedMapsWithOverlappingFields(t *testing.T) {
 			},
 		},
 		{
+			"Overlapping embedded fields - map on one side, value on other",
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": map[string]interface{}{
+						"field_x": "1",
+					},
+				},
+				"field_c2": "value_c2",
+			},
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": "value_2",
+				},
+				"field_c2": map[string]interface{}{
+					"field_1": "value_c2",
+				},
+			},
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": "value_2",
+				},
+				"field_c2": map[string]interface{}{
+					"field_1": "value_c2",
+				},
+			},
+		},
+		{
+			"Overlapping embedded fields - value on one side, map on other",
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": "value_2",
+				},
+				"field_c2": "value_c2",
+			},
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": map[string]interface{}{
+						"field_x": "1",
+					},
+				},
+				"field_c2": map[string]interface{}{
+					"field_1": "value_c2",
+				},
+			},
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": map[string]interface{}{
+						"field_x": "1",
+					},
+				},
+				"field_c2": map[string]interface{}{
+					"field_1": "value_c2",
+				},
+			},
+		},
+		{
 			"Complex example",
 			map[string]interface{}{
 				"field_c": "value_c",
