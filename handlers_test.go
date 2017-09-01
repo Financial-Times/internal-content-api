@@ -156,6 +156,62 @@ func TestMergeEmbeddedMapsWithOverlappingFields(t *testing.T) {
 			},
 		},
 		{
+			"Overlapping embedded fields - map on one side, value on other",
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": map[string]interface{}{
+						"field_x": "1",
+					},
+				},
+				"field_c2": "value_c2",
+			},
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": "value_2",
+				},
+				"field_c2": map[string]interface{}{
+					"field_1": "value_c2",
+				},
+			},
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": "value_2",
+				},
+				"field_c2": map[string]interface{}{
+					"field_1": "value_c2",
+				},
+			},
+		},
+		{
+			"Overlapping embedded fields - value on one side, map on other",
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": "value_2",
+				},
+				"field_c2": "value_c2",
+			},
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": map[string]interface{}{
+						"field_x": "1",
+					},
+				},
+				"field_c2": map[string]interface{}{
+					"field_1": "value_c2",
+				},
+			},
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": map[string]interface{}{
+						"field_x": "1",
+					},
+				},
+				"field_c2": map[string]interface{}{
+					"field_1": "value_c2",
+				},
+			},
+		},
+		{
 			"Complex example",
 			map[string]interface{}{
 				"field_c": "value_c",
@@ -188,6 +244,88 @@ func TestMergeEmbeddedMapsWithOverlappingFields(t *testing.T) {
 		assert.True(t, reflect.DeepEqual(row.mergedContent, res), "Expected and actual merged content differs.\n Expected: %v\n Actual %v\n", row.mergedContent, res)
 	}
 
+}
+
+func TestFilterKeys(t *testing.T) {
+	data := []struct {
+		name            string
+		content         map[string]interface{}
+		filter          map[string]interface{}
+		filteredContent map[string]interface{}
+	}{
+		{
+			"simple",
+			map[string]interface{}{
+				"a": "1",
+				"b": "2",
+			},
+			map[string]interface{}{
+				"a": "",
+			},
+			map[string]interface{}{
+				"b": "2",
+			},
+		},
+		{
+			"embedded",
+			map[string]interface{}{
+				"a": map[string]interface{}{
+					"a": "11",
+					"b": "22",
+				},
+				"b": "2",
+			},
+			map[string]interface{}{
+				"a": map[string]interface{}{
+					"a": "",
+				},
+			},
+			map[string]interface{}{
+				"a": map[string]interface{}{
+					"b": "22",
+				},
+				"b": "2",
+			},
+
+		},
+		{
+			"empty filter",
+			map[string]interface{}{
+				"a": map[string]interface{}{
+					"a": "11",
+					"b": "22",
+				},
+				"b": "2",
+			},
+			map[string]interface{}{},
+			map[string]interface{}{
+				"a": map[string]interface{}{
+					"a": "11",
+					"b": "22",
+				},
+				"b": "2",
+			},
+
+		},
+		{
+			"empty content",
+			map[string]interface{}{},
+			map[string]interface{}{
+				"a": map[string]interface{}{
+					"a": "11",
+					"b": "22",
+				},
+				"b": "2",
+			},
+			map[string]interface{}{},
+
+		},
+	}
+
+	for _, row := range data {
+		res := filterKeys(row.content, row.filter)
+		assert.True(t, reflect.DeepEqual(row.filteredContent, res), "Expected and actual filtered content differs.\n Expected: %v\n Actual %v\n", row.filteredContent, res)
+	}
 }
 
 func TestResolvingOverlappingMergesFullContent(t *testing.T) {

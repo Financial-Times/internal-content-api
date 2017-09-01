@@ -26,7 +26,11 @@ const (
 	expandImagesKey contextKey = "expandImages"
 )
 
-var excludedAttributes = map[string]bool{"uuid": true, "lastModified": true, "publishReference": true}
+var internalComponentsFilter = map[string]interface{}{
+	"uuid": "",
+	"lastModified": "",
+	"publishReference": "",
+}
 
 type internalContentHandler struct {
 	serviceConfig *serviceConfig
@@ -150,6 +154,7 @@ func (h internalContentHandler) retrieveAndUnmarshall(ctx context.Context, r ret
 
 func (h internalContentHandler) resolveAdditionalFields(ctx context.Context, parts []responsePart) map[string]interface{} {
 	uuid := ctx.Value(uuidKey).(string)
+	parts[1].content = filterKeys(parts[1].content, internalComponentsFilter)
 	mergedContent := mergeParts(parts)
 	mergedContent = resolveLeadImages(ctx, mergedContent, h)
 	resolveRequestUrl(mergedContent, h, uuid)
@@ -158,30 +163,57 @@ func (h internalContentHandler) resolveAdditionalFields(ctx context.Context, par
 	return mergedContent
 }
 
-func mergeParts(parts []responsePart) map[string]interface{} {
-	content := parts[0].content
-	for i := 1; i < len(parts); i++ {
-		p := parts[i]
-		for key, value := range p.content {
-			_, found := excludedAttributes[key]
-			if !found {
-				// merge values - even if value represents a map
-				// Note: no need to check more than 1 level deep for our model/use cases
-				if p_map, ok := value.(map[string]interface{}); ok {
-					if c_map, ok := content[key].(map[string]interface{}); ok {
-						for k2, v2 := range p_map {
-							c_map[k2] = v2
-						}
-					} else {
-						content[key] = value
-					}
-				} else {
-					content[key] = value
-				}
+func filterKeys(m map[string]interface{}, filter map[string]interface{}) map[string]interface{} {
+	for key, valueInFilter := range filter {
+		foundValInM, foundInM := m[key]
+		if foundInM {
+			mapInM, isMapInM := foundValInM.(map[string]interface{})
+			mapInFilter, isMapInFilter := valueInFilter.(map[string]interface{})
+			if isMapInM && isMapInFilter {
+				m[key] = filterKeys(mapInM, mapInFilter)
+			} else {
+				delete(m, key)
 			}
 		}
 	}
-	return content
+	return m
+}
+
+func mergeParts(parts []responsePart) map[string]interface{}{
+	if len(parts) == 0 {
+		return make(map[string]interface{})
+	}
+	if len(parts) == 1 {
+		return parts[0].content
+	}
+
+	contents := make([]map[string]interface{}, len(parts))
+	for i, p := range parts {
+		contents[i] = p.content
+	}
+
+	for i := 1; i < len(contents); i++ {
+		contents[0] = mergeTwoContents(contents[0], contents[i])
+	}
+	return contents[0]
+}
+
+func mergeTwoContents(a map[string]interface{}, b map[string]interface{}) map[string]interface{} {
+	for key, valueInB := range b {
+		foundValInA, foundInA := a[key]
+		if foundInA {
+			mapInA, isMapInA := foundValInA.(map[string]interface{})
+			mapInB, isMapInB := valueInB.(map[string]interface{})
+			if isMapInA && isMapInB {
+				a[key] = mergeTwoContents(mapInA, mapInB)
+			} else {
+				a[key] = valueInB
+			}
+		} else {
+			a[key] = valueInB
+		}
+	}
+	return a
 }
 
 func resolveLeadImages(ctx context.Context, content map[string]interface{}, h internalContentHandler) map[string]interface{} {
