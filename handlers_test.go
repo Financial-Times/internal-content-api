@@ -7,6 +7,7 @@ import (
 	"github.com/Financial-Times/transactionid-utils-go"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
+	"io/ioutil"
 	"reflect"
 )
 
@@ -191,11 +192,15 @@ func TestMergeEmbeddedMapsWithOverlappingFields(t *testing.T) {
 
 func TestResolvingOverlappingMergesFullContent(t *testing.T) {
 
-	contentJson := `{"uuid":"uuid1","title":"title1","alternativeStandfirsts":{"promotionalStandfirst":"stand first"},"alternativeTitles":{"promotionalTitle":"promo title","contentPackageTitle":null},"type":"Article","byline":"","brands":[{"id":"http://api.ft.com/things/brandid1"}],"identifiers":[{"authority":"id_key","identifierValue":"id_value"}],"publishedDate":"2017-08-24T07:47:10.000Z","standfirst":"standfirst","body":"<body> some text <\/body>","description":null,"mediaType":null,"pixelWidth":null,"pixelHeight":null,"internalBinaryUrl":null,"externalBinaryUrl":null,"members":null,"mainImage":null,"standout":{"editorsChoice":false,"exclusive":false,"scoop":false},"comments":{"enabled":true},"copyright":null,"webUrl":null,"publishReference":"tid_1","lastModified":"2017-08-30T11:12:42.772Z","canBeSyndicated":"verify","firstPublishedDate":"2017-08-24T07:47:10.000Z","accessLevel":"subscribed","canBeDistributed":"yes"}`
-	internalComponentJson := `{"design":null,"tableOfContents":null,"topper":null,"leadImages":[],"unpublishedContentDescription":null,"bodyXML":"<body> some text <\/body>","uuid":"uuid1","lastModified":"2017-08-30T11:12:42.772Z","publishReference":"tid_1","alternativeTitles":{"shortTeaser":"short teaser"}}`
+	contentJson, e := ioutil.ReadFile("test-resources/embedded-enrichedcontent-output.json")
+	assert.Nil(t, e, "Couldn't read enrichedcontent json")
+
+	internalComponentJson, e := ioutil.ReadFile("test-resources/embedded-internalcomponents-output.json")
+	assert.Nil(t, e, "Couldn't read internalcomponents json")
+
 	var content, internalComponent map[string]interface{}
 
-	err := json.Unmarshal([]byte(contentJson), &content)
+	err := json.Unmarshal(contentJson, &content)
 	assert.Equal(t, nil, err, "Error %v", err)
 	err = json.Unmarshal([]byte(internalComponentJson), &internalComponent)
 	assert.Equal(t, nil, err, "Error %v", err)
@@ -208,5 +213,5 @@ func TestResolvingOverlappingMergesFullContent(t *testing.T) {
 
 	assert.Equal(t, "promo title", promotionalTitle)
 	assert.Equal(t, "short teaser", shortTeaser)
-	assert.Equal(t, "stand first", alternativeStandfirsts)
+	assert.Equal(t, "standfirst", alternativeStandfirsts)
 }
