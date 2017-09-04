@@ -74,7 +74,7 @@ spec:
               name: global-config
               key: graphite.address
         - name: GRAPHITE_PREFIX
-          value: "coco.services.k8s.{{ .Values.service.name }}"
+          value: "coco.services.k8sTestTL.{{ .Values.service.name }}"
         ports: 
         - containerPort: 8080
         livenessProbe: 
