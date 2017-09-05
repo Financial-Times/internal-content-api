@@ -1,0 +1,29 @@
+{
+  "topper": {
+    "theme": "split-text-left",
+    "bgColor": "black",
+    "headline": "Topper headline",
+    "standfirst": "Topper standfirst"
+  },
+  "alternativeTitles": {
+    "shortTeaser": "short teaser"
+  },
+  "alternativeStandfirsts": {
+    "promotionalStandfirst":"standfirst"
+  },
+  "leadImages": [
+    {
+      "id": "f3add2e0-dbfa-11e6-a7d5-ce30ecef69c7",
+      "type": "square"
+    },
+    {
+      "id": "35059e34-dc33-11e6-86ac-f253db7791c6",
+      "type": "standard"
+    },
+    {
+      "id": "c374c260-dd84-11e6-9d7c-be108f1c1dce",
+      "type": "wide"
+    }
+  ],
+  "uuid": "5c3cae78-dbef-11e6-9d7c-be108f1c1dce"
+}

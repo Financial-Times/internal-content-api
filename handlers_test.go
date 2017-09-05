@@ -3,9 +3,12 @@ package main
 import (
 	"testing"
 
+	"encoding/json"
 	"github.com/Financial-Times/transactionid-utils-go"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
+	"io/ioutil"
+	"reflect"
 )
 
 func TestResolveLeadImgURLs(t *testing.T) {
@@ -32,4 +35,321 @@ func TestResolveLeadImgURLs(t *testing.T) {
 
 	assert.Equal(t, "http://unit-test.ft.com/content/56aed7e7-485f-303d-9605-b885b86e947e", squareImgID.(string))
 	assert.Equal(t, "http://unit-test.ft.com/content/56aed7e7-485f-303d-9605-b885b86e947f", wideImgID.(string))
+}
+
+func TestMergeEmbeddedMapsWithOverlappingFields(t *testing.T) {
+	data := []struct {
+		name          string
+		content       map[string]interface{}
+		component     map[string]interface{}
+		mergedContent map[string]interface{}
+	}{
+		{
+			"Simple fields",
+			map[string]interface{}{
+				"field_c1": "value_c1",
+			},
+			map[string]interface{}{
+				"field_ic1": "value_ic1",
+			},
+			map[string]interface{}{
+				"field_c1":  "value_c1",
+				"field_ic1": "value_ic1",
+			},
+		},
+		{
+			"Empty map as destination",
+			map[string]interface{}{},
+			map[string]interface{}{
+				"field_ic1": "value_ic1",
+			},
+			map[string]interface{}{
+				"field_ic1": "value_ic1",
+			},
+		},
+		{
+			"Empty map as argument",
+			map[string]interface{}{
+				"field_c1": "value_c1",
+			},
+			map[string]interface{}{},
+			map[string]interface{}{
+				"field_c1": "value_c1",
+			},
+		},
+		{
+			"Embedded fields as destination",
+			map[string]interface{}{
+				"field_c1": map[string]interface{}{
+					"field_embed_c1": "value_c1",
+				},
+			},
+			map[string]interface{}{
+				"field_ic1": "value_ic1",
+			},
+			map[string]interface{}{
+				"field_c1": map[string]interface{}{
+					"field_embed_c1": "value_c1",
+				},
+				"field_ic1": "value_ic1",
+			},
+		},
+		{
+			"Embedded fields as agument",
+			map[string]interface{}{
+				"field_c1": "value_c1",
+			},
+			map[string]interface{}{
+				"field_ic1": map[string]interface{}{
+					"field_embed_ic1": "value_ic1",
+				},
+			},
+			map[string]interface{}{
+				"field_c1": "value_c1",
+				"field_ic1": map[string]interface{}{
+					"field_embed_ic1": "value_ic1",
+				},
+			},
+		},
+		{
+			"Overlapping embedded fields",
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": "value_1",
+				},
+			},
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_2": "value_2",
+				},
+			},
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": "value_1",
+					"field_2": "value_2",
+				},
+			},
+		},
+		{
+			"Overlapping embedded fields - same names still overwritten",
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": "value_1",
+				},
+				"field_c2": "value_c2",
+			},
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": "value_2",
+				},
+				"field_c2": map[string]interface{}{
+					"field_1": "value_c2",
+				},
+			},
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": "value_2",
+				},
+				"field_c2": map[string]interface{}{
+					"field_1": "value_c2",
+				},
+			},
+		},
+		{
+			"Overlapping embedded fields - map on one side, value on other",
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": map[string]interface{}{
+						"field_x": "1",
+					},
+				},
+				"field_c2": "value_c2",
+			},
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": "value_2",
+				},
+				"field_c2": map[string]interface{}{
+					"field_1": "value_c2",
+				},
+			},
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": "value_2",
+				},
+				"field_c2": map[string]interface{}{
+					"field_1": "value_c2",
+				},
+			},
+		},
+		{
+			"Overlapping embedded fields - value on one side, map on other",
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": "value_2",
+				},
+				"field_c2": "value_c2",
+			},
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": map[string]interface{}{
+						"field_x": "1",
+					},
+				},
+				"field_c2": map[string]interface{}{
+					"field_1": "value_c2",
+				},
+			},
+			map[string]interface{}{
+				"field_c": map[string]interface{}{
+					"field_1": map[string]interface{}{
+						"field_x": "1",
+					},
+				},
+				"field_c2": map[string]interface{}{
+					"field_1": "value_c2",
+				},
+			},
+		},
+		{
+			"Complex example",
+			map[string]interface{}{
+				"field_c": "value_c",
+				"field": map[string]interface{}{
+					"field_1": "value_1",
+					"field_2": "value_2",
+				},
+			},
+			map[string]interface{}{
+				"field": map[string]interface{}{
+					"field_1": "value_2",
+					"field_3": "value_3",
+				},
+				"field_ic": "value_ic",
+			},
+			map[string]interface{}{
+				"field_c": "value_c",
+				"field": map[string]interface{}{
+					"field_1": "value_2",
+					"field_2": "value_2",
+					"field_3": "value_3",
+				},
+				"field_ic": "value_ic",
+			},
+		},
+	}
+
+	for _, row := range data {
+		res := mergeParts([]responsePart{{content: row.content}, {content: row.component}})
+		assert.True(t, reflect.DeepEqual(row.mergedContent, res), "Expected and actual merged content differs.\n Expected: %v\n Actual %v\n", row.mergedContent, res)
+	}
+
+}
+
+func TestFilterKeys(t *testing.T) {
+	data := []struct {
+		name            string
+		content         map[string]interface{}
+		filter          map[string]interface{}
+		filteredContent map[string]interface{}
+	}{
+		{
+			"simple",
+			map[string]interface{}{
+				"a": "1",
+				"b": "2",
+			},
+			map[string]interface{}{
+				"a": "",
+			},
+			map[string]interface{}{
+				"b": "2",
+			},
+		},
+		{
+			"embedded",
+			map[string]interface{}{
+				"a": map[string]interface{}{
+					"a": "11",
+					"b": "22",
+				},
+				"b": "2",
+			},
+			map[string]interface{}{
+				"a": map[string]interface{}{
+					"a": "",
+				},
+			},
+			map[string]interface{}{
+				"a": map[string]interface{}{
+					"b": "22",
+				},
+				"b": "2",
+			},
+
+		},
+		{
+			"empty filter",
+			map[string]interface{}{
+				"a": map[string]interface{}{
+					"a": "11",
+					"b": "22",
+				},
+				"b": "2",
+			},
+			map[string]interface{}{},
+			map[string]interface{}{
+				"a": map[string]interface{}{
+					"a": "11",
+					"b": "22",
+				},
+				"b": "2",
+			},
+
+		},
+		{
+			"empty content",
+			map[string]interface{}{},
+			map[string]interface{}{
+				"a": map[string]interface{}{
+					"a": "11",
+					"b": "22",
+				},
+				"b": "2",
+			},
+			map[string]interface{}{},
+
+		},
+	}
+
+	for _, row := range data {
+		res := filterKeys(row.content, row.filter)
+		assert.True(t, reflect.DeepEqual(row.filteredContent, res), "Expected and actual filtered content differs.\n Expected: %v\n Actual %v\n", row.filteredContent, res)
+	}
+}
+
+func TestResolvingOverlappingMergesFullContent(t *testing.T) {
+
+	contentJson, e := ioutil.ReadFile("test-resources/embedded-enrichedcontent-output.json")
+	assert.Nil(t, e, "Couldn't read enrichedcontent json")
+
+	internalComponentJson, e := ioutil.ReadFile("test-resources/embedded-internalcomponents-output.json")
+	assert.Nil(t, e, "Couldn't read internalcomponents json")
+
+	var content, internalComponent map[string]interface{}
+
+	err := json.Unmarshal(contentJson, &content)
+	assert.Equal(t, nil, err, "Error %v", err)
+	err = json.Unmarshal([]byte(internalComponentJson), &internalComponent)
+	assert.Equal(t, nil, err, "Error %v", err)
+
+	results := mergeParts([]responsePart{{content: content}, {content: internalComponent}})
+
+	promotionalTitle := results["alternativeTitles"].(map[string]interface{})["promotionalTitle"]
+	shortTeaser := results["alternativeTitles"].(map[string]interface{})["shortTeaser"]
+	alternativeStandfirsts := results["alternativeStandfirsts"].(map[string]interface{})["promotionalStandfirst"]
+
+	assert.Equal(t, "promo title", promotionalTitle)
+	assert.Equal(t, "short teaser", shortTeaser)
+	assert.Equal(t, "standfirst", alternativeStandfirsts)
 }
