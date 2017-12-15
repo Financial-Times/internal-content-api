@@ -15,7 +15,7 @@ env:
   CONTENT_SOURCE_APP_BUSINESS_IMPACT: "No internal content articles would be available to be previewed"
   INTERNAL_COMPONENTS_SOURCE_APP_BUSINESS_IMPACT: "Articles won't have the internal components to be previewed"
   CACHE_CONTROL_POLICY: no-store
-  IMAGE_RESOLVER_URI: "http://image-resolver:8080/internalcontent/image" 
+  IMAGE_RESOLVER_URI: "http://image-resolver:8080/internalcontent/image"
   IMAGE_RESOLVER_APP_NAME: "image-resolver"
   IMAGE_RESOLVER_APP_HEALTH_URI: "http://image-resolver:8080/__health"
   IMAGE_RESOLVER_APP_PANIC_GUIDE: "https://dewey.ft.com/image-resolver.html"
