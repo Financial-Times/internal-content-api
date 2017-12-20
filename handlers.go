@@ -27,8 +27,8 @@ const (
 )
 
 var internalComponentsFilter = map[string]interface{}{
-	"uuid": "",
-	"lastModified": "",
+	"uuid":             "",
+	"lastModified":     "",
 	"publishReference": "",
 }
 
@@ -179,7 +179,7 @@ func filterKeys(m map[string]interface{}, filter map[string]interface{}) map[str
 	return m
 }
 
-func mergeParts(parts []responsePart) map[string]interface{}{
+func mergeParts(parts []responsePart) map[string]interface{} {
 	if len(parts) == 0 {
 		return make(map[string]interface{})
 	}

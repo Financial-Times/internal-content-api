@@ -286,7 +286,6 @@ func TestFilterKeys(t *testing.T) {
 				},
 				"b": "2",
 			},
-
 		},
 		{
 			"empty filter",
@@ -305,7 +304,6 @@ func TestFilterKeys(t *testing.T) {
 				},
 				"b": "2",
 			},
-
 		},
 		{
 			"empty content",
@@ -318,7 +316,6 @@ func TestFilterKeys(t *testing.T) {
 				"b": "2",
 			},
 			map[string]interface{}{},
-
 		},
 	}
 
