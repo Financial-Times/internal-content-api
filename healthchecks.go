@@ -8,22 +8,31 @@ import (
 	"net/http"
 )
 
-func (sc *serviceConfig) gtgCheck() gtg.Status {
-	msg, err := sc.checkServiceAvailability(sc.contentSourceAppName, sc.contentSourceAppHealthURI)
-	if err != nil {
-		return gtg.Status{GoodToGo: false, Message: msg}
+// GTG is the HTTP handler function for the Good-To-Go of the methode content placeholder mapper
+func (sc *serviceConfig) GTG() gtg.Status {
+	contentSourceAppCheck := func() gtg.Status {
+		return gtgCheck(sc.contentSourceAppChecker)
 	}
 
-	msg, err = sc.checkServiceAvailability(sc.internalComponentsSourceAppName, sc.internalComponentsSourceAppHealthURI)
-	if err != nil {
-		return gtg.Status{GoodToGo: false, Message: msg}
+	internalComponentsCheck := func() gtg.Status {
+		return gtgCheck(sc.internalComponentsSourceAppChecker)
 	}
 
-	msg, err = sc.checkServiceAvailability(sc.imageResolverAppName, sc.imageResolverAppHealthURI)
-	if err != nil {
-		return gtg.Status{GoodToGo: false, Message: msg}
+	imageResolverAppCheck := func() gtg.Status {
+		return gtgCheck(sc.imageResolverAppChecker)
 	}
 
+	return gtg.FailFastParallelCheck([]gtg.StatusChecker{
+		contentSourceAppCheck,
+		internalComponentsCheck,
+		imageResolverAppCheck,
+	})()
+}
+
+func gtgCheck(handler func() (string, error)) gtg.Status {
+	if _, err := handler(); err != nil {
+		return gtg.Status{GoodToGo: false, Message: err.Error()}
+	}
 	return gtg.Status{GoodToGo: true}
 }
 
@@ -34,9 +43,7 @@ func (sc *serviceConfig) contentSourceAppCheck() fthealth.Check {
 		PanicGuide:       sc.contentSourceAppPanicGuide,
 		Severity:         1,
 		TechnicalSummary: "Checks that " + sc.contentSourceAppName + " is reachable. " + sc.appName + " requests content from " + sc.contentSourceAppName,
-		Checker: func() (string, error) {
-			return sc.checkServiceAvailability(sc.contentSourceAppName, sc.contentSourceAppHealthURI)
-		},
+		Checker:          sc.contentSourceAppChecker,
 	}
 }
 
@@ -47,9 +54,7 @@ func (sc *serviceConfig) internalComponentsSourceAppCheck() fthealth.Check {
 		PanicGuide:       sc.internalComponentsSourceAppPanicGuide,
 		Severity:         2,
 		TechnicalSummary: "Checks that " + sc.internalComponentsSourceAppName + " is reachable. " + sc.appName + " relies on " + sc.internalComponentsSourceAppName + " to get the internal components",
-		Checker: func() (string, error) {
-			return sc.checkServiceAvailability(sc.internalComponentsSourceAppName, sc.internalComponentsSourceAppHealthURI)
-		},
+		Checker:          sc.internalComponentsSourceAppChecker,
 	}
 }
 
@@ -60,10 +65,20 @@ func (sc *serviceConfig) imageResolverAppCheck() fthealth.Check {
 		PanicGuide:       sc.imageResolverAppPanicGuide,
 		Severity:         2,
 		TechnicalSummary: "Checks that " + sc.imageResolverAppName + " is reachable. " + sc.appName + " relies on " + sc.imageResolverAppName + " to get the expanded images",
-		Checker: func() (string, error) {
-			return sc.checkServiceAvailability(sc.imageResolverAppName, sc.imageResolverAppHealthURI)
-		},
+		Checker:          sc.imageResolverAppChecker,
 	}
+}
+
+func (sc *serviceConfig) contentSourceAppChecker() (string, error) {
+	return sc.checkServiceAvailability(sc.contentSourceAppName, sc.contentSourceAppHealthURI)
+}
+
+func (sc *serviceConfig) internalComponentsSourceAppChecker() (string, error) {
+	return sc.checkServiceAvailability(sc.internalComponentsSourceAppName, sc.internalComponentsSourceAppHealthURI)
+}
+
+func (sc *serviceConfig) imageResolverAppChecker() (string, error) {
+	return sc.checkServiceAvailability(sc.imageResolverAppName, sc.imageResolverAppHealthURI)
 }
 
 func (sc *serviceConfig) checkServiceAvailability(serviceName string, healthURI string) (string, error) {

@@ -9,8 +9,10 @@ image:
   repository: coco/internal-content-api
   pullPolicy: IfNotPresent
 resources:
+  requests:
+    memory: 20Mi
   limits:
-    memory: 256Mi
+    memory: 128Mi
 env: # environment variable for the app
   APP_PORT: ""
   HANDLER_PATH: ""
