@@ -104,8 +104,9 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 	mergedContent := h.resolveAdditionalFields(ctx, parts)
 	resultBytes, _ := json.Marshal(mergedContent)
 	if len(resultBytes) == 0 {
-		w.Write([]byte("Requested content item does not exist in DB"))
 		w.WriteHeader(http.StatusNotFound)
+		msg, _ := json.Marshal(ErrorMessage{fmt.Sprintf("Requested content item does not exist in DB")})
+		w.Write([]byte(msg))
 		return
 	}
 	w.Header().Set("Cache-Control", h.serviceConfig.cacheControlPolicy)
