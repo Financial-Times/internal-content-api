@@ -338,6 +338,22 @@ func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentNotFound(t 
 	assert.Equal(t, expectedOutput, actualOutput, "Response body shoud be equal to transformer response body")
 }
 
+func TestShouldReturn404WhenDocumentDoesNotExistInAnySource(t *testing.T) {
+	startEnrichedContentAPIMock("notFound")
+	startDocumentStoreAPIMock("notFound")
+	startImageResolverServiceMock("notFound")
+	startInternalContentService()
+	defer stopServices()
+	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dc1")
+	if err != nil {
+		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
+	}
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusNotFound, resp.StatusCode, "Response status should be 200")
+	assert.Empty(t, resp.Body, "Body should be nil")
+}
+
 func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentFailed(t *testing.T) {
 	startEnrichedContentAPIMock("happy")
 	startDocumentStoreAPIMock("unhappy")
