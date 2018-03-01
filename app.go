@@ -10,7 +10,7 @@ import (
 	oldhttphandlers "github.com/Financial-Times/http-handlers-go/httphandlers"
 	"github.com/Financial-Times/service-status-go/gtg"
 	"github.com/Financial-Times/service-status-go/httphandlers"
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jawher/mow.cli"
