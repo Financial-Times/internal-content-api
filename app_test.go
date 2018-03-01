@@ -351,7 +351,6 @@ func TestShouldReturn404WhenDocumentDoesNotExistInAnySource(t *testing.T) {
 	defer resp.Body.Close()
 
 	assert.Equal(t, http.StatusNotFound, resp.StatusCode, "Response status should be 200")
-	assert.Empty(t, resp.Body, "Body should be nil")
 }
 
 func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentFailed(t *testing.T) {
