@@ -3,9 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
+	"net/http"
+
 	fthealth "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/Financial-Times/service-status-go/gtg"
-	"net/http"
 )
 
 // GTG is the HTTP handler function for the Good-To-Go of the methode content placeholder mapper
@@ -18,14 +19,14 @@ func (sc *serviceConfig) GTG() gtg.Status {
 		return gtgCheck(sc.internalComponentsSourceAppChecker)
 	}
 
-	imageResolverAppCheck := func() gtg.Status {
-		return gtgCheck(sc.imageResolverAppChecker)
+	contentUnrollerAppCheck := func() gtg.Status {
+		return gtgCheck(sc.contentUnrollerAppChecker)
 	}
 
 	return gtg.FailFastParallelCheck([]gtg.StatusChecker{
 		contentSourceAppCheck,
 		internalComponentsCheck,
-		imageResolverAppCheck,
+		contentUnrollerAppCheck,
 	})()
 }
 
@@ -58,14 +59,14 @@ func (sc *serviceConfig) internalComponentsSourceAppCheck() fthealth.Check {
 	}
 }
 
-func (sc *serviceConfig) imageResolverAppCheck() fthealth.Check {
+func (sc *serviceConfig) contentUnrollerAppCheck() fthealth.Check {
 	return fthealth.Check{
-		BusinessImpact:   sc.imageResolverAppBusinessImpact,
-		Name:             sc.imageResolverAppName,
-		PanicGuide:       sc.imageResolverAppPanicGuide,
+		BusinessImpact:   sc.contentUnrollerAppBusinessImpact,
+		Name:             sc.contentUnrollerAppName,
+		PanicGuide:       sc.contentUnrollerAppPanicGuide,
 		Severity:         2,
-		TechnicalSummary: "Checks that " + sc.imageResolverAppName + " is reachable. " + sc.appName + " relies on " + sc.imageResolverAppName + " to get the expanded images",
-		Checker:          sc.imageResolverAppChecker,
+		TechnicalSummary: "Checks that " + sc.contentUnrollerAppName + " is reachable. " + sc.appName + " relies on " + sc.contentUnrollerAppName + " to get the expanded images",
+		Checker:          sc.contentUnrollerAppChecker,
 	}
 }
 
@@ -77,8 +78,8 @@ func (sc *serviceConfig) internalComponentsSourceAppChecker() (string, error) {
 	return sc.checkServiceAvailability(sc.internalComponentsSourceAppName, sc.internalComponentsSourceAppHealthURI)
 }
 
-func (sc *serviceConfig) imageResolverAppChecker() (string, error) {
-	return sc.checkServiceAvailability(sc.imageResolverAppName, sc.imageResolverAppHealthURI)
+func (sc *serviceConfig) contentUnrollerAppChecker() (string, error) {
+	return sc.checkServiceAvailability(sc.contentUnrollerAppName, sc.contentUnrollerAppHealthURI)
 }
 
 func (sc *serviceConfig) checkServiceAvailability(serviceName string, healthURI string) (string, error) {

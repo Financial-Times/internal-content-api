@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"sync"
 
 	"bytes"
@@ -178,7 +179,7 @@ func resolveDC(ctx context.Context, content map[string]interface{}, h internalCo
 		transformedContent, err = h.getUnrolledContent(ctx, content)
 		if err != nil {
 			transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
-			h.handleError(err, h.serviceConfig.imageResolverAppName, h.serviceConfig.imageResolverSourceURI, transactionID, uuid)
+			h.handleError(err, h.serviceConfig.contentUnrollerAppName, h.serviceConfig.contentUnrollerSourceURI, transactionID, uuid)
 			return content
 		}
 	} else {
@@ -234,9 +235,17 @@ func mergeParts(parts []responsePart, baseUrl string) map[string]interface{} {
 	return contents[0]
 }
 
+func matchIDs(idA string, idB string) bool {
+	match, _ := regexp.MatchString(idA+"$", idB)
+	return match
+}
+func sameIds(idA string, idB string) bool {
+	return idA == idB || matchIDs(idA+"$", idB) || matchIDs(idB+"$", idA)
+}
+
 func fixIds(valueMap map[string]interface{}, baseUrl string) {
 	uuid, ok := valueMap["uuid"]
-	if ok {
+	if !ok {
 		return
 	}
 	idURL := baseUrl + uuid.(string)
@@ -257,7 +266,7 @@ func mergeTwoEmbeds(a []interface{}, b []interface{}, baseUrl string) []interfac
 					valueMapA, isMapInA := valueInA.(map[string]interface{})
 					if isMapInA {
 						fixIds(valueMapA, baseUrl)
-						if valueMapB["id"] == valueMapA["id"] {
+						if sameIds(valueMapB["id"].(string), valueMapA["id"].(string)) {
 							//							fmt.Println("mergeTwoContents", valueMapA, valueMapB)
 							a[aKey] = mergeTwoContents(valueMapA, valueMapB, baseUrl)
 						} else {
@@ -323,7 +332,7 @@ func resolveLeadImages(ctx context.Context, content map[string]interface{}, h in
 		transformedContent, err = h.getUnrolledContent(ctx, content)
 		if err != nil {
 			transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
-			h.handleError(err, h.serviceConfig.imageResolverAppName, h.serviceConfig.imageResolverSourceURI, transactionID, uuid)
+			h.handleError(err, h.serviceConfig.contentUnrollerAppName, h.serviceConfig.contentUnrollerSourceURI, transactionID, uuid)
 			return content
 		}
 	} else {
@@ -342,7 +351,7 @@ func (h internalContentHandler) getUnrolledContent(ctx context.Context, content 
 	if err != nil {
 		return expandedContent, err
 	}
-	req, err := http.NewRequest(http.MethodPost, h.serviceConfig.imageResolverSourceURI, bytes.NewReader(body))
+	req, err := http.NewRequest(http.MethodPost, h.serviceConfig.contentUnrollerSourceURI, bytes.NewReader(body))
 	if err != nil {
 		return expandedContent, err
 	}
@@ -357,12 +366,12 @@ func (h internalContentHandler) getUnrolledContent(ctx context.Context, content 
 
 	uuid := ctx.Value(uuidKey).(string)
 	if resp.StatusCode != http.StatusOK {
-		h.log.RequestFailedEvent(h.serviceConfig.imageResolverAppName, req.URL.String(), resp, uuid)
+		h.log.RequestFailedEvent(h.serviceConfig.contentUnrollerAppName, req.URL.String(), resp, uuid)
 		h.metrics.recordRequestFailedEvent()
-		errMsg := fmt.Sprintf("Received status code %d from %v.", resp.StatusCode, h.serviceConfig.imageResolverAppName)
+		errMsg := fmt.Sprintf("Received status code %d from %v.", resp.StatusCode, h.serviceConfig.contentUnrollerAppName)
 		return expandedContent, errors.New(errMsg)
 	}
-	h.log.ResponseEvent(h.serviceConfig.imageResolverAppName, req.URL.String(), resp, uuid)
+	h.log.ResponseEvent(h.serviceConfig.contentUnrollerAppName, req.URL.String(), resp, uuid)
 
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
