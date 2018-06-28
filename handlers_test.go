@@ -54,7 +54,7 @@ func TestMergeEmbeds(t *testing.T) {
 			map[string]interface{}{
 				"embeds": []interface{}{
 					map[string]interface{}{
-						"id":                2,
+						"id":                "2",
 						"alternativeImages": map[string]interface{}{},
 						"alternativeTitles": map[string]interface{}{},
 						"description":       "Description2",
@@ -65,7 +65,7 @@ func TestMergeEmbeds(t *testing.T) {
 			map[string]interface{}{
 				"embeds": []interface{}{
 					map[string]interface{}{
-						"id":                2,
+						"id":                "2",
 						"alternativeImages": map[string]interface{}{},
 						"alternativeTitles": map[string]interface{}{},
 						"description":       "Description2",
@@ -79,7 +79,7 @@ func TestMergeEmbeds(t *testing.T) {
 			map[string]interface{}{
 				"embeds": []interface{}{
 					map[string]interface{}{
-						"id":                1,
+						"id":                "1",
 						"alternativeImages": map[string]interface{}{},
 						"alternativeTitles": map[string]interface{}{},
 						"description":       "Description1",
@@ -90,7 +90,7 @@ func TestMergeEmbeds(t *testing.T) {
 			map[string]interface{}{
 				"embeds": []interface{}{
 					map[string]interface{}{
-						"id":                2,
+						"id":                "2",
 						"alternativeImages": map[string]interface{}{},
 						"alternativeTitles": map[string]interface{}{},
 						"description":       "Description2",
@@ -101,14 +101,14 @@ func TestMergeEmbeds(t *testing.T) {
 			map[string]interface{}{
 				"embeds": []interface{}{
 					map[string]interface{}{
-						"id":                1,
+						"id":                "1",
 						"alternativeImages": map[string]interface{}{},
 						"alternativeTitles": map[string]interface{}{},
 						"description":       "Description1",
 						"lastModified":      "lastModified1",
 					},
 					map[string]interface{}{
-						"id":                2,
+						"id":                "2",
 						"alternativeImages": map[string]interface{}{},
 						"alternativeTitles": map[string]interface{}{},
 						"description":       "Description2",
@@ -122,7 +122,7 @@ func TestMergeEmbeds(t *testing.T) {
 			map[string]interface{}{
 				"embeds": []interface{}{
 					map[string]interface{}{
-						"id":                1,
+						"id":                "1",
 						"alternativeImages": map[string]interface{}{},
 						"alternativeTitles": map[string]interface{}{},
 						"description":       "Description1",
@@ -133,7 +133,7 @@ func TestMergeEmbeds(t *testing.T) {
 			map[string]interface{}{
 				"embeds": []interface{}{
 					map[string]interface{}{
-						"id":                1,
+						"id":                "1",
 						"alternativeTitles": map[string]interface{}{},
 						"description":       "Description2",
 						"lastModified":      "lastModified2",
@@ -143,7 +143,7 @@ func TestMergeEmbeds(t *testing.T) {
 			map[string]interface{}{
 				"embeds": []interface{}{
 					map[string]interface{}{
-						"id":                1,
+						"id":                "1",
 						"alternativeImages": map[string]interface{}{},
 						"alternativeTitles": map[string]interface{}{},
 						"description":       "Description2",
@@ -155,7 +155,7 @@ func TestMergeEmbeds(t *testing.T) {
 	}
 
 	for _, row := range data {
-		res := mergeParts([]responsePart{{content: row.content}, {content: row.component}})
+		res := mergeParts([]responsePart{{content: row.content}, {content: row.component}}, "http://test.api.ft.com/content/")
 		assert.True(t, reflect.DeepEqual(row.mergedContent, res), "Expected and actual merged content differs.\n Expected: %v\n Actual %v\n", row.mergedContent, res)
 	}
 }
@@ -363,7 +363,7 @@ func TestMergeEmbeddedMapsWithOverlappingFields(t *testing.T) {
 	}
 
 	for _, row := range data {
-		res := mergeParts([]responsePart{{content: row.content}, {content: row.component}})
+		res := mergeParts([]responsePart{{content: row.content}, {content: row.component}}, "http://test.api.ft.com/content/")
 		assert.True(t, reflect.DeepEqual(row.mergedContent, res), "Expected and actual merged content differs.\n Expected: %v\n Actual %v\n", row.mergedContent, res)
 	}
 
@@ -463,7 +463,7 @@ func TestResolvingOverlappingMergesFullContent(t *testing.T) {
 	err = json.Unmarshal([]byte(internalComponentJson), &internalComponent)
 	assert.Equal(t, nil, err, "Error %v", err)
 
-	results := mergeParts([]responsePart{{content: content}, {content: internalComponent}})
+	results := mergeParts([]responsePart{{content: content}, {content: internalComponent}}, "")
 
 	promotionalTitle := results["alternativeTitles"].(map[string]interface{})["promotionalTitle"]
 	shortTeaser := results["alternativeTitles"].(map[string]interface{})["shortTeaser"]
@@ -509,31 +509,11 @@ func TestResolvingOverlappingMergesFullContentDC(t *testing.T) {
 	err = json.Unmarshal([]byte(internalComponentJson), &internalComponent)
 	assert.Equal(t, nil, err, "Error %v", err)
 
-	results := mergeParts([]responsePart{{content: content}, {content: internalComponent}})
+	results := mergeParts([]responsePart{{content: content}, {content: internalComponent}}, "http://test.api.ft.com/content/")
 	jsonResult, errJson := json.Marshal(results)
 	assert.Equal(t, nil, errJson, "Error %v", errJson)
-
-	//	e = ioutil.WriteFile("test-resources/out.json", jsonResult, 0644)
-	//	assert.Equal(t, nil, e, "Error %v", e)
 
 	areEqual, e := AreEqualJSON(string(jsonResult), string(expectedContent))
 	assert.Equal(t, nil, e, "Error %v", e)
 	assert.Equal(t, true, areEqual, "Error %v", areEqual)
-}
-
-func TestTransformBlocksDC(t *testing.T) {
-	internalComponentJson, e := ioutil.ReadFile("test-resources/embedded-internalcomponents-outputDC.json")
-	assert.Nil(t, e, "Couldn't read internalcomponents json")
-	var internalComponent map[string]interface{}
-
-	err := json.Unmarshal(internalComponentJson, &internalComponent)
-	assert.Equal(t, nil, err, "Error %v", err)
-	transformBlocks(internalComponent)
-
-	jsonResult, errJson := json.Marshal(internalComponent)
-	assert.Equal(t, nil, errJson, "Error %v", errJson)
-
-	e = ioutil.WriteFile("test-resources/out.json", jsonResult, 0644)
-	assert.Equal(t, nil, e, "Error %v", e)
-
 }

@@ -243,38 +243,41 @@ func sameIds(idA string, idB string) bool {
 	return idA == idB || matchIDs(idA+"$", idB) || matchIDs(idB+"$", idA)
 }
 
-func fixIds(valueMap map[string]interface{}, baseUrl string) {
-	uuid, ok := valueMap["uuid"]
-	if !ok {
-		return
+func fixEmbedIds(vMap []interface{}, baseUrl string) {
+	for _, valueMapB := range vMap {
+		valueMap, _ := valueMapB.(map[string]interface{})
+		uuid, ok := valueMap["uuid"]
+		if !ok {
+			continue
+		}
+		valueMap["id"] = baseUrl + uuid.(string)
+		delete(valueMap, "uuid")
 	}
-	idURL := baseUrl + uuid.(string)
-	valueMap["id"] = idURL
-	delete(valueMap, "uuid")
 }
 
 func mergeTwoEmbeds(a []interface{}, b []interface{}, baseUrl string) []interface{} {
-	//	fmt.Println("mergeTwoEmbeds")
+	if len(a) == 0 {
+		return b
+	}
+	if len(b) == 0 {
+		return a
+	}
 	for _, valueInB := range b {
 		valueMapB, isMapInB := valueInB.(map[string]interface{})
 		if isMapInB {
-			fixIds(valueMapB, baseUrl)
-			if len(a) == 0 {
-				a = append(a, valueMapB)
-			} else {
-				for aKey, valueInA := range a {
-					valueMapA, isMapInA := valueInA.(map[string]interface{})
-					if isMapInA {
-						fixIds(valueMapA, baseUrl)
-						if sameIds(valueMapB["id"].(string), valueMapA["id"].(string)) {
-							//							fmt.Println("mergeTwoContents", valueMapA, valueMapB)
-							a[aKey] = mergeTwoContents(valueMapA, valueMapB, baseUrl)
-						} else {
-							//							fmt.Println("append", a, valueMapB)
-							a = append(a, valueMapB)
-						}
+			lbFound := false
+			for aKey, valueInA := range a {
+				valueMapA, isMapInA := valueInA.(map[string]interface{})
+				if isMapInA {
+					if sameIds(valueMapB["id"].(string), valueMapA["id"].(string)) {
+						a[aKey] = mergeTwoContents(valueMapA, valueMapB, baseUrl)
+						lbFound = true
+						break
 					}
 				}
+			}
+			if !lbFound {
+				a = append(a, valueMapB)
 			}
 		}
 	}
@@ -289,6 +292,8 @@ func mergeTwoContents(a map[string]interface{}, b map[string]interface{}, baseUr
 				arrInA, isArrInA := foundValInA.([]interface{})
 				arrInB, isArrInB := valueInB.([]interface{})
 				if isArrInA && isArrInB {
+					fixEmbedIds(arrInA, baseUrl)
+					fixEmbedIds(arrInB, baseUrl)
 					a[key] = mergeTwoEmbeds(arrInA, arrInB, baseUrl)
 				} else {
 					a[key] = valueInB
