@@ -192,10 +192,10 @@ func (h internalContentHandler) resolveAdditionalFields(ctx context.Context, par
 	uuid := ctx.Value(uuidKey).(string)
 	parts[1].content = resolveDC(ctx, parts[1].content, h)
 	parts[1].content = filterKeys(parts[1].content, internalComponentsFilter)
-	baseUrl := "http://" + h.serviceConfig.envAPIHost + "/content/"
-	mergedContent := mergeParts(parts, baseUrl)
-	resolveRequestUrl(mergedContent, h, uuid)
-	resolveApiUrl(mergedContent, h, uuid)
+	baseURL := "http://" + h.serviceConfig.envAPIHost + "/content/"
+	mergedContent := mergeParts(parts, baseURL)
+	resolveRequestURL(mergedContent, h, uuid)
+	resolveAPIURL(mergedContent, h, uuid)
 	removeEmptyMapFields(mergedContent)
 	return mergedContent
 }
@@ -216,7 +216,7 @@ func filterKeys(m map[string]interface{}, filter map[string]interface{}) map[str
 	return m
 }
 
-func mergeParts(parts []responsePart, baseUrl string) map[string]interface{} {
+func mergeParts(parts []responsePart, baseURL string) map[string]interface{} {
 	if len(parts) == 0 {
 		return make(map[string]interface{})
 	}
@@ -230,7 +230,7 @@ func mergeParts(parts []responsePart, baseUrl string) map[string]interface{} {
 	}
 
 	for i := 1; i < len(contents); i++ {
-		contents[0] = mergeTwoContents(contents[0], contents[i], baseUrl)
+		contents[0] = mergeTwoContents(contents[0], contents[i], baseURL)
 	}
 	return contents[0]
 }
@@ -243,19 +243,19 @@ func sameIds(idA string, idB string) bool {
 	return idA == idB || matchIDs(idA+"$", idB) || matchIDs(idB+"$", idA)
 }
 
-func fixEmbedIds(vMap []interface{}, baseUrl string) {
+func fixEmbedIds(vMap []interface{}, baseURL string) {
 	for _, valueMapB := range vMap {
 		valueMap, _ := valueMapB.(map[string]interface{})
 		uuid, ok := valueMap["uuid"]
 		if !ok {
 			continue
 		}
-		valueMap["id"] = baseUrl + uuid.(string)
+		valueMap["id"] = baseURL + uuid.(string)
 		delete(valueMap, "uuid")
 	}
 }
 
-func mergeTwoEmbeds(a []interface{}, b []interface{}, baseUrl string) []interface{} {
+func mergeTwoEmbeds(a []interface{}, b []interface{}, baseURL string) []interface{} {
 	if len(a) == 0 {
 		return b
 	}
@@ -270,7 +270,7 @@ func mergeTwoEmbeds(a []interface{}, b []interface{}, baseUrl string) []interfac
 				valueMapA, isMapInA := valueInA.(map[string]interface{})
 				if isMapInA {
 					if sameIds(valueMapB["id"].(string), valueMapA["id"].(string)) {
-						a[aKey] = mergeTwoContents(valueMapA, valueMapB, baseUrl)
+						a[aKey] = mergeTwoContents(valueMapA, valueMapB, baseURL)
 						lbFound = true
 						break
 					}
@@ -284,7 +284,7 @@ func mergeTwoEmbeds(a []interface{}, b []interface{}, baseUrl string) []interfac
 	return a
 }
 
-func mergeTwoContents(a map[string]interface{}, b map[string]interface{}, baseUrl string) map[string]interface{} {
+func mergeTwoContents(a map[string]interface{}, b map[string]interface{}, baseURL string) map[string]interface{} {
 	for key, valueInB := range b {
 		foundValInA, foundInA := a[key]
 		if foundInA {
@@ -292,9 +292,9 @@ func mergeTwoContents(a map[string]interface{}, b map[string]interface{}, baseUr
 				arrInA, isArrInA := foundValInA.([]interface{})
 				arrInB, isArrInB := valueInB.([]interface{})
 				if isArrInA && isArrInB {
-					fixEmbedIds(arrInA, baseUrl)
-					fixEmbedIds(arrInB, baseUrl)
-					a[key] = mergeTwoEmbeds(arrInA, arrInB, baseUrl)
+					fixEmbedIds(arrInA, baseURL)
+					fixEmbedIds(arrInB, baseURL)
+					a[key] = mergeTwoEmbeds(arrInA, arrInB, baseURL)
 				} else {
 					a[key] = valueInB
 				}
@@ -302,7 +302,7 @@ func mergeTwoContents(a map[string]interface{}, b map[string]interface{}, baseUr
 				mapInA, isMapInA := foundValInA.(map[string]interface{})
 				mapInB, isMapInB := valueInB.(map[string]interface{})
 				if isMapInA && isMapInB {
-					a[key] = mergeTwoContents(mapInA, mapInB, baseUrl)
+					a[key] = mergeTwoContents(mapInA, mapInB, baseURL)
 				} else {
 					a[key] = valueInB
 				}
@@ -426,14 +426,14 @@ func transformLeadImage(leadImage map[string]interface{}) {
 	delete(imageModelAsMap, "requestUrl")
 }
 
-func resolveRequestUrl(content map[string]interface{}, handler internalContentHandler, contentUUID string) {
-	content["requestUrl"] = createRequestUrl(handler.serviceConfig.envAPIHost, handler.serviceConfig.handlerPath, contentUUID)
+func resolveRequestURL(content map[string]interface{}, handler internalContentHandler, contentUUID string) {
+	content["requestUrl"] = createRequestURL(handler.serviceConfig.envAPIHost, handler.serviceConfig.handlerPath, contentUUID)
 }
 
-func resolveApiUrl(content map[string]interface{}, handler internalContentHandler, contentUUID string) {
+func resolveAPIURL(content map[string]interface{}, handler internalContentHandler, contentUUID string) {
 	handlerPath := handler.serviceConfig.handlerPath
 	if !isPreview(handlerPath) {
-		content["apiUrl"] = createRequestUrl(handler.serviceConfig.envAPIHost, handlerPath, contentUUID)
+		content["apiUrl"] = createRequestURL(handler.serviceConfig.envAPIHost, handlerPath, contentUUID)
 	}
 }
 
@@ -441,7 +441,7 @@ func isPreview(handlerPath string) bool {
 	return strings.HasSuffix(handlerPath, previewSuffix)
 }
 
-func createRequestUrl(APIHost string, handlerPath string, uuid string) string {
+func createRequestURL(APIHost string, handlerPath string, uuid string) string {
 	if isPreview(handlerPath) {
 		handlerPath = strings.TrimSuffix(handlerPath, previewSuffix)
 	}

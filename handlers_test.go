@@ -450,17 +450,17 @@ func TestFilterKeys(t *testing.T) {
 
 func TestResolvingOverlappingMergesFullContent(t *testing.T) {
 
-	contentJson, e := ioutil.ReadFile("test-resources/embedded-enrichedcontent-output.json")
+	contentJSON, e := ioutil.ReadFile("test-resources/embedded-enrichedcontent-output.json")
 	assert.Nil(t, e, "Couldn't read enrichedcontent json")
 
-	internalComponentJson, e := ioutil.ReadFile("test-resources/embedded-internalcomponents-output.json")
+	internalComponentJSON, e := ioutil.ReadFile("test-resources/embedded-internalcomponents-output.json")
 	assert.Nil(t, e, "Couldn't read internalcomponents json")
 
 	var content, internalComponent map[string]interface{}
 
-	err := json.Unmarshal(contentJson, &content)
+	err := json.Unmarshal(contentJSON, &content)
 	assert.Equal(t, nil, err, "Error %v", err)
-	err = json.Unmarshal([]byte(internalComponentJson), &internalComponent)
+	err = json.Unmarshal([]byte(internalComponentJSON), &internalComponent)
 	assert.Equal(t, nil, err, "Error %v", err)
 
 	results := mergeParts([]responsePart{{content: content}, {content: internalComponent}}, "")
@@ -493,10 +493,10 @@ func AreEqualJSON(s1, s2 string) (bool, error) {
 
 func TestResolvingOverlappingMergesFullContentDC(t *testing.T) {
 
-	contentJson, e := ioutil.ReadFile("test-resources/embedded-enrichedcontent-outputDC.json")
+	contentJSON, e := ioutil.ReadFile("test-resources/embedded-enrichedcontent-outputDC.json")
 	assert.Nil(t, e, "Couldn't read enrichedcontent json")
 
-	internalComponentJson, e := ioutil.ReadFile("test-resources/embedded-internalcomponents-outputDC.json")
+	internalComponentJSON, e := ioutil.ReadFile("test-resources/embedded-internalcomponents-outputDC.json")
 	assert.Nil(t, e, "Couldn't read internalcomponents json")
 
 	expectedContent, e := ioutil.ReadFile("test-resources/expanded-internal-content-api-outputDC.json")
@@ -504,14 +504,14 @@ func TestResolvingOverlappingMergesFullContentDC(t *testing.T) {
 
 	var content, internalComponent map[string]interface{}
 
-	err := json.Unmarshal(contentJson, &content)
+	err := json.Unmarshal(contentJSON, &content)
 	assert.Equal(t, nil, err, "Error %v", err)
-	err = json.Unmarshal([]byte(internalComponentJson), &internalComponent)
+	err = json.Unmarshal([]byte(internalComponentJSON), &internalComponent)
 	assert.Equal(t, nil, err, "Error %v", err)
 
 	results := mergeParts([]responsePart{{content: content}, {content: internalComponent}}, "http://test.api.ft.com/content/")
-	jsonResult, errJson := json.Marshal(results)
-	assert.Equal(t, nil, errJson, "Error %v", errJson)
+	jsonResult, errJSON := json.Marshal(results)
+	assert.Equal(t, nil, errJSON, "Error %v", errJSON)
 
 	areEqual, e := AreEqualJSON(string(jsonResult), string(expectedContent))
 	assert.Equal(t, nil, e, "Error %v", e)
