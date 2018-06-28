@@ -110,35 +110,35 @@ func main() {
 		Desc:   "Describe the business impact the internal components source app would produce if it is broken.",
 		EnvVar: "INTERNAL_COMPONENTS_SOURCE_APP_BUSINESS_IMPACT",
 	})
-	imageResolverURI := app.String(cli.StringOpt{
-		Name:   "image-resolver-uri",
-		Value:  "http://localhost:8080/__image-resolver/internalcontent/image",
-		Desc:   "URI of the image resolver application",
-		EnvVar: "IMAGE_RESOLVER_URI",
+	contentUnrollerURI := app.String(cli.StringOpt{
+		Name:   "content-unroller-uri",
+		Value:  "http://localhost:8080/__content-unroller/internalcontent",
+		Desc:   "URI of the content unroller application",
+		EnvVar: "CONTENT_UNROLLER_URI",
 	})
-	imageResolverAppName := app.String(cli.StringOpt{
-		Name:   "image-resolver-app-name",
-		Value:  "image-resolver",
+	contentUnrollerAppName := app.String(cli.StringOpt{
+		Name:   "content-unroller-app-name",
+		Value:  "content-unroller",
 		Desc:   "Service of the image resolver application",
-		EnvVar: "IMAGE_RESOLVER_APP_NAME",
+		EnvVar: "CONTENT_UNROLLER_APP_NAME",
 	})
-	imageResolverAppHealthURI := app.String(cli.StringOpt{
-		Name:   "image-resolver-app-health-uri",
-		Value:  "http://localhost:8080/__image-resolver/__health",
-		Desc:   "URI of the Image Resolver service health endpoint",
-		EnvVar: "IMAGE_RESOLVER_APP_HEALTH_URI",
+	contentUnrollerAppHealthURI := app.String(cli.StringOpt{
+		Name:   "content-unroller-app-health-uri",
+		Value:  "http://localhost:8080/__content-unroller/__health",
+		Desc:   "URI of the Content Unroller service health endpoint",
+		EnvVar: "CONTENT_UNROLLER_APP_HEALTH_URI",
 	})
-	imageResolverAppPanicGuide := app.String(cli.StringOpt{
-		Name:   "image-resolver-app-panic-guide",
-		Value:  "https://dewey.ft.com/image-resolver.html",
-		Desc:   "Image Resolver application panic guide url for healthcheck.",
-		EnvVar: "IMAGE_RESOLVER_APP_PANIC_GUIDE",
+	contentUnrollerAppPanicGuide := app.String(cli.StringOpt{
+		Name:   "content-unroller-app-panic-guide",
+		Value:  "https://dewey.ft.com/content-unroller.html",
+		Desc:   "Content Unroller application panic guide url for healthcheck.",
+		EnvVar: "CONTENT_UNROLLER_APP_PANIC_GUIDE",
 	})
-	imageResolverAppBusinessImpact := app.String(cli.StringOpt{
-		Name:   "image-resolver-app-business-impact",
-		Value:  "Expanded images would not be available",
-		Desc:   "Describe the business impact the image resolver app would produce if it is broken.",
-		EnvVar: "IMAGE_RESOLVER_APP_BUSINESS_IMPACT",
+	contentUnrollerAppBusinessImpact := app.String(cli.StringOpt{
+		Name:   "content-unroller-app-business-impact",
+		Value:  "Dynamic Content and images would not be available",
+		Desc:   "Describe the business impact the content unroller app would produce if it is broken.",
+		EnvVar: "CONTENT_UNROLLER_APP_BUSINESS_IMPACT",
 	})
 	envAPIHost := app.String(cli.StringOpt{
 		Name:   "env-api-host",
@@ -190,11 +190,11 @@ func main() {
 			*internalComponentsSourceAppHealthURI,
 			*internalComponentsSourceAppPanicGuide,
 			*internalComponentsSourceAppBusinessImpact,
-			*imageResolverURI,
-			*imageResolverAppName,
-			*imageResolverAppHealthURI,
-			*imageResolverAppPanicGuide,
-			*imageResolverAppBusinessImpact,
+			*contentUnrollerURI,
+			*contentUnrollerAppName,
+			*contentUnrollerAppHealthURI,
+			*contentUnrollerAppPanicGuide,
+			*contentUnrollerAppBusinessImpact,
 			*envAPIHost,
 			*graphiteTCPAddress,
 			*graphitePrefix,
@@ -226,7 +226,7 @@ func setupServiceHandler(sc serviceConfig, metricsHandler Metrics, contentHandle
 			SystemCode:  sc.appSystemCode,
 			Description: serviceDescription,
 			Name:        sc.appName,
-			Checks:      []fthealth.Check{sc.contentSourceAppCheck(), sc.internalComponentsSourceAppCheck(), sc.imageResolverAppCheck()},
+			Checks:      []fthealth.Check{sc.contentSourceAppCheck(), sc.internalComponentsSourceAppCheck(), sc.contentUnrollerAppCheck()},
 		},
 		Timeout: 10 * time.Second,
 	}
@@ -254,11 +254,11 @@ type serviceConfig struct {
 	internalComponentsSourceAppHealthURI      string
 	internalComponentsSourceAppPanicGuide     string
 	internalComponentsSourceAppBusinessImpact string
-	imageResolverSourceURI                    string
-	imageResolverAppName                      string
-	imageResolverAppHealthURI                 string
-	imageResolverAppPanicGuide                string
-	imageResolverAppBusinessImpact            string
+	contentUnrollerSourceURI                  string
+	contentUnrollerAppName                    string
+	contentUnrollerAppHealthURI               string
+	contentUnrollerAppPanicGuide              string
+	contentUnrollerAppBusinessImpact          string
 	envAPIHost                                string
 	graphiteTCPAddress                        string
 	graphitePrefix                            string
@@ -282,11 +282,11 @@ func (sc serviceConfig) asMap() map[string]interface{} {
 		"internal-components-source-app-health-uri":      sc.internalComponentsSourceAppHealthURI,
 		"internal-components-source-app-panic-guide":     sc.internalComponentsSourceAppPanicGuide,
 		"internal-components-source-app-business-impact": sc.internalComponentsSourceAppBusinessImpact,
-		"image-resolver-source-uri":                      sc.imageResolverSourceURI,
-		"image-resolver-app-name":                        sc.imageResolverAppName,
-		"image-resolver-app-health-uri":                  sc.imageResolverAppHealthURI,
-		"image-resolver-app-panic-guide":                 sc.imageResolverAppPanicGuide,
-		"image-resolver-app-bussines-impact":             sc.imageResolverAppBusinessImpact,
+		"image-resolver-source-uri":                      sc.contentUnrollerSourceURI,
+		"image-resolver-app-name":                        sc.contentUnrollerAppName,
+		"image-resolver-app-health-uri":                  sc.contentUnrollerAppHealthURI,
+		"image-resolver-app-panic-guide":                 sc.contentUnrollerAppPanicGuide,
+		"image-resolver-app-bussines-impact":             sc.contentUnrollerAppBusinessImpact,
 		"env-api-host":                                   sc.envAPIHost,
 		"graphite-tcp-address":                           sc.graphiteTCPAddress,
 		"graphite-prefix":                                sc.graphitePrefix,
