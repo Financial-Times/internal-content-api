@@ -209,7 +209,7 @@ func TestShouldReturn200AndInternalComponentOutput(t *testing.T) {
 	assert.Equal(t, "max-age=10", resp.Header.Get("Cache-Control"), "Should have cache control set")
 }
 
-func TestShouldReturn200WhenExpandImagesIsTrueAndInternalComponentOutput(t *testing.T) {
+func TestShouldReturn200WhenUnrollContentIsTrueAndInternalComponentOutput(t *testing.T) {
 	startEnrichedContentAPIMock("happy")
 	startDocumentStoreAPIMock("happy")
 	startImageResolverServiceMock("happy")
@@ -218,7 +218,7 @@ func TestShouldReturn200WhenExpandImagesIsTrueAndInternalComponentOutput(t *test
 
 	req, err := http.NewRequest(http.MethodGet, internalContentAPI.URL+"/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce", nil)
 	q := req.URL.Query()
-	q.Add("expandImages", "true")
+	q.Add("unrollContent", "true")
 	req.URL.RawQuery = q.Encode()
 
 	resp, err := http.DefaultClient.Do(req)
@@ -239,7 +239,7 @@ func TestShouldReturn200WhenExpandImagesIsTrueAndInternalComponentOutput(t *test
 	assert.Equal(t, "max-age=10", resp.Header.Get("Cache-Control"), "Should have cache control set")
 }
 
-func TestShouldReturn200AndInternalComponentOutputWhenExpandImagesReturns400(t *testing.T) {
+func TestShouldReturn200AndInternalComponentOutputWhenUnrollContentReturns400(t *testing.T) {
 	startEnrichedContentAPIMock("happy")
 	startDocumentStoreAPIMock("happy")
 	startImageResolverServiceMock("badRequest")
@@ -248,7 +248,7 @@ func TestShouldReturn200AndInternalComponentOutputWhenExpandImagesReturns400(t *
 
 	req, err := http.NewRequest(http.MethodGet, internalContentAPI.URL+"/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce", nil)
 	q := req.URL.Query()
-	q.Add("expandImages", "true")
+	q.Add("unrollContent", "true")
 	req.URL.RawQuery = q.Encode()
 
 	resp, err := http.DefaultClient.Do(req)
@@ -269,7 +269,7 @@ func TestShouldReturn200AndInternalComponentOutputWhenExpandImagesReturns400(t *
 	assert.Equal(t, "max-age=10", resp.Header.Get("Cache-Control"), "Should have cache control set")
 }
 
-func TestShouldReturn200AndInternalComponentOutputWhenExpandImagesReturns500(t *testing.T) {
+func TestShouldReturn200AndInternalComponentOutputWhenUnrollContentReturns500(t *testing.T) {
 	startEnrichedContentAPIMock("happy")
 	startDocumentStoreAPIMock("happy")
 	startImageResolverServiceMock("unhappy")
@@ -278,7 +278,7 @@ func TestShouldReturn200AndInternalComponentOutputWhenExpandImagesReturns500(t *
 
 	req, err := http.NewRequest(http.MethodGet, internalContentAPI.URL+"/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce", nil)
 	q := req.URL.Query()
-	q.Add("expandImages", "true")
+	q.Add("unrollContent", "true")
 	req.URL.RawQuery = q.Encode()
 
 	resp, err := http.DefaultClient.Do(req)

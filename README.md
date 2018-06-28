@@ -74,7 +74,7 @@ Example
 The read should return the internal content of an article (i.e. an aggregation of enriched content plus internal components).
 
 #### Optional Parameters
-`expandImages={boolean}`, default *false*
+`unrollContent={boolean}`, default *false*
 
 When `true` all the images in the response(main image, body embedded images, lead images and alternative images) get expanded with the content as content-public-read service was called for that image. This service does not call content-public-read directly, but uses image-resolver which is responsible to get the requested images. When `false` the response contains only the IDs to the images.
 

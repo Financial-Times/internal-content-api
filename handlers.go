@@ -21,12 +21,13 @@ import (
 )
 
 const (
-	previewSuffix              = "-preview"
-	uuidKey         contextKey = "uuid"
-	expandImagesKey contextKey = "expandImages"
+	previewSuffix               = "-preview"
+	uuidKey          contextKey = "uuid"
+	unrollContentKey contextKey = "unrollContent"
 )
 
 var internalComponentsFilter = map[string]interface{}{
+	"id":               "",
 	"uuid":             "",
 	"lastModified":     "",
 	"publishReference": "",
@@ -75,14 +76,14 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 	tid := transactionidutils.GetTransactionIDFromRequest(r)
 	h.log.TransactionStartedEvent(r.RequestURI, tid, uuid)
 
-	expandImagesParam := r.URL.Query().Get(expandImagesKey.String())
-	expandImages, err := strconv.ParseBool(expandImagesParam)
+	unrollContentParam := r.URL.Query().Get(unrollContentKey.String())
+	unrollContent, err := strconv.ParseBool(unrollContentParam)
 	if err != nil {
-		expandImages = false
+		unrollContent = false
 	}
 
 	ctx := context.WithValue(transactionidutils.TransactionAwareContext(context.Background(), tid), uuidKey, uuid)
-	ctx = context.WithValue(ctx, expandImagesKey, expandImages)
+	ctx = context.WithValue(ctx, unrollContentKey, unrollContent)
 
 	retrievers := []retriever{
 		{h.serviceConfig.contentSourceURI, h.serviceConfig.contentSourceAppName, true},
@@ -138,6 +139,23 @@ func (h internalContentHandler) asyncRetrievalsAndUnmarshalls(ctx context.Contex
 	return responseParts
 }
 
+func debug_map(what string, x map[string]interface{}) {
+	b, err := json.MarshalIndent(x, "", "  ")
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	fmt.Println("************ :  " + what)
+	fmt.Println(string(b))
+}
+
+func debug_content(filename string, w map[string]interface{}) {
+	jsonResult, e := json.Marshal(w)
+	e = ioutil.WriteFile("d:\\"+filename, jsonResult, 0644)
+	if e != nil {
+		panic(e)
+	}
+}
+
 func (h internalContentHandler) retrieveAndUnmarshall(ctx context.Context, r retriever, uuid string, tid string) responsePart {
 	part, resp := h.callService(ctx, r)
 	defer cleanupResp(resp, h.log.log)
@@ -152,11 +170,49 @@ func (h internalContentHandler) retrieveAndUnmarshall(ctx context.Context, r ret
 	return part
 }
 
+func resolveDC(ctx context.Context, content map[string]interface{}, h internalContentHandler) map[string]interface{} {
+	leadImages, ok := content["leadImages"].([]interface{})
+	if !ok {
+		return content
+	}
+
+	for _, img := range leadImages {
+		img, ok := img.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		imgURL := "http://" + h.serviceConfig.envAPIHost + "/content/" + img["id"].(string)
+		img["id"] = imgURL
+	}
+	var transformedContent map[string]interface{}
+	unrollContent := ctx.Value(unrollContentKey).(bool)
+	if unrollContent {
+		var err error
+		content["id"] = content["uuid"]
+		delete(content, "uuid")
+
+		uuid := ctx.Value(uuidKey).(string)
+		transformedContent, err = h.getUnrolledContent(ctx, content)
+		if err != nil {
+			transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
+			h.handleError(err, h.serviceConfig.imageResolverAppName, h.serviceConfig.imageResolverSourceURI, transactionID, uuid)
+			return content
+		}
+	} else {
+		return content
+	}
+	return transformedContent
+}
+
 func (h internalContentHandler) resolveAdditionalFields(ctx context.Context, parts []responsePart) map[string]interface{} {
 	uuid := ctx.Value(uuidKey).(string)
+	parts[1].content = resolveDC(ctx, parts[1].content, h)
 	parts[1].content = filterKeys(parts[1].content, internalComponentsFilter)
-	mergedContent := mergeParts(parts)
-	mergedContent = resolveLeadImages(ctx, mergedContent, h)
+
+	debug_content("0.json", parts[0].content)
+	debug_content("1.json", parts[1].content)
+	baseUrl := "http://" + h.serviceConfig.envAPIHost + "/content/"
+	mergedContent := mergeParts(parts, baseUrl)
 	resolveRequestUrl(mergedContent, h, uuid)
 	resolveApiUrl(mergedContent, h, uuid)
 	removeEmptyMapFields(mergedContent)
@@ -179,7 +235,7 @@ func filterKeys(m map[string]interface{}, filter map[string]interface{}) map[str
 	return m
 }
 
-func mergeParts(parts []responsePart) map[string]interface{} {
+func mergeParts(parts []responsePart, baseUrl string) map[string]interface{} {
 	if len(parts) == 0 {
 		return make(map[string]interface{})
 	}
@@ -193,21 +249,69 @@ func mergeParts(parts []responsePart) map[string]interface{} {
 	}
 
 	for i := 1; i < len(contents); i++ {
-		contents[0] = mergeTwoContents(contents[0], contents[i])
+		contents[0] = mergeTwoContents(contents[0], contents[i], baseUrl)
 	}
 	return contents[0]
 }
 
-func mergeTwoContents(a map[string]interface{}, b map[string]interface{}) map[string]interface{} {
+func fixIds(valueMap map[string]interface{}, baseUrl string) {
+	uuid, ok := valueMap["uuid"]
+	if ok {
+		return
+	}
+	idURL := baseUrl + uuid.(string)
+	valueMap["id"] = idURL
+	delete(valueMap, "uuid")
+}
+
+func mergeTwoEmbeds(a []interface{}, b []interface{}, baseUrl string) []interface{} {
+	//	fmt.Println("mergeTwoEmbeds")
+	for _, valueInB := range b {
+		valueMapB, isMapInB := valueInB.(map[string]interface{})
+		if isMapInB {
+			fixIds(valueMapB, baseUrl)
+			if len(a) == 0 {
+				a = append(a, valueMapB)
+			} else {
+				for aKey, valueInA := range a {
+					valueMapA, isMapInA := valueInA.(map[string]interface{})
+					if isMapInA {
+						fixIds(valueMapA, baseUrl)
+						if valueMapB["id"] == valueMapA["id"] {
+							//							fmt.Println("mergeTwoContents", valueMapA, valueMapB)
+							a[aKey] = mergeTwoContents(valueMapA, valueMapB, baseUrl)
+						} else {
+							//							fmt.Println("append", a, valueMapB)
+							a = append(a, valueMapB)
+						}
+					}
+				}
+			}
+		}
+	}
+	return a
+}
+
+func mergeTwoContents(a map[string]interface{}, b map[string]interface{}, baseUrl string) map[string]interface{} {
 	for key, valueInB := range b {
 		foundValInA, foundInA := a[key]
 		if foundInA {
-			mapInA, isMapInA := foundValInA.(map[string]interface{})
-			mapInB, isMapInB := valueInB.(map[string]interface{})
-			if isMapInA && isMapInB {
-				a[key] = mergeTwoContents(mapInA, mapInB)
+			if key == "embeds" {
+				arrInA, isArrInA := foundValInA.([]interface{})
+				arrInB, isArrInB := valueInB.([]interface{})
+				if isArrInA && isArrInB {
+					a[key] = mergeTwoEmbeds(arrInA, arrInB, baseUrl)
+				} else {
+					a[key] = valueInB
+				}
 			} else {
-				a[key] = valueInB
+				mapInA, isMapInA := foundValInA.(map[string]interface{})
+				mapInB, isMapInB := valueInB.(map[string]interface{})
+				if isMapInA && isMapInB {
+					a[key] = mergeTwoContents(mapInA, mapInB, baseUrl)
+				} else {
+					a[key] = valueInB
+				}
 			}
 		} else {
 			a[key] = valueInB
@@ -232,11 +336,11 @@ func resolveLeadImages(ctx context.Context, content map[string]interface{}, h in
 	}
 
 	var transformedContent map[string]interface{}
-	expandImages := ctx.Value(expandImagesKey).(bool)
-	if expandImages {
+	unrollContent := ctx.Value(unrollContentKey).(bool)
+	if unrollContent {
 		var err error
 		uuid := ctx.Value(uuidKey).(string)
-		transformedContent, err = h.getExpandedImages(ctx, content)
+		transformedContent, err = h.getUnrolledContent(ctx, content)
 		if err != nil {
 			transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
 			h.handleError(err, h.serviceConfig.imageResolverAppName, h.serviceConfig.imageResolverSourceURI, transactionID, uuid)
@@ -248,7 +352,7 @@ func resolveLeadImages(ctx context.Context, content map[string]interface{}, h in
 	return transformedContent
 }
 
-func (h internalContentHandler) getExpandedImages(ctx context.Context, content map[string]interface{}) (map[string]interface{}, error) {
+func (h internalContentHandler) getUnrolledContent(ctx context.Context, content map[string]interface{}) (map[string]interface{}, error) {
 	var expandedContent map[string]interface{}
 	transactionID, err := transactionidutils.GetTransactionIDFromContext(ctx)
 	if err != nil {
@@ -258,7 +362,6 @@ func (h internalContentHandler) getExpandedImages(ctx context.Context, content m
 	if err != nil {
 		return expandedContent, err
 	}
-
 	req, err := http.NewRequest(http.MethodPost, h.serviceConfig.imageResolverSourceURI, bytes.NewReader(body))
 	if err != nil {
 		return expandedContent, err
@@ -301,6 +404,7 @@ func (h internalContentHandler) getExpandedImages(ctx context.Context, content m
 		leadImageAsMap := leadImagesAsArray[i].(map[string]interface{})
 		transformLeadImage(leadImageAsMap)
 	}
+
 	return expandedContent, nil
 }
 
@@ -326,6 +430,49 @@ func transformLeadImage(leadImage map[string]interface{}) {
 	imageModelAsMap["id"] = apiURLAsString
 	imageModelAsMap["apiUrl"] = apiURLAsString
 	delete(imageModelAsMap, "requestUrl")
+}
+
+func transformBlocks(expandedContent map[string]interface{}) {
+	blocks, found := expandedContent["blocks"]
+	if !found {
+		return
+	}
+
+	if blocks != nil {
+		fmt.Println("***************")
+		fmt.Println(blocks)
+		fmt.Println("***************")
+
+		blocksAsArray := (blocks).([]interface{})
+		for i := 0; i < len(blocksAsArray); i++ {
+			blocksAsMap := blocksAsArray[i].(map[string]interface{})
+			transformBlock(blocksAsMap)
+		}
+	}
+}
+
+func transformBlock(blocks map[string]interface{}) {
+	blocksModel, found := blocks["image"]
+	if !found {
+		//if image field is not found inside the image, continue the processing
+		return
+	}
+
+	var apiURL interface{}
+	blockModelAsMap := blocksModel.(map[string]interface{})
+	if apiURL, found = blockModelAsMap["requestUrl"]; !found {
+		if apiURL, found = blocks["id"]; !found {
+			return
+		}
+	}
+
+	apiURLAsString, ok := apiURL.(string)
+	if !ok {
+		return
+	}
+	blockModelAsMap["id"] = apiURLAsString
+	blockModelAsMap["apiUrl"] = apiURLAsString
+	delete(blockModelAsMap, "requestUrl")
 }
 
 func resolveRequestUrl(content map[string]interface{}, handler internalContentHandler, contentUUID string) {
@@ -364,10 +511,10 @@ func (h internalContentHandler) callService(ctx context.Context, r retriever) (r
 	req.Header.Set(transactionidutils.TransactionIDHeader, transactionID)
 	req.Header.Set("Content-Type", "application/json")
 
-	expandImages, ok := ctx.Value(expandImagesKey).(bool)
+	unrollContent, ok := ctx.Value(unrollContentKey).(bool)
 	if ok && r.sourceAppName == h.serviceConfig.contentSourceAppName {
 		q := req.URL.Query()
-		q.Add(expandImagesKey.String(), strconv.FormatBool(expandImages))
+		q.Add(unrollContentKey.String(), strconv.FormatBool(unrollContent))
 		req.URL.RawQuery = q.Encode()
 	}
 

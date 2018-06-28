@@ -1,14 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"testing"
 
 	"encoding/json"
+	"io/ioutil"
+	"reflect"
+
 	"github.com/Financial-Times/transactionid-utils-go"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
-	"io/ioutil"
-	"reflect"
 )
 
 func TestResolveLeadImgURLs(t *testing.T) {
@@ -26,7 +28,7 @@ func TestResolveLeadImgURLs(t *testing.T) {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, transactionidutils.TransactionIDKey, "sample_tid")
 	ctx = context.WithValue(ctx, uuidKey, "4deb3541-d455-3a39-a51f-ebd94095aa98")
-	ctx = context.WithValue(ctx, expandImagesKey, false)
+	ctx = context.WithValue(ctx, unrollContentKey, false)
 
 	actual := resolveLeadImages(ctx, content, h)
 
@@ -35,6 +37,127 @@ func TestResolveLeadImgURLs(t *testing.T) {
 
 	assert.Equal(t, "http://unit-test.ft.com/content/56aed7e7-485f-303d-9605-b885b86e947e", squareImgID.(string))
 	assert.Equal(t, "http://unit-test.ft.com/content/56aed7e7-485f-303d-9605-b885b86e947f", wideImgID.(string))
+}
+
+func TestMergeEmbeds(t *testing.T) {
+	data := []struct {
+		name          string
+		content       map[string]interface{}
+		component     map[string]interface{}
+		mergedContent map[string]interface{}
+	}{
+		{
+			"Empty A remains B",
+			map[string]interface{}{
+				"embeds": []interface{}{},
+			},
+			map[string]interface{}{
+				"embeds": []interface{}{
+					map[string]interface{}{
+						"id":                2,
+						"alternativeImages": map[string]interface{}{},
+						"alternativeTitles": map[string]interface{}{},
+						"description":       "Description2",
+						"lastModified":      "lastModified2",
+					},
+				},
+			},
+			map[string]interface{}{
+				"embeds": []interface{}{
+					map[string]interface{}{
+						"id":                2,
+						"alternativeImages": map[string]interface{}{},
+						"alternativeTitles": map[string]interface{}{},
+						"description":       "Description2",
+						"lastModified":      "lastModified2",
+					},
+				},
+			},
+		},
+		{
+			"embeds are concatenated",
+			map[string]interface{}{
+				"embeds": []interface{}{
+					map[string]interface{}{
+						"id":                1,
+						"alternativeImages": map[string]interface{}{},
+						"alternativeTitles": map[string]interface{}{},
+						"description":       "Description1",
+						"lastModified":      "lastModified1",
+					},
+				},
+			},
+			map[string]interface{}{
+				"embeds": []interface{}{
+					map[string]interface{}{
+						"id":                2,
+						"alternativeImages": map[string]interface{}{},
+						"alternativeTitles": map[string]interface{}{},
+						"description":       "Description2",
+						"lastModified":      "lastModified2",
+					},
+				},
+			},
+			map[string]interface{}{
+				"embeds": []interface{}{
+					map[string]interface{}{
+						"id":                1,
+						"alternativeImages": map[string]interface{}{},
+						"alternativeTitles": map[string]interface{}{},
+						"description":       "Description1",
+						"lastModified":      "lastModified1",
+					},
+					map[string]interface{}{
+						"id":                2,
+						"alternativeImages": map[string]interface{}{},
+						"alternativeTitles": map[string]interface{}{},
+						"description":       "Description2",
+						"lastModified":      "lastModified2",
+					},
+				},
+			},
+		},
+		{
+			"embeds are updated",
+			map[string]interface{}{
+				"embeds": []interface{}{
+					map[string]interface{}{
+						"id":                1,
+						"alternativeImages": map[string]interface{}{},
+						"alternativeTitles": map[string]interface{}{},
+						"description":       "Description1",
+						"lastModified":      "lastModified1",
+					},
+				},
+			},
+			map[string]interface{}{
+				"embeds": []interface{}{
+					map[string]interface{}{
+						"id":                1,
+						"alternativeTitles": map[string]interface{}{},
+						"description":       "Description2",
+						"lastModified":      "lastModified2",
+					},
+				},
+			},
+			map[string]interface{}{
+				"embeds": []interface{}{
+					map[string]interface{}{
+						"id":                1,
+						"alternativeImages": map[string]interface{}{},
+						"alternativeTitles": map[string]interface{}{},
+						"description":       "Description2",
+						"lastModified":      "lastModified2",
+					},
+				},
+			},
+		},
+	}
+
+	for _, row := range data {
+		res := mergeParts([]responsePart{{content: row.content}, {content: row.component}})
+		assert.True(t, reflect.DeepEqual(row.mergedContent, res), "Expected and actual merged content differs.\n Expected: %v\n Actual %v\n", row.mergedContent, res)
+	}
 }
 
 func TestMergeEmbeddedMapsWithOverlappingFields(t *testing.T) {
@@ -349,4 +472,68 @@ func TestResolvingOverlappingMergesFullContent(t *testing.T) {
 	assert.Equal(t, "promo title", promotionalTitle)
 	assert.Equal(t, "short teaser", shortTeaser)
 	assert.Equal(t, "standfirst", alternativeStandfirsts)
+}
+
+func AreEqualJSON(s1, s2 string) (bool, error) {
+	var o1 interface{}
+	var o2 interface{}
+
+	var err error
+	err = json.Unmarshal([]byte(s1), &o1)
+	if err != nil {
+		return false, fmt.Errorf("Error mashalling string 1 :: %s", err.Error())
+	}
+	err = json.Unmarshal([]byte(s2), &o2)
+	if err != nil {
+		return false, fmt.Errorf("Error mashalling string 2 :: %s", err.Error())
+	}
+
+	return reflect.DeepEqual(o1, o2), nil
+}
+
+func TestResolvingOverlappingMergesFullContentDC(t *testing.T) {
+
+	contentJson, e := ioutil.ReadFile("test-resources/embedded-enrichedcontent-outputDC.json")
+	assert.Nil(t, e, "Couldn't read enrichedcontent json")
+
+	internalComponentJson, e := ioutil.ReadFile("test-resources/embedded-internalcomponents-outputDC.json")
+	assert.Nil(t, e, "Couldn't read internalcomponents json")
+
+	expectedContent, e := ioutil.ReadFile("test-resources/expanded-internal-content-api-outputDC.json")
+	assert.Nil(t, e, "Couldn't read enrichedcontent json")
+
+	var content, internalComponent map[string]interface{}
+
+	err := json.Unmarshal(contentJson, &content)
+	assert.Equal(t, nil, err, "Error %v", err)
+	err = json.Unmarshal([]byte(internalComponentJson), &internalComponent)
+	assert.Equal(t, nil, err, "Error %v", err)
+
+	results := mergeParts([]responsePart{{content: content}, {content: internalComponent}})
+	jsonResult, errJson := json.Marshal(results)
+	assert.Equal(t, nil, errJson, "Error %v", errJson)
+
+	//	e = ioutil.WriteFile("test-resources/out.json", jsonResult, 0644)
+	//	assert.Equal(t, nil, e, "Error %v", e)
+
+	areEqual, e := AreEqualJSON(string(jsonResult), string(expectedContent))
+	assert.Equal(t, nil, e, "Error %v", e)
+	assert.Equal(t, true, areEqual, "Error %v", areEqual)
+}
+
+func TestTransformBlocksDC(t *testing.T) {
+	internalComponentJson, e := ioutil.ReadFile("test-resources/embedded-internalcomponents-outputDC.json")
+	assert.Nil(t, e, "Couldn't read internalcomponents json")
+	var internalComponent map[string]interface{}
+
+	err := json.Unmarshal(internalComponentJson, &internalComponent)
+	assert.Equal(t, nil, err, "Error %v", err)
+	transformBlocks(internalComponent)
+
+	jsonResult, errJson := json.Marshal(internalComponent)
+	assert.Equal(t, nil, errJson, "Error %v", errJson)
+
+	e = ioutil.WriteFile("test-resources/out.json", jsonResult, 0644)
+	assert.Equal(t, nil, e, "Error %v", e)
+
 }
