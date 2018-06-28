@@ -139,23 +139,6 @@ func (h internalContentHandler) asyncRetrievalsAndUnmarshalls(ctx context.Contex
 	return responseParts
 }
 
-func debug_map(what string, x map[string]interface{}) {
-	b, err := json.MarshalIndent(x, "", "  ")
-	if err != nil {
-		fmt.Println("error:", err)
-	}
-	fmt.Println("************ :  " + what)
-	fmt.Println(string(b))
-}
-
-func debug_content(filename string, w map[string]interface{}) {
-	jsonResult, e := json.Marshal(w)
-	e = ioutil.WriteFile("d:\\"+filename, jsonResult, 0644)
-	if e != nil {
-		panic(e)
-	}
-}
-
 func (h internalContentHandler) retrieveAndUnmarshall(ctx context.Context, r retriever, uuid string, tid string) responsePart {
 	part, resp := h.callService(ctx, r)
 	defer cleanupResp(resp, h.log.log)
@@ -208,9 +191,6 @@ func (h internalContentHandler) resolveAdditionalFields(ctx context.Context, par
 	uuid := ctx.Value(uuidKey).(string)
 	parts[1].content = resolveDC(ctx, parts[1].content, h)
 	parts[1].content = filterKeys(parts[1].content, internalComponentsFilter)
-
-	debug_content("0.json", parts[0].content)
-	debug_content("1.json", parts[1].content)
 	baseUrl := "http://" + h.serviceConfig.envAPIHost + "/content/"
 	mergedContent := mergeParts(parts, baseUrl)
 	resolveRequestUrl(mergedContent, h, uuid)
@@ -430,49 +410,6 @@ func transformLeadImage(leadImage map[string]interface{}) {
 	imageModelAsMap["id"] = apiURLAsString
 	imageModelAsMap["apiUrl"] = apiURLAsString
 	delete(imageModelAsMap, "requestUrl")
-}
-
-func transformBlocks(expandedContent map[string]interface{}) {
-	blocks, found := expandedContent["blocks"]
-	if !found {
-		return
-	}
-
-	if blocks != nil {
-		fmt.Println("***************")
-		fmt.Println(blocks)
-		fmt.Println("***************")
-
-		blocksAsArray := (blocks).([]interface{})
-		for i := 0; i < len(blocksAsArray); i++ {
-			blocksAsMap := blocksAsArray[i].(map[string]interface{})
-			transformBlock(blocksAsMap)
-		}
-	}
-}
-
-func transformBlock(blocks map[string]interface{}) {
-	blocksModel, found := blocks["image"]
-	if !found {
-		//if image field is not found inside the image, continue the processing
-		return
-	}
-
-	var apiURL interface{}
-	blockModelAsMap := blocksModel.(map[string]interface{})
-	if apiURL, found = blockModelAsMap["requestUrl"]; !found {
-		if apiURL, found = blocks["id"]; !found {
-			return
-		}
-	}
-
-	apiURLAsString, ok := apiURL.(string)
-	if !ok {
-		return
-	}
-	blockModelAsMap["id"] = apiURLAsString
-	blockModelAsMap["apiUrl"] = apiURLAsString
-	delete(blockModelAsMap, "requestUrl")
 }
 
 func resolveRequestUrl(content map[string]interface{}, handler internalContentHandler, contentUUID string) {
