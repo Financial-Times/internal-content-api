@@ -42,7 +42,7 @@ $GOPATH/bin/internal-content-api \
 --content-unroller-uri "http://localhost:8080/__content-unroller-api/internalcontent" \
 --content-unroller-app-health-uri "http://localhost:8080/__content-unroller-api/__health" \
 --graphite-tcp-address "graphite.ft.com:2003" \
---graphite-prefix "coco.services.$ENV.content-preview.%i"
+--graphite-prefix "coco.services.$ENV.internal-content.%i"
  
 ```
 
