@@ -38,7 +38,7 @@ $GOPATH/bin/internal-content-api \
 --internal-components-source-app-name  "Internal Components Source Service" \
 --content-source-app-health-uri  "http://localhost:8080/__enriched-content-read-api/__health" \
 --internal-components-source-app-health-uri  "http://localhost:8080/__document-store-api/__health" \
---content-unroller-app-name "Content unroller" \
+--content-unroller-app-name "Content Unroller" \
 --content-unroller-uri "http://localhost:8080/__content-unroller-api/internalcontent" \
 --content-unroller-app-health-uri "http://localhost:8080/__content-unroller-api/__health" \
 --graphite-tcp-address "graphite.ft.com:2003" \
