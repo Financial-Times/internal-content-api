@@ -48,26 +48,8 @@ $GOPATH/bin/internal-content-api \
 
 With Docker:
 
-`docker build -t coco/internal-content-api .`
-
-`docker run -ti coco/internal-content-api`
-
-```
-docker run -ti  
---env "APP_PORT=8080" \
---env "HANDLER_PATH=internalcontent" \
---env "CONTENT_SOURCE_URI=http://localhost:8080/__enriched-content-read-api/enrichedcontent/" \
---env "INTERNAL_COMPONENTS_SOURCE_URI=http://localhost:8080/__document-store-api/internalcomponents/" \
---env "CONTENT_SOURCE_APP_NAME=Content Source Service" \
---env "INTERNAL_COMPONENTS_SOURCE_APP_NAME=Document Store Service" \
---env "CONTENT_SOURCE_APP_HEALTH_URI=http://localhost:8080/__enriched-content-read-api/__health" \
---env "INTERNAL_COMPONENTS_SOURCE_APP_HEALTH_URI=http://localhost:8080/__document-store-api/__health" \
---env "CONTENT_UNROLLER_URI=http://localhost:8080/__content-unroller-api/internalcontent"
---env "CONTENT_UNROLLER_APP_NAME=content-unroller"
---env "CONTENT_UNROLLER_APP_HEALTH_URI=http://localhost:8080/__content-unroller-api/__health"
---env "GRAPHITE_TCP_ADDRESS=graphite.ft.com:2003" \  
---env "GRAPHITE_PREFIX=coco.services.$ENV.content-preview.%i" \  
-coco/internal-content-api  
+* Built by Docker Hub on merge to master: [coco/internal-content-api](https://hub.docker.com/r/coco/internal-content-api/)
+* CI provided by CircleCI: [internal-content-api](https://circleci.com/gh/Financial-Times/internal-content-api)
 ```
 
 When deployed locally arguments are optional.
