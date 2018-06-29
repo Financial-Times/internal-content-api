@@ -32,8 +32,8 @@ go install
 $GOPATH/bin/internal-content-api \
 --app-port  "8084" \
 --handler-path "internalcontent" \
---content-source-uri "http://localhost:8080/__enriched-content-read-api/enrichedcontent \
---internal-components-source-uri "http://localhost:8080/__document-store-api/internalcomponents/" \
+--content-source-uri "http://localhost:8080/__enriched-content-read-api/enrichedcontent" \
+--internal-components-source-uri "http://localhost:8080/__document-store-api/internalcomponents" \
 --content-source-app-name  "Content Source Service" \
 --internal-components-source-app-name  "Internal Components Source Service" \
 --content-source-app-health-uri  "http://localhost:8080/__enriched-content-read-api/__health" \
