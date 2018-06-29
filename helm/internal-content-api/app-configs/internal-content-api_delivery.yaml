@@ -16,7 +16,7 @@ env:
   INTERNAL_COMPONENTS_SOURCE_APP_BUSINESS_IMPACT: "Articles won't have the internal components"
   CACHE_CONTROL_POLICY: "max-age=10"
   CONTENT_UNROLLER_URI: "http://content-unroller:8080/internalcontent"
-  CONTENT_UNROLLER_APP_NAME: "image-resolver"
+  CONTENT_UNROLLER_APP_NAME: "content-unroller"
   CONTENT_UNROLLER_APP_HEALTH_URI: "http://content-unroller:8080/__health"
   CONTENT_UNROLLER_APP_PANIC_GUIDE: "https://dewey.in.ft.com/runbooks/content-unroller"
   CONTENT_UNROLLER_APP_BUSINESS_IMPACT: "Dynamic content and images related data won’t be available in the response"

@@ -8,23 +8,24 @@ __Internal Content API serves published content that includes the internal compo
 
 For the first time:
 
-`go get github.com/Financial-Times/internal-content-api`
-
-or update:
-
-`go get -u github.com/Financial-Times/internal-content-api`
+curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+go get -u github.com/Financial-Times/internal-content-api
+cd $GOPATH/src/github.com/Financial-Times/internal-content-api
+dep ensure
+go build .
 
 ## Running
 
 
-Locally with default configuration:
+## Running locally
+_How can I run it_
 
-```
-go install
-$GOPATH/bin/internal-content-api
-```
+1. Run the tests and install the binary:
 
-Locally with properties set:
+        dep ensure
+        go test -race ./...
+        go install
+2. Run the binary locally with properties set:
 
 ```
 go install
@@ -37,6 +38,9 @@ $GOPATH/bin/internal-content-api \
 --internal-components-source-app-name  "Internal Components Source Service" \
 --content-source-app-health-uri  "http://localhost:8080/__enriched-content-read-api/__health" \
 --internal-components-source-app-health-uri  "http://localhost:8080/__document-store-api/__health" \
+--content-unroller-app-name "Content unroller" \
+--content-unroller-uri "http://localhost:8080/__content-unroller-api/internalcontent" \
+--content-unroller-app-health-uri "http://localhost:8080/__content-unroller-api/__health" \
 --graphite-tcp-address "graphite.ft.com:2003" \
 --graphite-prefix "coco.services.$ENV.content-preview.%i"
  
@@ -58,6 +62,9 @@ docker run -ti
 --env "INTERNAL_COMPONENTS_SOURCE_APP_NAME=Document Store Service" \
 --env "CONTENT_SOURCE_APP_HEALTH_URI=http://localhost:8080/__enriched-content-read-api/__health" \
 --env "INTERNAL_COMPONENTS_SOURCE_APP_HEALTH_URI=http://localhost:8080/__document-store-api/__health" \
+--env "CONTENT_UNROLLER_URI=http://localhost:8080/__content-unroller-api/internalcontent"
+--env "CONTENT_UNROLLER_APP_NAME=content-unroller"
+--env "CONTENT_UNROLLER_APP_HEALTH_URI=http://localhost:8080/__content-unroller-api/__health"
 --env "GRAPHITE_TCP_ADDRESS=graphite.ft.com:2003" \  
 --env "GRAPHITE_PREFIX=coco.services.$ENV.content-preview.%i" \  
 coco/internal-content-api  
