@@ -50,8 +50,7 @@ With Docker:
 
 * Built by Docker Hub on merge to master: [coco/internal-content-api](https://hub.docker.com/r/coco/internal-content-api/)
 * CI provided by CircleCI: [internal-content-api](https://circleci.com/gh/Financial-Times/internal-content-api)
-```
-
+	
 When deployed locally arguments are optional.
 
 ## Endpoints
