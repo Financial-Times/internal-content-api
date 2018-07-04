@@ -94,7 +94,7 @@ func main() {
 	})
 	internalComponentsSourceAppPanicGuide := app.String(cli.StringOpt{
 		Name:   "internal-components-source-app-panic-guide",
-		Value:  "https://dewey.ft.com/content-public-read.html",
+		Value:  "https://dewey.in.ft.com/runbooks/contentreadapi.html",
 		Desc:   "Internal components source application panic guide url for healthcheck. Default panic guide is for Document Store API.",
 		EnvVar: "INTERNAL_COMPONENTS_SOURCE_APP_PANIC_GUIDE",
 	})

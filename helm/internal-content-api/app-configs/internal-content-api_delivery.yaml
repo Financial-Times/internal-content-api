@@ -11,7 +11,7 @@ env:
   CONTENT_SOURCE_APP_NAME: "enriched-content-read-api"
   INTERNAL_COMPONENTS_SOURCE_APP_NAME: "content-public-read"
   CONTENT_SOURCE_APP_PANIC_GUIDE: "https://dewey.ft.com/enriched-content-read-api.html"
-  INTERNAL_COMPONENTS_SOURCE_APP_PANIC_GUIDE: "https://dewey.ft.com/content-public-read.html"
+  INTERNAL_COMPONENTS_SOURCE_APP_PANIC_GUIDE: "https://dewey.in.ft.com/runbooks/contentreadapi.html"
   CONTENT_SOURCE_APP_BUSINESS_IMPACT: "No articles would be available"
   INTERNAL_COMPONENTS_SOURCE_APP_BUSINESS_IMPACT: "Articles won't have the internal components"
   CACHE_CONTROL_POLICY: "max-age=10"
