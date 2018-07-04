@@ -58,7 +58,7 @@ func main() {
 	})
 	internalComponentsSourceURI := app.String(cli.StringOpt{
 		Name:   "internal-components-source-uri",
-		Value:  "http://localhost:8080/__document-store-api/internalcomponents/",
+		Value:  "http://localhost:8080/__content-public-read/internalcontent/",
 		Desc:   "Internal components source URI",
 		EnvVar: "INTERNAL_COMPONENTS_SOURCE_URI",
 	})
@@ -82,7 +82,7 @@ func main() {
 	})
 	internalComponentsSourceAppHealthURI := app.String(cli.StringOpt{
 		Name:   "internal-components-source-app-health-uri",
-		Value:  "http://localhost:8080/__document-store-api/__health",
+		Value:  "http://localhost:8080/__content-public-read/__health",
 		Desc:   "URI of the Internal Components Source Application health endpoint",
 		EnvVar: "INTERNAL_COMPONENTS_SOURCE_APP_HEALTH_URI",
 	})
@@ -94,7 +94,7 @@ func main() {
 	})
 	internalComponentsSourceAppPanicGuide := app.String(cli.StringOpt{
 		Name:   "internal-components-source-app-panic-guide",
-		Value:  "https://dewey.ft.com/document-store-api.html",
+		Value:  "https://dewey.ft.com/content-public-read.html",
 		Desc:   "Internal components source application panic guide url for healthcheck. Default panic guide is for Document Store API.",
 		EnvVar: "INTERNAL_COMPONENTS_SOURCE_APP_PANIC_GUIDE",
 	})

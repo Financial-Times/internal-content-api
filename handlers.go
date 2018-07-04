@@ -154,7 +154,7 @@ func (h internalContentHandler) retrieveAndUnmarshall(ctx context.Context, r ret
 	return part
 }
 
-func resolveDC(ctx context.Context, content map[string]interface{}, h internalContentHandler) map[string]interface{} {
+func resolveDynamicContent(ctx context.Context, content map[string]interface{}, h internalContentHandler) map[string]interface{} {
 	leadImages, ok := content["leadImages"].([]interface{})
 	if !ok {
 		return content
@@ -172,10 +172,8 @@ func resolveDC(ctx context.Context, content map[string]interface{}, h internalCo
 	unrollContent := ctx.Value(unrollContentKey).(bool)
 	if unrollContent {
 		var err error
-		content["id"] = content["uuid"]
-		delete(content, "uuid")
-
 		uuid := ctx.Value(uuidKey).(string)
+
 		transformedContent, err = h.getUnrolledContent(ctx, content)
 		if err != nil {
 			transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
@@ -190,10 +188,11 @@ func resolveDC(ctx context.Context, content map[string]interface{}, h internalCo
 
 func (h internalContentHandler) resolveAdditionalFields(ctx context.Context, parts []responsePart) map[string]interface{} {
 	uuid := ctx.Value(uuidKey).(string)
-	parts[1].content = resolveDC(ctx, parts[1].content, h)
+	parts[1].content = resolveDynamicContent(ctx, parts[1].content, h)
 	parts[1].content = filterKeys(parts[1].content, internalComponentsFilter)
 	baseURL := "http://" + h.serviceConfig.envAPIHost + "/content/"
 	mergedContent := mergeParts(parts, baseURL)
+
 	resolveRequestURL(mergedContent, h, uuid)
 	resolveAPIURL(mergedContent, h, uuid)
 	removeEmptyMapFields(mergedContent)
@@ -312,38 +311,6 @@ func mergeTwoContents(a map[string]interface{}, b map[string]interface{}, baseUR
 		}
 	}
 	return a
-}
-
-func resolveLeadImages(ctx context.Context, content map[string]interface{}, h internalContentHandler) map[string]interface{} {
-	leadImages, ok := content["leadImages"].([]interface{})
-	if !ok {
-		return content
-	}
-
-	for _, img := range leadImages {
-		img, ok := img.(map[string]interface{})
-		if !ok {
-			continue
-		}
-		imgURL := "http://" + h.serviceConfig.envAPIHost + "/content/" + img["id"].(string)
-		img["id"] = imgURL
-	}
-
-	var transformedContent map[string]interface{}
-	unrollContent := ctx.Value(unrollContentKey).(bool)
-	if unrollContent {
-		var err error
-		uuid := ctx.Value(uuidKey).(string)
-		transformedContent, err = h.getUnrolledContent(ctx, content)
-		if err != nil {
-			transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
-			h.handleError(err, h.serviceConfig.contentUnrollerAppName, h.serviceConfig.contentUnrollerSourceURI, transactionID, uuid)
-			return content
-		}
-	} else {
-		return content
-	}
-	return transformedContent
 }
 
 func (h internalContentHandler) getUnrolledContent(ctx context.Context, content map[string]interface{}) (map[string]interface{}, error) {

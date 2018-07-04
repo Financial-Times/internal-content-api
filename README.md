@@ -33,11 +33,11 @@ $GOPATH/bin/internal-content-api \
 --app-port  "8084" \
 --handler-path "internalcontent" \
 --content-source-uri "http://localhost:8080/__enriched-content-read-api/enrichedcontent" \
---internal-components-source-uri "http://localhost:8080/__document-store-api/internalcomponents" \
+--internal-components-source-uri "http://localhost:8080/__content-public-read/internalcomponents" \
 --content-source-app-name  "Content Source Service" \
 --internal-components-source-app-name  "Internal Components Source Service" \
 --content-source-app-health-uri  "http://localhost:8080/__enriched-content-read-api/__health" \
---internal-components-source-app-health-uri  "http://localhost:8080/__document-store-api/__health" \
+--internal-components-source-app-health-uri  "http://localhost:8080/__content-public-read/__health" \
 --content-unroller-app-name "Content Unroller" \
 --content-unroller-uri "http://localhost:8080/__content-unroller-api/internalcontent" \
 --content-unroller-app-health-uri "http://localhost:8080/__content-unroller-api/__health" \
@@ -83,7 +83,7 @@ Healthchecks: [http://localhost:8084/__health](http://localhost:8084/__health)
 
 good-to-go: [http://localhost:8084/__gtg](http://localhost:8084/__gtg)
 
-Health and gtg are based on enriched-content-read-api and document-store-api's health endpoints availability.
+Health and gtg are based on enriched-content-read-api and content-public-read's health endpoints availability.
 
 Ping: [http://localhost:8084/__ping](http://localhost:8084/__ping)
 

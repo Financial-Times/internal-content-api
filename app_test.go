@@ -113,7 +113,7 @@ func startImageResolverServiceMock(status string) {
 }
 
 func happyDocumentStoreAPIMock(writer http.ResponseWriter, request *http.Request) {
-	file, err := os.Open("test-resources/document-store-api-output.json")
+	file, err := os.Open("test-resources/content-public-read-output.json")
 	if err != nil {
 		return
 	}
@@ -155,7 +155,7 @@ func startInternalContentService() {
 		"panic guide",
 		"Source app business impact",
 		documentStoreAPIURI,
-		"document-store-api",
+		"content-public-read",
 		documentStoreAPIHealthURI,
 		"panic guide",
 		"Internal components app business impact",
@@ -425,7 +425,7 @@ func TestShouldBeUnhealthyWhenMethodeApiIsNotHappy(t *testing.T) {
 		switch res.Checks[i].Name {
 		case "enriched-content-read-api":
 			assert.Equal(t, false, res.Checks[i].Ok, "The Enriched Content should be unhealthy")
-		case "document-store-api":
+		case "content-public-read":
 			assert.Equal(t, true, res.Checks[i].Ok, "The Document Store should be healthy")
 		case "image-resolver":
 			assert.Equal(t, true, res.Checks[i].Ok, "The Image Resolver should be healthy")
@@ -460,7 +460,7 @@ func TestShouldBeUnhealthyWhenTransformerIsNotHappy(t *testing.T) {
 		switch res.Checks[i].Name {
 		case "enriched-content-read-api":
 			assert.Equal(t, true, res.Checks[i].Ok, "The Enriched Content should be unhealthy")
-		case "document-store-api":
+		case "content-public-read":
 			assert.Equal(t, false, res.Checks[i].Ok, "The Document Store should be healthy")
 		case "image-resolver":
 			assert.Equal(t, true, res.Checks[i].Ok, "The Image Resolver should be healthy")
@@ -496,7 +496,7 @@ func TestShouldBeUnhealthyWhenImageResolverIsUnhealthy(t *testing.T) {
 		switch res.Checks[i].Name {
 		case "enriched-content-read-api":
 			assert.Equal(t, true, res.Checks[i].Ok, "The Enriched Content should be healthy")
-		case "document-store-api":
+		case "content-public-read":
 			assert.Equal(t, true, res.Checks[i].Ok, "The Document Store should be healthy")
 		case "image-resolver":
 			assert.Equal(t, false, res.Checks[i].Ok, "The Image Resolver should be unhealthy")
