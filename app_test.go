@@ -84,7 +84,7 @@ func startDocumentStoreAPIMock(status string) {
 		health = internalErrorHandler
 	}
 
-	router.Path("/internalcomponents/{uuid}").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(getContent)})
+	router.Path("/internalcontent/{uuid}").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(getContent)})
 	router.Path("/__health").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(health)})
 
 	documentStoreAPIMock = httptest.NewServer(router)
@@ -106,7 +106,7 @@ func startImageResolverServiceMock(status string) {
 		health = internalErrorHandler
 	}
 
-	router.Path("/internalcontent/image").Handler(handlers.MethodHandler{http.MethodPost: http.HandlerFunc(getExpandedContent)})
+	router.Path("/internalcontent").Handler(handlers.MethodHandler{http.MethodPost: http.HandlerFunc(getExpandedContent)})
 	router.Path("/__health").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(health)})
 
 	imageResolverMock = httptest.NewServer(router)
@@ -139,9 +139,9 @@ func stopServices() {
 func startInternalContentService() {
 	enrichedContentAPIURI := enrichedContentAPIMock.URL + "/enrichedcontent/"
 	enrichedContentAPIHealthURI := enrichedContentAPIMock.URL + "/__health"
-	documentStoreAPIURI := documentStoreAPIMock.URL + "/internalcomponents/"
+	documentStoreAPIURI := documentStoreAPIMock.URL + "/internalcontent/"
 	documentStoreAPIHealthURI := documentStoreAPIMock.URL + "/__health"
-	imageResolverURI := imageResolverMock.URL + "/internalcontent/image"
+	imageResolverURI := imageResolverMock.URL + "/internalcontent"
 	imageResolverHealthURI := imageResolverMock.URL + "/__health"
 	sc := serviceConfig{
 		"internal-content-api",
