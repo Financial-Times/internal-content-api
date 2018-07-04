@@ -5,7 +5,7 @@ service:
 env:
   HANDLER_PATH: "internalcontent"
   CONTENT_SOURCE_URI: "http://enriched-content-read-api:8080/enrichedcontent/"
-  INTERNAL_COMPONENTS_SOURCE_URI: "http://content-public-read:8080/internalcomponents/"
+  INTERNAL_COMPONENTS_SOURCE_URI: "http://content-public-read:8080/internalcontent/"
   CONTENT_SOURCE_APP_HEALTH_URI: "http://enriched-content-read-api:8080/__health"
   INTERNAL_COMPONENTS_SOURCE_APP_HEALTH_URI: "http://content-public-read:8080/__health"
   CONTENT_SOURCE_APP_NAME: "enriched-content-read-api"
