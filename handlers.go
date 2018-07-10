@@ -225,7 +225,11 @@ func mergeParts(parts []responsePart, baseURL string) map[string]interface{} {
 
 	contents := make([]map[string]interface{}, len(parts))
 	for i, p := range parts {
-		contents[i] = p.content
+		if p.content != nil {
+			contents[i] = p.content
+		} else {
+			contents[i] = make(map[string]interface{})
+		}
 	}
 
 	for i := 1; i < len(contents); i++ {
@@ -362,8 +366,10 @@ func (h internalContentHandler) getUnrolledContent(ctx context.Context, content 
 
 	leadImagesAsArray := (leadImages).([]interface{})
 	for i := 0; i < len(leadImagesAsArray); i++ {
-		leadImageAsMap := leadImagesAsArray[i].(map[string]interface{})
-		transformLeadImage(leadImageAsMap)
+		leadImageAsMap, ok := leadImagesAsArray[i].(map[string]interface{})
+		if ok {
+			transformLeadImage(leadImageAsMap)
+		}
 	}
 
 	return expandedContent, nil
@@ -377,7 +383,10 @@ func transformLeadImage(leadImage map[string]interface{}) {
 	}
 
 	var apiURL interface{}
-	imageModelAsMap := imageModel.(map[string]interface{})
+	imageModelAsMap, ok := imageModel.(map[string]interface{})
+	if !ok {
+		return
+	}
 	if apiURL, found = imageModelAsMap["requestUrl"]; !found {
 		if apiURL, found = leadImage["id"]; !found {
 			return

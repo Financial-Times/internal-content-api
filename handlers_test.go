@@ -139,6 +139,24 @@ func TestMergeEmbeddedMapsWithOverlappingFields(t *testing.T) {
 		component     map[string]interface{}
 		mergedContent map[string]interface{}
 	}{
+		{"Test null contents",
+			nil,
+			map[string]interface{}{
+				"field_ic1": "value_ic1",
+			},
+			map[string]interface{}{
+				"field_ic1": "value_ic1",
+			},
+		},
+		{"Test null component",
+			map[string]interface{}{
+				"field_ic1": "value_ic1",
+			},
+			nil,
+			map[string]interface{}{
+				"field_ic1": "value_ic1",
+			},
+		},
 		{
 			"Simple fields",
 			map[string]interface{}{
@@ -336,7 +354,7 @@ func TestMergeEmbeddedMapsWithOverlappingFields(t *testing.T) {
 
 	for _, row := range data {
 		res := mergeParts([]responsePart{{content: row.content}, {content: row.component}}, "http://test.api.ft.com/content/")
-		assert.True(t, reflect.DeepEqual(row.mergedContent, res), "Expected and actual merged content differs.\n Expected: %v\n Actual %v\n", row.mergedContent, res)
+		assert.True(t, reflect.DeepEqual(row.mergedContent, res), row.name+" - Expected and actual merged content differs.\n Expected: %v\n Actual: %v\n", row.mergedContent, res)
 	}
 
 }
@@ -416,7 +434,7 @@ func TestFilterKeys(t *testing.T) {
 
 	for _, row := range data {
 		res := filterKeys(row.content, row.filter)
-		assert.True(t, reflect.DeepEqual(row.filteredContent, res), "Expected and actual filtered content differs.\n Expected: %v\n Actual %v\n", row.filteredContent, res)
+		assert.True(t, reflect.DeepEqual(row.filteredContent, res), row.name+" - Expected and actual filtered content differs.\n Expected: %v\n Actual %v\n", row.filteredContent, res)
 	}
 }
 
