@@ -119,7 +119,7 @@ func main() {
 	contentUnrollerAppName := app.String(cli.StringOpt{
 		Name:   "content-unroller-app-name",
 		Value:  "content-unroller",
-		Desc:   "Service of the image resolver application",
+		Desc:   "Service of the content unroller application",
 		EnvVar: "CONTENT_UNROLLER_APP_NAME",
 	})
 	contentUnrollerAppHealthURI := app.String(cli.StringOpt{
@@ -282,11 +282,11 @@ func (sc serviceConfig) asMap() map[string]interface{} {
 		"internal-components-source-app-health-uri":      sc.internalComponentsSourceAppHealthURI,
 		"internal-components-source-app-panic-guide":     sc.internalComponentsSourceAppPanicGuide,
 		"internal-components-source-app-business-impact": sc.internalComponentsSourceAppBusinessImpact,
-		"image-resolver-source-uri":                      sc.contentUnrollerSourceURI,
-		"image-resolver-app-name":                        sc.contentUnrollerAppName,
-		"image-resolver-app-health-uri":                  sc.contentUnrollerAppHealthURI,
-		"image-resolver-app-panic-guide":                 sc.contentUnrollerAppPanicGuide,
-		"image-resolver-app-bussines-impact":             sc.contentUnrollerAppBusinessImpact,
+		"content-unroller-source-uri":                    sc.contentUnrollerSourceURI,
+		"content-unroller-app-name":                      sc.contentUnrollerAppName,
+		"content-unroller-app-health-uri":                sc.contentUnrollerAppHealthURI,
+		"content-unroller-app-panic-guide":               sc.contentUnrollerAppPanicGuide,
+		"content-unroller-app-bussines-impact":           sc.contentUnrollerAppBusinessImpact,
 		"env-api-host":                                   sc.envAPIHost,
 		"graphite-tcp-address":                           sc.graphiteTCPAddress,
 		"graphite-prefix":                                sc.graphitePrefix,
