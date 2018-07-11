@@ -172,9 +172,9 @@ func resolveDynamicContent(ctx context.Context, content map[string]interface{}, 
 	unrollContent := ctx.Value(unrollContentKey).(bool)
 	if unrollContent {
 		var err error
-		rec_uuid, ok := content["uuid"]
+		recUuid, ok := content["uuid"]
 		if ok {
-			content["id"] = rec_uuid
+			content["id"] = recUuid
 			delete(content, "uuid")
 		}
 		uuid := ctx.Value(uuidKey).(string)
@@ -322,17 +322,8 @@ func mergeTwoContents(a map[string]interface{}, b map[string]interface{}, baseUR
 	return a
 }
 
-func debug_content(filename string, w map[string]interface{}) {
-	jsonResult, e := json.Marshal(w)
-	e = ioutil.WriteFile("d:\\"+filename, jsonResult, 0644)
-	if e != nil {
-		panic(e)
-	}
-}
-
 func (h internalContentHandler) getUnrolledContent(ctx context.Context, content map[string]interface{}) (map[string]interface{}, error) {
 	var expandedContent map[string]interface{}
-	debug_content("getUnrolledContent-preview.json", content)
 	transactionID, err := transactionidutils.GetTransactionIDFromContext(ctx)
 	if err != nil {
 		transactionID = transactionidutils.NewTransactionID()
@@ -350,7 +341,7 @@ func (h internalContentHandler) getUnrolledContent(ctx context.Context, content 
 
 	resp, err := h.serviceConfig.httpClient.Do(req)
 	if err != nil {
-		return expandedContent, err
+		return content, err
 	}
 	defer resp.Body.Close()
 
