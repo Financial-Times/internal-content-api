@@ -181,7 +181,7 @@ func (h internalContentHandler) resolveAdditionalFields(ctx context.Context, par
 	uuid := ctx.Value(uuidKey).(string)
 	parts[1].content = resolveDynamicContent(ctx, parts[1].content, h)
 	parts[1].content = filterKeys(parts[1].content, internalComponentsFilter)
-	baseURL := "http://" + h.serviceConfig.envAPIHost + "/content/"
+	baseURL := "https://" + h.serviceConfig.envAPIHost + "/content/"
 	mergedContent := mergeParts(parts, baseURL)
 
 	resolveRequestURL(mergedContent, h, uuid)
@@ -417,7 +417,7 @@ func createRequestURL(APIHost string, handlerPath string, uuid string) string {
 	if isPreview(handlerPath) {
 		handlerPath = strings.TrimSuffix(handlerPath, previewSuffix)
 	}
-	return "http://" + APIHost + "/" + handlerPath + "/" + uuid
+	return "https://" + APIHost + "/" + handlerPath + "/" + uuid
 }
 
 func (h internalContentHandler) callService(ctx context.Context, r retriever) (responsePart, *http.Response) {
