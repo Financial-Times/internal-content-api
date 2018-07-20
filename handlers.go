@@ -6,7 +6,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"regexp"
 	"sync"
 
 	"bytes"
@@ -155,19 +154,6 @@ func (h internalContentHandler) retrieveAndUnmarshall(ctx context.Context, r ret
 }
 
 func resolveDynamicContent(ctx context.Context, content map[string]interface{}, h internalContentHandler) map[string]interface{} {
-	leadImages, ok := content["leadImages"].([]interface{})
-	if !ok {
-		return content
-	}
-
-	for _, img := range leadImages {
-		img, ok := img.(map[string]interface{})
-		if !ok {
-			continue
-		}
-		imgURL := "http://" + h.serviceConfig.envAPIHost + "/content/" + img["id"].(string)
-		img["id"] = imgURL
-	}
 	var transformedContent map[string]interface{}
 	unrollContent := ctx.Value(unrollContentKey).(bool)
 	if unrollContent {
@@ -243,12 +229,17 @@ func mergeParts(parts []responsePart, baseURL string) map[string]interface{} {
 	return contents[0]
 }
 
-func matchIDs(idA string, idB string) bool {
-	match, _ := regexp.MatchString(idA+"$", idB)
-	return match
+func extractIDValue(id string) string {
+	y := strings.Split(id, "/")
+	return y[len(y)-1]
 }
+
+func matchIDs(idA string, idB string) bool {
+	return extractIDValue(idA) == extractIDValue(idB)
+}
+
 func sameIds(idA string, idB string) bool {
-	return idA == idB || matchIDs(idA+"$", idB) || matchIDs(idB+"$", idA)
+	return idA == idB || matchIDs(idA, idB)
 }
 
 func fixEmbedIds(vMap []interface{}, baseURL string) {
