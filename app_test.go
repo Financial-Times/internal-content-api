@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -28,7 +27,9 @@ func startEnrichedContentAPIMock(status string) {
 	if status == "happy" {
 		getContent = happyEnrichedContentAPIMock
 		health = happyHandler
-
+	} else if status == "unrollContent" {
+		getContent = unrollContentEnrichedContentAPIMock
+		health = happyHandler
 	} else if status == "notFound" {
 		getContent = notFoundHandler
 		health = happyHandler
@@ -41,6 +42,15 @@ func startEnrichedContentAPIMock(status string) {
 	router.Path("/__health").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(health)})
 
 	enrichedContentAPIMock = httptest.NewServer(router)
+}
+
+func unrollContentEnrichedContentAPIMock(writer http.ResponseWriter, request *http.Request) {
+	file, err := os.Open("test-resources/enriched-content-api-output-unrollContent.json")
+	if err != nil {
+		return
+	}
+	defer file.Close()
+	io.Copy(writer, file)
 }
 
 func happyEnrichedContentAPIMock(writer http.ResponseWriter, request *http.Request) {
@@ -119,7 +129,7 @@ func startContentUnrollerServiceMock(status string) {
 }
 
 func happyContentPublicReadAPIMock(writer http.ResponseWriter, request *http.Request) {
-	file, err := os.Open("test-resources/content-public-read-output-unrollContent.json")
+	file, err := os.Open("test-resources/content-public-read-output.json")
 	if err != nil {
 		return
 	}
@@ -128,7 +138,7 @@ func happyContentPublicReadAPIMock(writer http.ResponseWriter, request *http.Req
 }
 
 func unrollContentPublicReadAPIMock(writer http.ResponseWriter, request *http.Request) {
-	file, err := os.Open("test-resources/content-public-read-output.json")
+	file, err := os.Open("test-resources/content-public-read-output-unrollContent.json")
 	if err != nil {
 		return
 	}
@@ -209,14 +219,6 @@ func getMapFromReader(r io.Reader) map[string]interface{} {
 	return m
 }
 
-func debug_content(filename string, w map[string]interface{}) {
-	jsonResult, e := json.Marshal(w)
-	e = ioutil.WriteFile("d:\\"+filename, jsonResult, 0644)
-	if e != nil {
-		panic(e)
-	}
-}
-
 func compareResults(expectedOutput map[string]interface{}, actualOutput map[string]interface{}) (bool, error) {
 	expectedOutputJson, errJSON := json.Marshal(expectedOutput)
 	if errJSON != nil {
@@ -227,8 +229,6 @@ func compareResults(expectedOutput map[string]interface{}, actualOutput map[stri
 		return false, errJSON
 	}
 
-	debug_content("expectedOutput.json", expectedOutput)
-	debug_content("actualOutput.json", actualOutput)
 	areEqual, e := AreEqualJSON(string(expectedOutputJson), string(actualOutputJson))
 	if e != nil {
 		return false, e
@@ -261,37 +261,37 @@ func TestShouldReturn200AndInternalComponentOutput(t *testing.T) {
 	assert.Equal(t, "max-age=10", resp.Header.Get("Cache-Control"), "Should have cache control set")
 }
 
-// func TestShouldReturn200WhenUnrollContentIsTrueAndInternalComponentOutput(t *testing.T) {
-// 	startEnrichedContentAPIMock("happy")
-// 	startContentPublicReadAPIMock("unrollContent")
-// 	startContentUnrollerServiceMock("unrollContent")
-// 	startInternalContentService()
-// 	defer stopServices()
+func TestShouldReturn200WhenUnrollContentIsTrueAndInternalComponentOutput(t *testing.T) {
+	startEnrichedContentAPIMock("unrollContent")
+	startContentPublicReadAPIMock("unrollContent")
+	startContentUnrollerServiceMock("unrollContent")
+	startInternalContentService()
+	defer stopServices()
 
-// 	req, err := http.NewRequest(http.MethodGet, internalContentAPI.URL+"/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce", nil)
-// 	q := req.URL.Query()
-// 	q.Add("unrollContent", "true")
-// 	req.URL.RawQuery = q.Encode()
+	req, err := http.NewRequest(http.MethodGet, internalContentAPI.URL+"/internalcontent/9607cb04-7ac4-11e8-8e17-ed45e46cf554", nil)
+	q := req.URL.Query()
+	q.Add("unrollContent", "true")
+	req.URL.RawQuery = q.Encode()
 
-// 	resp, err := http.DefaultClient.Do(req)
-// 	if err != nil {
-// 		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
-// 	}
-// 	defer resp.Body.Close()
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
+	}
+	defer resp.Body.Close()
 
-// 	assert.Equal(t, http.StatusOK, resp.StatusCode, "Response status should be 200")
+	assert.Equal(t, http.StatusOK, resp.StatusCode, "Response status should be 200")
 
-// 	file, _ := os.Open("test-resources/full-expanded-internal-content-api-output.json")
-// 	defer file.Close()
+	file, _ := os.Open("test-resources/internal-content-api-output-unrollContent.json")
+	defer file.Close()
 
-// 	expectedOutput := getMapFromReader(file)
-// 	actualOutput := getMapFromReader(resp.Body)
+	expectedOutput := getMapFromReader(file)
+	actualOutput := getMapFromReader(resp.Body)
 
-// 	areEqual, e := compareResults(expectedOutput, actualOutput)
-// 	assert.Equal(t, nil, e, "Error %v", e)
-// 	assert.Equal(t, true, areEqual, "Error %v", areEqual)
-// 	assert.Equal(t, "max-age=10", resp.Header.Get("Cache-Control"), "Should have cache control set")
-// }
+	areEqual, e := compareResults(expectedOutput, actualOutput)
+	assert.Equal(t, nil, e, "Error %v", e)
+	assert.Equal(t, true, areEqual, "Error %v", areEqual)
+	assert.Equal(t, "max-age=10", resp.Header.Get("Cache-Control"), "Should have cache control set")
+}
 
 func TestShouldReturn200AndInternalComponentOutputWhenUnrollContentReturns400(t *testing.T) {
 	startEnrichedContentAPIMock("happy")
@@ -369,51 +369,51 @@ func TestShouldReturn404(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, resp.StatusCode, "Response status should be 404")
 }
 
-// func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentNotFound(t *testing.T) {
-// 	startEnrichedContentAPIMock("happy")
-// 	startContentPublicReadAPIMock("notFound")
-// 	startContentUnrollerServiceMock("badRequest")
-// 	startInternalContentService()
-// 	defer stopServices()
-// 	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
-// 	if err != nil {
-// 		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
-// 	}
-// 	defer resp.Body.Close()
+func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentNotFound(t *testing.T) {
+	startEnrichedContentAPIMock("happy")
+	startContentPublicReadAPIMock("notFound")
+	startContentUnrollerServiceMock("badRequest")
+	startInternalContentService()
+	defer stopServices()
+	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
+	if err != nil {
+		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
+	}
+	defer resp.Body.Close()
 
-// 	assert.Equal(t, http.StatusOK, resp.StatusCode, "Response status should be 200")
+	assert.Equal(t, http.StatusOK, resp.StatusCode, "Response status should be 200")
 
-// 	file, _ := os.Open("test-resources/partial-internal-content-api-output.json")
-// 	defer file.Close()
+	file, _ := os.Open("test-resources/partial-internal-content-api-output.json")
+	defer file.Close()
 
-// 	expectedOutput := getMapFromReader(file)
-// 	actualOutput := getMapFromReader(resp.Body)
+	expectedOutput := getMapFromReader(file)
+	actualOutput := getMapFromReader(resp.Body)
 
-// 	assert.Equal(t, expectedOutput, actualOutput, "Response body shoud be equal to transformer response body")
-// }
+	assert.Equal(t, expectedOutput, actualOutput, "Response body shoud be equal to transformer response body")
+}
 
-// func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentFailed(t *testing.T) {
-// 	startEnrichedContentAPIMock("happy")
-// 	startContentPublicReadAPIMock("unhappy")
-// 	startContentUnrollerServiceMock("badRequest")
-// 	startInternalContentService()
-// 	defer stopServices()
-// 	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
-// 	if err != nil {
-// 		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
-// 	}
-// 	defer resp.Body.Close()
+func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentFailed(t *testing.T) {
+	startEnrichedContentAPIMock("happy")
+	startContentPublicReadAPIMock("unhappy")
+	startContentUnrollerServiceMock("badRequest")
+	startInternalContentService()
+	defer stopServices()
+	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
+	if err != nil {
+		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
+	}
+	defer resp.Body.Close()
 
-// 	assert.Equal(t, http.StatusOK, resp.StatusCode, "Response status should be 200")
+	assert.Equal(t, http.StatusOK, resp.StatusCode, "Response status should be 200")
 
-// 	file, _ := os.Open("test-resources/partial-internal-content-api-output.json")
-// 	defer file.Close()
+	file, _ := os.Open("test-resources/partial-internal-content-api-output.json")
+	defer file.Close()
 
-// 	expectedOutput := getMapFromReader(file)
-// 	actualOutput := getMapFromReader(resp.Body)
+	expectedOutput := getMapFromReader(file)
+	actualOutput := getMapFromReader(resp.Body)
 
-// 	assert.Equal(t, expectedOutput, actualOutput, "Response body shoud be equal to transformer response body")
-// }
+	assert.Equal(t, expectedOutput, actualOutput, "Response body shoud be equal to transformer response body")
+}
 
 func TestShouldReturn503whenEnrichedContentApiIsNotAvailable(t *testing.T) {
 	startEnrichedContentAPIMock("unhappy")

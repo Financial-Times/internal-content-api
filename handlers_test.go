@@ -504,7 +504,6 @@ func TestResolvingOverlappingMergesFullContentDC(t *testing.T) {
 	results := mergeParts([]responsePart{{content: content}, {content: internalComponent}}, baseUrl)
 	jsonResult, errJSON := json.Marshal(results)
 	assert.Equal(t, nil, errJSON, "Error %v", errJSON)
-	debug_content("merge_parts.json", results)
 
 	areEqual, e := AreEqualJSON(string(jsonResult), string(expectedContent))
 	assert.Equal(t, nil, e, "Error %v", e)
