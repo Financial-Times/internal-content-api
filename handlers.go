@@ -33,6 +33,8 @@ var internalComponentsFilter = map[string]interface{}{
 	"publishReference": "",
 }
 
+var embedsComponentsFilter = []string{"requestUrl"}
+
 type internalContentHandler struct {
 	serviceConfig *serviceConfig
 	log           *appLogger
@@ -242,18 +244,24 @@ func sameIds(idA string, idB string) bool {
 	return idA == idB || matchIDs(idA, idB)
 }
 
+func filterEmbedsKeys(m map[string]interface{}, filter []string) map[string]interface{} {
+	for _, valueInFilter := range filter {
+		_, foundInM := m[valueInFilter]
+		if foundInM {
+			delete(m, valueInFilter)
+		}
+	}
+	return m
+}
+
 func transformEmbeds(vMap []interface{}, baseURL string) {
 	for _, valueMapB := range vMap {
 		valueMap, ok := valueMapB.(map[string]interface{})
 		if !ok {
 			return
 		}
-		_, ok = valueMap["requestUrl"]
-		if ok {
-			fmt.Println("delete")
-			delete(valueMap, "requestUrl")
-		}
 
+		valueMap = filterEmbedsKeys(valueMap, embedsComponentsFilter)
 		uuid, ok := valueMap["uuid"]
 		if !ok {
 			continue
