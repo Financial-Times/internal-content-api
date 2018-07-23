@@ -11,6 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const baseUrl = "http://test.api.ft.com/content/"
+
 func TestMergeEmbeds(t *testing.T) {
 	data := []struct {
 		name          string
@@ -127,7 +129,7 @@ func TestMergeEmbeds(t *testing.T) {
 	}
 
 	for _, row := range data {
-		res := mergeParts([]responsePart{{content: row.content}, {content: row.component}}, "http://test.api.ft.com/content/")
+		res := mergeParts([]responsePart{{content: row.content}, {content: row.component}}, baseUrl)
 		assert.True(t, reflect.DeepEqual(row.mergedContent, res), "Expected and actual merged content differs.\n Expected: %v\n Actual %v\n", row.mergedContent, res)
 	}
 }
@@ -353,7 +355,7 @@ func TestMergeEmbeddedMapsWithOverlappingFields(t *testing.T) {
 	}
 
 	for _, row := range data {
-		res := mergeParts([]responsePart{{content: row.content}, {content: row.component}}, "http://test.api.ft.com/content/")
+		res := mergeParts([]responsePart{{content: row.content}, {content: row.component}}, baseUrl)
 		assert.True(t, reflect.DeepEqual(row.mergedContent, res), row.name+" - Expected and actual merged content differs.\n Expected: %v\n Actual: %v\n", row.mergedContent, res)
 	}
 
@@ -499,9 +501,10 @@ func TestResolvingOverlappingMergesFullContentDC(t *testing.T) {
 	err = json.Unmarshal([]byte(internalComponentJSON), &internalComponent)
 	assert.Equal(t, nil, err, "Error %v", err)
 
-	results := mergeParts([]responsePart{{content: content}, {content: internalComponent}}, "http://test.api.ft.com/content/")
+	results := mergeParts([]responsePart{{content: content}, {content: internalComponent}}, baseUrl)
 	jsonResult, errJSON := json.Marshal(results)
 	assert.Equal(t, nil, errJSON, "Error %v", errJSON)
+	debug_content("merge_parts.json", results)
 
 	areEqual, e := AreEqualJSON(string(jsonResult), string(expectedContent))
 	assert.Equal(t, nil, e, "Error %v", e)

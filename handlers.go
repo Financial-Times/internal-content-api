@@ -242,9 +242,18 @@ func sameIds(idA string, idB string) bool {
 	return idA == idB || matchIDs(idA, idB)
 }
 
-func fixEmbedIds(vMap []interface{}, baseURL string) {
+func transformEmbeds(vMap []interface{}, baseURL string) {
 	for _, valueMapB := range vMap {
-		valueMap, _ := valueMapB.(map[string]interface{})
+		valueMap, ok := valueMapB.(map[string]interface{})
+		if !ok {
+			return
+		}
+		_, ok = valueMap["requestUrl"]
+		if ok {
+			fmt.Println("delete")
+			delete(valueMap, "requestUrl")
+		}
+
 		uuid, ok := valueMap["uuid"]
 		if !ok {
 			continue
@@ -289,13 +298,18 @@ func mergeTwoContents(a map[string]interface{}, b map[string]interface{}, baseUR
 		if foundInA {
 			if key == "embeds" {
 				arrInA, isArrInA := foundValInA.([]interface{})
+				if isArrInA {
+					transformEmbeds(arrInA, baseURL)
+				}
 				arrInB, isArrInB := valueInB.([]interface{})
+				if isArrInB {
+					transformEmbeds(arrInB, baseURL)
+				}
+
 				if isArrInA && isArrInB {
-					fixEmbedIds(arrInA, baseURL)
-					fixEmbedIds(arrInB, baseURL)
 					a[key] = mergeTwoEmbeds(arrInA, arrInB, baseURL)
 				} else {
-					a[key] = valueInB
+					a[key] = arrInB
 				}
 			} else {
 				mapInA, isMapInA := foundValInA.(map[string]interface{})

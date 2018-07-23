@@ -275,6 +275,7 @@
     "embeds": [
         {
             "apiUrl": "http://test.api.ft.com/content/3086856c-0a05-11e7-323c-07a1fb42b00a",
+			"requestUrl": "http://api.ft.com/internalcontent/5010e2e4-09bd-11e7-97d1-5e720a26771b",
             "canBeDistributed": "yes",
             "description": "epa05851043 Leader of the Party for Freedom (PVV), Geert Wilders reacts on the election results in The Hague, The Netherlands, 16 March 2017. According to initial exit polls in the Dutch parliamentary elections, Prime Minister Mark Rutte's center-right People's Party for Freedom and Democracy (VVD) is projected to win 31 seats out of 150, and the far-right party of Wilders with 19 seats.  EPA/REMKO DE WAAL",
             "firstPublishedDate": "2017-03-16T05:00:00.000Z",
