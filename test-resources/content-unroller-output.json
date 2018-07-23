@@ -1,0 +1,23 @@
+{
+    "leadImages": [
+        {
+            "id": "https://test.api.ft.com/content/f3add2e0-dbfa-11e6-a7d5-ce30ecef69c7",
+            "type": "square"
+        },
+        {
+            "id": "https://test.api.ft.com/content/35059e34-dc33-11e6-86ac-f253db7791c6",
+            "type": "standard"
+        },
+        {
+            "id": "https://test.api.ft.com/content/c374c260-dd84-11e6-9d7c-be108f1c1dce",
+            "type": "wide"
+        }
+    ],
+    "topper": {
+        "bgColor": "black",
+        "headline": "Topper headline",
+        "standfirst": "Topper standfirst",
+        "theme": "split-text-left"
+    },
+    "uuid": "5c3cae78-dbef-11e6-9d7c-be108f1c1dce"
+}
