@@ -52,13 +52,27 @@ type responsePart struct {
 	content    map[string]interface{}
 }
 
+type transformContent func(ctx context.Context, content map[string]interface{}, h internalContentHandler) map[string]interface{}
+
 type retriever struct {
 	uri           string
 	sourceAppName string
 	doFail        bool
+	transformContent
 }
 
 type contextKey string
+
+func transformContentSourceContent(ctx context.Context, content map[string]interface{}, h internalContentHandler) map[string]interface{} {
+	return content
+}
+
+func transformInternalComponentsContent(ctx context.Context, content map[string]interface{}, h internalContentHandler) map[string]interface{} {
+	var transformedContent map[string]interface{}
+	transformedContent = h.resolveDynamicContent(ctx, content)
+	transformedContent = filterKeys(transformedContent, internalComponentsFilter)
+	return transformedContent
+}
 
 func (c contextKey) String() string {
 	return string(c)
@@ -88,8 +102,8 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 	ctx = context.WithValue(ctx, unrollContentKey, unrollContent)
 
 	retrievers := []retriever{
-		{h.serviceConfig.contentSourceURI, h.serviceConfig.contentSourceAppName, true},
-		{h.serviceConfig.internalComponentsSourceURI, h.serviceConfig.internalComponentsSourceAppName, false},
+		{h.serviceConfig.contentSourceURI, h.serviceConfig.contentSourceAppName, true, transformContentSourceContent},
+		{h.serviceConfig.internalComponentsSourceURI, h.serviceConfig.internalComponentsSourceAppName, false, transformInternalComponentsContent},
 	}
 	parts := h.asyncRetrievalsAndUnmarshalls(ctx, retrievers, uuid, tid)
 	for _, p := range parts {
@@ -103,8 +117,9 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 			return
 		}
 	}
-
-	mergedContent := h.resolveAdditionalFields(ctx, parts)
+	baseURL := "https://" + h.serviceConfig.envAPIHost + "/content/"
+	mergedContent := mergeParts(parts, baseURL)
+	mergedContent = h.resolveAdditionalFields(ctx, mergedContent)
 	resultBytes, _ := json.Marshal(mergedContent)
 	w.Header().Set("Cache-Control", h.serviceConfig.cacheControlPolicy)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -118,7 +133,7 @@ func validateUUID(contentUUID string) error {
 		return err
 	}
 	if contentUUID != parsedUUID.String() {
-		return fmt.Errorf("Parsed UUID (%v) is different than the given uuid (%v).", parsedUUID, contentUUID)
+		return fmt.Errorf("Parsed UUID (%v) is different than the given uuid (%v)", parsedUUID, contentUUID)
 	}
 	return nil
 }
@@ -134,6 +149,7 @@ func (h internalContentHandler) asyncRetrievalsAndUnmarshalls(ctx context.Contex
 			m.Lock()
 			defer m.Unlock()
 			defer wg.Done()
+			part.content = r.transformContent(ctx, part.content, h)
 			responseParts[i] = part
 		}(i, r)
 	}
@@ -155,20 +171,24 @@ func (h internalContentHandler) retrieveAndUnmarshall(ctx context.Context, r ret
 	return part
 }
 
-func resolveDynamicContent(ctx context.Context, content map[string]interface{}, h internalContentHandler) map[string]interface{} {
+func replaceUUID(content map[string]interface{}) map[string]interface{} {
+	recUUID, ok := content["uuid"]
+	if ok {
+		content["id"] = recUUID
+		delete(content, "uuid")
+	}
+	return content
+}
+
+func (h internalContentHandler) resolveDynamicContent(ctx context.Context, content map[string]interface{}) map[string]interface{} {
 	var transformedContent map[string]interface{}
 	unrollContent := ctx.Value(unrollContentKey).(bool)
 	if unrollContent {
+		replaceUUID(content)
 		var err error
-		recUuid, ok := content["uuid"]
-		if ok {
-			content["id"] = recUuid
-			delete(content, "uuid")
-		}
-		uuid := ctx.Value(uuidKey).(string)
-
 		transformedContent, err = h.getUnrolledContent(ctx, content)
 		if err != nil {
+			uuid := ctx.Value(uuidKey).(string)
 			transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
 			h.handleError(err, h.serviceConfig.contentUnrollerAppName, h.serviceConfig.contentUnrollerSourceURI, transactionID, uuid)
 			return content
@@ -179,17 +199,12 @@ func resolveDynamicContent(ctx context.Context, content map[string]interface{}, 
 	return transformedContent
 }
 
-func (h internalContentHandler) resolveAdditionalFields(ctx context.Context, parts []responsePart) map[string]interface{} {
+func (h internalContentHandler) resolveAdditionalFields(ctx context.Context, content map[string]interface{}) map[string]interface{} {
 	uuid := ctx.Value(uuidKey).(string)
-	parts[1].content = resolveDynamicContent(ctx, parts[1].content, h)
-	parts[1].content = filterKeys(parts[1].content, internalComponentsFilter)
-	baseURL := "https://" + h.serviceConfig.envAPIHost + "/content/"
-	mergedContent := mergeParts(parts, baseURL)
-
-	resolveRequestURL(mergedContent, h, uuid)
-	resolveAPIURL(mergedContent, h, uuid)
-	removeEmptyMapFields(mergedContent)
-	return mergedContent
+	resolveRequestURL(content, h, uuid)
+	resolveAPIURL(content, h, uuid)
+	removeEmptyMapFields(content)
+	return content
 }
 
 func filterKeys(m map[string]interface{}, filter map[string]interface{}) map[string]interface{} {

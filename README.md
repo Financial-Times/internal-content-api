@@ -8,7 +8,6 @@ __Internal Content API serves published content that includes the internal compo
 
 For the first time:
 
-curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 go get -u github.com/Financial-Times/internal-content-api
 cd $GOPATH/src/github.com/Financial-Times/internal-content-api
 dep ensure
@@ -64,7 +63,7 @@ The read should return the internal content of an article (i.e. an aggregation o
 #### Optional Parameters
 `unrollContent={boolean}`, default *false*
 
-When `true` all the images in the response(main image, body embedded images, lead images and alternative images) get expanded with the content as content-public-read service was called for that image. This service does not call content-public-read directly, but uses image-resolver which is responsible to get the requested images. When `false` the response contains only the IDs to the images.
+When `true` all the dynamic content components in the response(main image, body embedded images, lead images and alternative images) get expanded with the content as content-public-read service was called for that dynamic component. This service does not call content-public-read directly, but uses content-unroller which is responsible to get the requested dynamic components. When `false` the response contains only the IDs to the dynamic components.
 
 404 if article with given uuid does not exist.
 
@@ -94,5 +93,6 @@ Metrics:  [http://localhost:8084/__metrics](http://localhost:8084/__metrics)
 ## Model
 
 For the model spec please refer to:
-* [enriched-content-read-api](http://git.svc.ft.com/projects/CP/repos/enriched-content-read-api/browse) - complements the content model with content & concept relationships
-* [methode-article-internal-components-mapper](https://github.com/Financial-Times/methode-article-internal-components-mapper) - transforms the internal components of a story (this part of the model is subject to continuous change, hence for the latest model it's recommended to check the [spec](https://github.com/Financial-Times/methode-article-internal-components-mapper/blob/master/api.md))
+* [enriched-content-read-api](https://github.com/Financial-Times/enriched-content-read-api) - returns enriched content (content + complementary content + annotations + relations)
+* [content-public-read](https://github.com/Financial-Times/content-public-read) - it allows public access to content data provided by the platform
+* [content-unroller](https://github.com/Financial-Times/image-resolver) - expands dynamic content of an article

@@ -141,6 +141,11 @@ func TestMergeEmbeddedMapsWithOverlappingFields(t *testing.T) {
 		component     map[string]interface{}
 		mergedContent map[string]interface{}
 	}{
+		{"Test both null",
+			nil,
+			nil,
+			map[string]interface{}{},
+		},
 		{"Test null contents",
 			nil,
 			map[string]interface{}{
