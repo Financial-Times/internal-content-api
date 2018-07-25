@@ -275,14 +275,18 @@ func transformEmbeds(vMap []interface{}, baseURL string) {
 		if !ok {
 			return
 		}
-
 		valueMap = filterEmbedsKeys(valueMap, embedsComponentsFilter)
-		uuid, ok := valueMap["uuid"]
-		if !ok {
-			continue
+		id, ok := valueMap["id"]
+		if ok {
+			valueMap["id"] = baseURL + extractIDValue(id.(string))
 		}
-		valueMap["id"] = baseURL + uuid.(string)
-		delete(valueMap, "uuid")
+
+		uuid, ok := valueMap["uuid"]
+		if ok {
+			valueMap["id"] = baseURL + uuid.(string)
+			delete(valueMap, "uuid")
+		}
+
 	}
 }
 

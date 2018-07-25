@@ -24,7 +24,7 @@
             "canBeDistributed": "yes",
             "description": "Ai Sakai (C) greets the audience at Namba Grand Kagetsu theater in Osaka on July 26, 2017, after becoming the first female among six directors of the Shin Yoshimoto theatrical comedy troupe, one of Japan's leading comedy companies. (Kyodo)\n==Kyodo\n(Photo by Kyodo News via Getty Images)",
             "firstPublishedDate": "2018-06-28T11:27:00.000Z",
-            "id": "https://test.api.ft.com/content/b7c8e40e-73a7-11e8-17fc-56e8d19c9a20",
+            "id": "https://api.ft.com/content/b7c8e40e-73a7-11e8-17fc-56e8d19c9a20",
             "identifiers": [
                 {
                     "authority": "http://api.ft.com/system/FTCOM-METHODE",
@@ -94,7 +94,7 @@
             },
             "editorialDesk": "/FT/WorldNews",
             "firstPublishedDate": "2018-06-28T11:20:10.000Z",
-            "id": "http://www.ft.com/thing/f22b581a-7ac4-11e8-8e17-ed45e46cf554",
+            "id": "https://api.ft.com/content/f22b581a-7ac4-11e8-8e17-ed45e46cf554",
             "identifiers": [
                 {
                     "authority": "http://api.ft.com/system/FTCOM-IG",
@@ -121,7 +121,7 @@
             "apiUrl": "https://test.api.ft.com/content/504f6678-fcc8-36cb-9bfb-025f33758e90",
             "canBeDistributed": "yes",
             "firstPublishedDate": "2018-06-28T11:27:06.000Z",
-            "id": "https://test.api.ft.com/content/504f6678-fcc8-36cb-9bfb-025f33758e90",
+            "id": "https://api.ft.com/content/504f6678-fcc8-36cb-9bfb-025f33758e90",
             "identifiers": [
                 {
                     "authority": "http://api.ft.com/system/FTCOM-METHODE",

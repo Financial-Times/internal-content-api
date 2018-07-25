@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const baseUrl = "http://test.api.ft.com/content/"
+const testBaseUrl = "http://test.api.ft.com/content/"
 
 func TestMergeEmbeds(t *testing.T) {
 	data := []struct {
@@ -20,6 +20,18 @@ func TestMergeEmbeds(t *testing.T) {
 		component     map[string]interface{}
 		mergedContent map[string]interface{}
 	}{
+		{
+			"Empty A, empty B return empty",
+			map[string]interface{}{
+				"embeds": []interface{}{},
+			},
+			map[string]interface{}{
+				"embeds": []interface{}{},
+			},
+			map[string]interface{}{
+				"embeds": []interface{}{},
+			},
+		},
 		{
 			"Empty A remains B",
 			map[string]interface{}{
@@ -39,7 +51,35 @@ func TestMergeEmbeds(t *testing.T) {
 			map[string]interface{}{
 				"embeds": []interface{}{
 					map[string]interface{}{
+						"id":                testBaseUrl + "2",
+						"alternativeImages": map[string]interface{}{},
+						"alternativeTitles": map[string]interface{}{},
+						"description":       "Description2",
+						"lastModified":      "lastModified2",
+					},
+				},
+			},
+		},
+		{
+			"Empty B remains A",
+			map[string]interface{}{
+				"embeds": []interface{}{
+					map[string]interface{}{
 						"id":                "2",
+						"alternativeImages": map[string]interface{}{},
+						"alternativeTitles": map[string]interface{}{},
+						"description":       "Description2",
+						"lastModified":      "lastModified2",
+					},
+				},
+			},
+			map[string]interface{}{
+				"embeds": []interface{}{},
+			},
+			map[string]interface{}{
+				"embeds": []interface{}{
+					map[string]interface{}{
+						"id":                testBaseUrl + "2",
 						"alternativeImages": map[string]interface{}{},
 						"alternativeTitles": map[string]interface{}{},
 						"description":       "Description2",
@@ -75,14 +115,14 @@ func TestMergeEmbeds(t *testing.T) {
 			map[string]interface{}{
 				"embeds": []interface{}{
 					map[string]interface{}{
-						"id":                "1",
+						"id":                testBaseUrl + "1",
 						"alternativeImages": map[string]interface{}{},
 						"alternativeTitles": map[string]interface{}{},
 						"description":       "Description1",
 						"lastModified":      "lastModified1",
 					},
 					map[string]interface{}{
-						"id":                "2",
+						"id":                testBaseUrl + "2",
 						"alternativeImages": map[string]interface{}{},
 						"alternativeTitles": map[string]interface{}{},
 						"description":       "Description2",
@@ -117,7 +157,7 @@ func TestMergeEmbeds(t *testing.T) {
 			map[string]interface{}{
 				"embeds": []interface{}{
 					map[string]interface{}{
-						"id":                "1",
+						"id":                testBaseUrl + "1",
 						"alternativeImages": map[string]interface{}{},
 						"alternativeTitles": map[string]interface{}{},
 						"description":       "Description2",
@@ -129,7 +169,7 @@ func TestMergeEmbeds(t *testing.T) {
 	}
 
 	for _, row := range data {
-		res := mergeParts([]responsePart{{content: row.content}, {content: row.component}}, baseUrl)
+		res := mergeParts([]responsePart{{content: row.content}, {content: row.component}}, testBaseUrl)
 		assert.True(t, reflect.DeepEqual(row.mergedContent, res), "Expected and actual merged content differs.\n Expected: %v\n Actual %v\n", row.mergedContent, res)
 	}
 }
@@ -360,7 +400,7 @@ func TestMergeEmbeddedMapsWithOverlappingFields(t *testing.T) {
 	}
 
 	for _, row := range data {
-		res := mergeParts([]responsePart{{content: row.content}, {content: row.component}}, baseUrl)
+		res := mergeParts([]responsePart{{content: row.content}, {content: row.component}}, testBaseUrl)
 		assert.True(t, reflect.DeepEqual(row.mergedContent, res), row.name+" - Expected and actual merged content differs.\n Expected: %v\n Actual: %v\n", row.mergedContent, res)
 	}
 
@@ -506,7 +546,7 @@ func TestResolvingOverlappingMergesFullContentDC(t *testing.T) {
 	err = json.Unmarshal([]byte(internalComponentJSON), &internalComponent)
 	assert.Equal(t, nil, err, "Error %v", err)
 
-	results := mergeParts([]responsePart{{content: content}, {content: internalComponent}}, baseUrl)
+	results := mergeParts([]responsePart{{content: content}, {content: internalComponent}}, testBaseUrl)
 	jsonResult, errJSON := json.Marshal(results)
 	assert.Equal(t, nil, errJSON, "Error %v", errJSON)
 

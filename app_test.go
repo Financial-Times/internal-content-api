@@ -175,8 +175,8 @@ func startInternalContentService() {
 	enrichedContentAPIHealthURI := enrichedContentAPIMock.URL + "/__health"
 	contentPublicReadAPIURI := contentPublicReadAPIMock.URL + "/internalcontent/"
 	contentPublicReadAPIHealthURI := contentPublicReadAPIMock.URL + "/__health"
-	imageResolverURI := contentUnrollerMock.URL + "/internalcontent"
-	imageResolverHealthURI := contentUnrollerMock.URL + "/__health"
+	contentUnrollerURI := contentUnrollerMock.URL + "/internalcontent"
+	contentUnrollerHealthURI := contentUnrollerMock.URL + "/__health"
 	sc := serviceConfig{
 		"internal-content-api",
 		"Internal Content API",
@@ -193,9 +193,9 @@ func startInternalContentService() {
 		contentPublicReadAPIHealthURI,
 		"panic guide",
 		"Internal components app business impact",
-		imageResolverURI,
-		"image-resolver",
-		imageResolverHealthURI,
+		contentUnrollerURI,
+		"content-unroller",
+		contentUnrollerHealthURI,
 		"panic guide",
 		"Image resolver app business imapct",
 		"api.ft.com",
@@ -481,7 +481,7 @@ func TestShouldBeUnhealthyWhenMethodeApiIsNotHappy(t *testing.T) {
 			assert.Equal(t, false, res.Checks[i].Ok, "The Enriched Content should be unhealthy")
 		case "content-public-read":
 			assert.Equal(t, true, res.Checks[i].Ok, "The Document Store should be healthy")
-		case "image-resolver":
+		case "content-unroller":
 			assert.Equal(t, true, res.Checks[i].Ok, "The Image Resolver should be healthy")
 		default:
 			assert.FailNow(t, "Not a valid check")
@@ -516,7 +516,7 @@ func TestShouldBeUnhealthyWhenTransformerIsNotHappy(t *testing.T) {
 			assert.Equal(t, true, res.Checks[i].Ok, "The Enriched Content should be unhealthy")
 		case "content-public-read":
 			assert.Equal(t, false, res.Checks[i].Ok, "The Document Store should be healthy")
-		case "image-resolver":
+		case "content-unroller":
 			assert.Equal(t, true, res.Checks[i].Ok, "The Image Resolver should be healthy")
 		default:
 			assert.FailNow(t, "Not a valid check")
@@ -552,7 +552,7 @@ func TestShouldBeUnhealthyWhenContentUnrollerIsUnhealthy(t *testing.T) {
 			assert.Equal(t, true, res.Checks[i].Ok, "The Enriched Content should be healthy")
 		case "content-public-read":
 			assert.Equal(t, true, res.Checks[i].Ok, "The Document Store should be healthy")
-		case "image-resolver":
+		case "content-unroller":
 			assert.Equal(t, false, res.Checks[i].Ok, "The Image Resolver should be unhealthy")
 		default:
 			assert.FailNow(t, "Not a valid check")
@@ -635,4 +635,60 @@ func TestShouldReturn400WhenInvalidUUID(t *testing.T) {
 	defer resp.Body.Close()
 
 	assert.Equal(t, http.StatusBadRequest, resp.StatusCode, "Response status should be 400")
+}
+
+func TestServiceasMap(t *testing.T) {
+	sc := serviceConfig{
+		"appSystemCode",
+		"appName",
+		"appPort",
+		"handlerPath",
+		"cacheControlPolicy",
+		"contentSourceURI",
+		"contentSourceAppName",
+		"contentSourceAppHealthURI",
+		"contentSourceAppPanicGuide",
+		"contentSourceAppBusinessImpact",
+		"internalComponentsSourceURI",
+		"internalComponentsSourceAppName",
+		"internalComponentsSourceAppHealthURI",
+		"internalComponentsSourceAppPanicGuide",
+		"internalComponentsSourceAppBusinessImpact",
+		"contentUnrollerSourceURI",
+		"contentUnrollerAppName",
+		"contentUnrollerAppHealthURI",
+		"contentUnrollerAppPanicGuide",
+		"contentUnrollerAppBusinessImpact",
+		"envAPIHost",
+		"graphiteTCPAddress",
+		"graphitePrefix",
+		nil,
+	}
+	resp := sc.asMap()
+	expected := map[string]interface{}{
+		"app-system-code":                                "appSystemCode",
+		"app-name":                                       "appName",
+		"app-port":                                       "appPort",
+		"cache-control-policy":                           "cacheControlPolicy",
+		"handler-path":                                   "handlerPath",
+		"content-source-uri":                             "contentSourceURI",
+		"content-source-app-name":                        "contentSourceAppName",
+		"content-source-app-health-uri":                  "contentSourceAppHealthURI",
+		"content-source-app-panic-guide":                 "contentSourceAppPanicGuide",
+		"content-source-app-business-impact":             "contentSourceAppBusinessImpact",
+		"internal-components-source-uri":                 "internalComponentsSourceURI",
+		"internal-components-source-app-name":            "internalComponentsSourceAppName",
+		"internal-components-source-app-health-uri":      "internalComponentsSourceAppHealthURI",
+		"internal-components-source-app-panic-guide":     "internalComponentsSourceAppPanicGuide",
+		"internal-components-source-app-business-impact": "internalComponentsSourceAppBusinessImpact",
+		"content-unroller-source-uri":                    "contentUnrollerSourceURI",
+		"content-unroller-app-name":                      "contentUnrollerAppName",
+		"content-unroller-app-health-uri":                "contentUnrollerAppHealthURI",
+		"content-unroller-app-panic-guide":               "contentUnrollerAppPanicGuide",
+		"content-unroller-app-bussines-impact":           "contentUnrollerAppBusinessImpact",
+		"env-api-host":                                   "envAPIHost",
+		"graphite-tcp-address":                           "graphiteTCPAddress",
+		"graphite-prefix":                                "graphitePrefix",
+	}
+	assert.Equal(t, resp, expected, "Wrong return from asMap")
 }
