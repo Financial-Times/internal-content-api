@@ -4,11 +4,11 @@ service:
   name: internal-content-preview-api
 env:
   HANDLER_PATH: "internalcontent-preview"
-  CONTENT_SOURCE_URI: "http://content-public-read-preview:8080/content-preview/"
+  CONTENT_SOURCE_URI: "http://unrolled-content-public-read-preview:8080/content-preview/"
   INTERNAL_COMPONENTS_SOURCE_URI: "http://internal-components-preview:8080/content-preview/"
-  CONTENT_SOURCE_APP_HEALTH_URI: "http://content-public-read-preview:8080/__health"
+  CONTENT_SOURCE_APP_HEALTH_URI: "http://unrolled-content-public-read-preview:8080/__health"
   INTERNAL_COMPONENTS_SOURCE_APP_HEALTH_URI: "http://internal-components-preview:8080/__health"
-  CONTENT_SOURCE_APP_NAME: "content-public-read-preview"
+  CONTENT_SOURCE_APP_NAME: "unrolled-content-public-read-preview"
   INTERNAL_COMPONENTS_SOURCE_APP_NAME: "internal-components-preview"
   CONTENT_SOURCE_APP_PANIC_GUIDE: "https://dewey.ft.com/contentreadapi.html"
   INTERNAL_COMPONENTS_SOURCE_APP_PANIC_GUIDE: "https://dewey.ft.com/internal-components-preview.html"
