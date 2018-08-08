@@ -1,13 +1,13 @@
 package main
 
 import (
+	"net/http"
+
 	tid "github.com/Financial-Times/transactionid-utils-go"
 	"github.com/Sirupsen/logrus"
-	"net/http"
 )
 
 type event struct {
-	serviceName   string
 	requestURL    string
 	transactionID string
 	err           error
@@ -39,10 +39,9 @@ func (appLogger *appLogger) TransactionStartedEvent(requestURL string, transacti
 	}).Info()
 }
 
-func (appLogger *appLogger) RequestEvent(serviceName string, requestURL string, transactionID string, uuid string) {
+func (appLogger *appLogger) RequestEvent(requestURL string, transactionID string, uuid string) {
 	appLogger.log.WithFields(logrus.Fields{
 		"event":          "request",
-		"service_name":   serviceName,
 		"request_uri":    requestURL,
 		"transaction_id": transactionID,
 		"uuid":           uuid,
@@ -52,7 +51,6 @@ func (appLogger *appLogger) RequestEvent(serviceName string, requestURL string, 
 func (appLogger *appLogger) ErrorEvent(serviceName string, requestURL string, transactionID string, err error, uuid string) {
 	appLogger.log.WithFields(logrus.Fields{
 		"event":          "error",
-		"service_name":   serviceName,
 		"request_url":    requestURL,
 		"transaction_id": transactionID,
 		"error":          err,
@@ -65,7 +63,6 @@ func (appLogger *appLogger) ErrorEvent(serviceName string, requestURL string, tr
 func (appLogger *appLogger) Error(event event, errMessage string) {
 	appLogger.log.WithFields(logrus.Fields{
 		"event":          "error",
-		"service_name":   event.serviceName,
 		"request_url":    event.requestURL,
 		"transaction_id": event.transactionID,
 		"error":          event.err,
@@ -77,7 +74,6 @@ func (appLogger *appLogger) Error(event event, errMessage string) {
 func (appLogger *appLogger) RequestFailedEvent(serviceName string, requestURL string, resp *http.Response, uuid string) {
 	appLogger.log.WithFields(logrus.Fields{
 		"event":          "request_failed",
-		"service_name":   serviceName,
 		"request_url":    requestURL,
 		"transaction_id": resp.Header.Get(tid.TransactionIDHeader),
 		"status":         resp.StatusCode,
@@ -89,7 +85,6 @@ func (appLogger *appLogger) RequestFailedEvent(serviceName string, requestURL st
 func (appLogger *appLogger) ResponseEvent(serviceName string, requestURL string, resp *http.Response, uuid string) {
 	appLogger.log.WithFields(logrus.Fields{
 		"event":          "response",
-		"service_name":   serviceName,
 		"status":         resp.StatusCode,
 		"request_url":    requestURL,
 		"transaction_id": resp.Header.Get(tid.TransactionIDHeader),

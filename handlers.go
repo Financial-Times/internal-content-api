@@ -162,7 +162,6 @@ func (h internalContentHandler) retrieveAndUnmarshall(ctx context.Context, r ret
 	defer cleanupResp(resp, h.log.log)
 
 	part.e = event{
-		serviceName:   r.sourceAppName,
 		requestURL:    extractRequestURL(resp),
 		transactionID: tid,
 		uuid:          uuid,
@@ -465,7 +464,6 @@ func (h internalContentHandler) callService(ctx context.Context, r retriever) (r
 	uuid := ctx.Value(uuidKey).(string)
 	requestURL := fmt.Sprintf("%s%s", r.uri, uuid)
 	transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
-	h.log.RequestEvent(r.sourceAppName, requestURL, transactionID, uuid)
 
 	req, err := http.NewRequest(http.MethodGet, requestURL, nil)
 	if err != nil {
