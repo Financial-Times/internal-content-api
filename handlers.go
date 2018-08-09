@@ -404,14 +404,18 @@ func (h internalContentHandler) getUnrolledContent(ctx context.Context, content 
 	for i := 0; i < len(leadImagesAsArray); i++ {
 		leadImageAsMap, ok := leadImagesAsArray[i].(map[string]interface{})
 		if ok {
-			transformLeadImage(leadImageAsMap)
+			h.transformLeadImage(leadImageAsMap)
 		}
 	}
 
 	return expandedContent, nil
 }
 
-func transformLeadImage(leadImage map[string]interface{}) {
+func (h internalContentHandler) transformLeadImage(leadImage map[string]interface{}) {
+	if id, found := leadImage["id"]; found {
+		leadImage["id"] = "https://" + h.serviceConfig.envAPIHost + "/content/" + extractIDValue(id.(string))
+	}
+
 	imageModel, found := leadImage["image"]
 	if !found {
 		//if image field is not found inside the image, continue the processing
@@ -446,6 +450,8 @@ func resolveAPIURL(content map[string]interface{}, handler internalContentHandle
 	handlerPath := handler.serviceConfig.handlerPath
 	if !isPreview(handlerPath) {
 		content["apiUrl"] = createRequestURL(handler.serviceConfig.envAPIHost, handlerPath, contentUUID)
+	} else {
+		delete(content, "apiUrl")
 	}
 }
 
