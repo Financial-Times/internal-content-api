@@ -130,7 +130,7 @@ func main() {
 	})
 	contentUnrollerAppPanicGuide := app.String(cli.StringOpt{
 		Name:   "content-unroller-app-panic-guide",
-		Value:  "https://dewey.ft.com/content-unroller.html",
+		Value:  "https://dewey.in.ft.com/runbooks/content-unroller",
 		Desc:   "Content Unroller application panic guide url for healthcheck.",
 		EnvVar: "CONTENT_UNROLLER_APP_PANIC_GUIDE",
 	})

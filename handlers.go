@@ -69,7 +69,7 @@ func transformContentSourceContent(ctx context.Context, content map[string]inter
 
 func transformInternalComponentsContent(ctx context.Context, content map[string]interface{}, h internalContentHandler) map[string]interface{} {
 	var transformedContent map[string]interface{}
-	transformedContent = h.resolveDynamicContent(ctx, content)
+	transformedContent = h.unrollContent(ctx, content)
 	transformedContent = filterKeys(transformedContent, internalComponentsFilter)
 	return transformedContent
 }
@@ -179,7 +179,7 @@ func replaceUUID(content map[string]interface{}) map[string]interface{} {
 	return content
 }
 
-func (h internalContentHandler) resolveDynamicContent(ctx context.Context, content map[string]interface{}) map[string]interface{} {
+func (h internalContentHandler) unrollContent(ctx context.Context, content map[string]interface{}) map[string]interface{} {
 	var transformedContent map[string]interface{}
 	unrollContent := ctx.Value(unrollContentKey).(bool)
 	if unrollContent {
