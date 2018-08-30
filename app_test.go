@@ -220,16 +220,16 @@ func getMapFromReader(r io.Reader) map[string]interface{} {
 }
 
 func compareResults(expectedOutput map[string]interface{}, actualOutput map[string]interface{}) (bool, error) {
-	expectedOutputJson, errJSON := json.Marshal(expectedOutput)
+	expectedOutputJSON, errJSON := json.Marshal(expectedOutput)
 	if errJSON != nil {
 		return false, errJSON
 	}
-	actualOutputJson, errJSON := json.Marshal(actualOutput)
+	actualOutputJSON, errJSON := json.Marshal(actualOutput)
 	if errJSON != nil {
 		return false, errJSON
 	}
 
-	areEqual, e := AreEqualJSON(string(expectedOutputJson), string(actualOutputJson))
+	areEqual, e := AreEqualJSON(string(expectedOutputJSON), string(actualOutputJSON))
 	if e != nil {
 		return false, e
 	}

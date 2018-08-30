@@ -11,22 +11,16 @@ import (
 
 // GTG is the HTTP handler function for the Good-To-Go of the methode content placeholder mapper
 func (sc *serviceConfig) GTG() gtg.Status {
-	contentSourceAppCheck := func() gtg.Status {
-		return gtgCheck(sc.contentSourceAppChecker)
-	}
-
-	internalComponentsCheck := func() gtg.Status {
-		return gtgCheck(sc.internalComponentsSourceAppChecker)
-	}
-
-	contentUnrollerAppCheck := func() gtg.Status {
-		return gtgCheck(sc.contentUnrollerAppChecker)
-	}
-
 	return gtg.FailFastParallelCheck([]gtg.StatusChecker{
-		contentSourceAppCheck,
-		internalComponentsCheck,
-		contentUnrollerAppCheck,
+		func() gtg.Status {
+			return gtgCheck(sc.contentSourceAppChecker)
+		},
+		func() gtg.Status {
+			return gtgCheck(sc.internalComponentsSourceAppChecker)
+		},
+		func() gtg.Status {
+			return gtgCheck(sc.contentUnrollerAppChecker)
+		},
 	})()
 }
 
@@ -84,6 +78,10 @@ func (sc *serviceConfig) contentUnrollerAppChecker() (string, error) {
 
 func (sc *serviceConfig) checkServiceAvailability(serviceName string, healthURI string) (string, error) {
 	req, err := http.NewRequest("GET", healthURI, nil)
+	if err != nil {
+		msg := fmt.Sprintf("%s service is unreachable: %v", serviceName, err)
+		return msg, errors.New(msg)
+	}
 	resp, err := sc.httpClient.Do(req)
 	if err != nil {
 		msg := fmt.Sprintf("%s service is unreachable: %v", serviceName, err)

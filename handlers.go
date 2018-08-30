@@ -68,8 +68,7 @@ func transformContentSourceContent(ctx context.Context, content map[string]inter
 }
 
 func transformInternalComponentsContent(ctx context.Context, content map[string]interface{}, h internalContentHandler) map[string]interface{} {
-	var transformedContent map[string]interface{}
-	transformedContent = h.unrollContent(ctx, content)
+	transformedContent := h.unrollContent(ctx, content)
 	transformedContent = filterKeys(transformedContent, internalComponentsFilter)
 	return transformedContent
 }
@@ -85,7 +84,7 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusBadRequest)
 		msg, _ := json.Marshal(ErrorMessage{fmt.Sprintf("The given uuid is not valid, err=%v", err)})
-		w.Write([]byte(msg))
+		w.Write(msg)
 		return
 	}
 
@@ -397,7 +396,7 @@ func (h internalContentHandler) getUnrolledContent(ctx context.Context, content 
 
 	leadImages, found := expandedContent["leadImages"]
 	if !found {
-		return expandedContent, errors.New("Cannot find leadImages in response.")
+		return expandedContent, errors.New("cannot find leadImages in response")
 	}
 
 	leadImagesAsArray := (leadImages).([]interface{})
@@ -535,11 +534,7 @@ func unmarshallToMap(resp *http.Response) (map[string]interface{}, error) {
 		return content, err
 	}
 	err = json.Unmarshal(contentBytes, &content)
-	if err != nil {
-		return content, err
-	}
-
-	return content, nil
+	return content, err
 }
 
 func extractRequestURL(resp *http.Response) string {
