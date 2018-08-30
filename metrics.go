@@ -1,13 +1,14 @@
 package main
 
 import (
-	"github.com/cyberdelia/go-metrics-graphite"
-	"github.com/rcrowley/go-metrics"
 	standardLog "log"
 	"net"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/cyberdelia/go-metrics-graphite"
+	"github.com/rcrowley/go-metrics"
 )
 
 type Metrics struct {

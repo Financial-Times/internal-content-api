@@ -138,7 +138,7 @@ func validateUUID(contentUUID string) error {
 }
 
 func (h internalContentHandler) asyncRetrievalsAndUnmarshalls(ctx context.Context, retrievers []retriever, uuid string, tid string) []responsePart {
-	responseParts := make([]responsePart, len(retrievers), len(retrievers))
+	responseParts := make([]responsePart, len(retrievers))
 	m := sync.RWMutex{}
 	var wg sync.WaitGroup
 	wg.Add(len(retrievers))
@@ -169,13 +169,12 @@ func (h internalContentHandler) retrieveAndUnmarshall(ctx context.Context, r ret
 	return part
 }
 
-func replaceUUID(content map[string]interface{}) map[string]interface{} {
+func replaceUUID(content map[string]interface{}) {
 	recUUID, ok := content["uuid"]
 	if ok {
 		content["id"] = recUUID
 		delete(content, "uuid")
 	}
-	return content
 }
 
 func (h internalContentHandler) unrollContent(ctx context.Context, content map[string]interface{}) map[string]interface{} {
@@ -352,6 +351,22 @@ func mergeTwoContents(a map[string]interface{}, b map[string]interface{}, baseUR
 	return a
 }
 
+func (h internalContentHandler) expandLeadImages(ec map[string]interface{}) (map[string]interface{}, error) {
+	leadImages, found := ec["leadImages"]
+	if !found {
+		return ec, errors.New("cannot find leadImages in response")
+	}
+
+	leadImagesAsArray := (leadImages).([]interface{})
+	for i := 0; i < len(leadImagesAsArray); i++ {
+		leadImageAsMap, ok := leadImagesAsArray[i].(map[string]interface{})
+		if ok {
+			h.transformLeadImage(leadImageAsMap)
+		}
+	}
+	return ec, nil
+}
+
 func (h internalContentHandler) getUnrolledContent(ctx context.Context, content map[string]interface{}) (map[string]interface{}, error) {
 	var expandedContent map[string]interface{}
 	transactionID, err := transactionidutils.GetTransactionIDFromContext(ctx)
@@ -394,20 +409,7 @@ func (h internalContentHandler) getUnrolledContent(ctx context.Context, content 
 		return expandedContent, err
 	}
 
-	leadImages, found := expandedContent["leadImages"]
-	if !found {
-		return expandedContent, errors.New("cannot find leadImages in response")
-	}
-
-	leadImagesAsArray := (leadImages).([]interface{})
-	for i := 0; i < len(leadImagesAsArray); i++ {
-		leadImageAsMap, ok := leadImagesAsArray[i].(map[string]interface{})
-		if ok {
-			h.transformLeadImage(leadImageAsMap)
-		}
-	}
-
-	return expandedContent, nil
+	return h.expandLeadImages(expandedContent)
 }
 
 func (h internalContentHandler) transformLeadImage(leadImage map[string]interface{}) {

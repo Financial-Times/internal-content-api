@@ -269,6 +269,9 @@ func TestShouldReturn200WhenUnrollContentIsTrueAndInternalComponentOutput(t *tes
 	defer stopServices()
 
 	req, err := http.NewRequest(http.MethodGet, internalContentAPI.URL+"/internalcontent/9607cb04-7ac4-11e8-8e17-ed45e46cf554", nil)
+	if err != nil {
+		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
+	}
 	q := req.URL.Query()
 	q.Add("unrollContent", "true")
 	req.URL.RawQuery = q.Encode()
@@ -301,6 +304,9 @@ func TestShouldReturn200AndInternalComponentOutputWhenUnrollContentReturns400(t 
 	defer stopServices()
 
 	req, err := http.NewRequest(http.MethodGet, internalContentAPI.URL+"/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce", nil)
+	if err != nil {
+		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
+	}
 	q := req.URL.Query()
 	q.Add("unrollContent", "true")
 	req.URL.RawQuery = q.Encode()
@@ -331,6 +337,9 @@ func TestShouldReturn200AndInternalComponentOutputWhenUnrollContentReturns500(t 
 	defer stopServices()
 
 	req, err := http.NewRequest(http.MethodGet, internalContentAPI.URL+"/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce", nil)
+	if err != nil {
+		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
+	}
 	q := req.URL.Query()
 	q.Add("unrollContent", "true")
 	req.URL.RawQuery = q.Encode()
