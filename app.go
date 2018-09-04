@@ -136,7 +136,7 @@ func main() {
 	})
 	contentUnrollerAppBusinessImpact := app.String(cli.StringOpt{
 		Name:   "content-unroller-app-business-impact",
-		Value:  "Dynamic Content and images would not be available",
+		Value:  "Dynamic Content and images would not be expanded",
 		Desc:   "Describe the business impact the content unroller app would produce if it is broken.",
 		EnvVar: "CONTENT_UNROLLER_APP_BUSINESS_IMPACT",
 	})

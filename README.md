@@ -8,16 +8,18 @@ __Internal Content API serves published content that includes the internal compo
 
 For the first time:
 
+```bash
 go get -u github.com/Financial-Times/internal-content-api
 cd $GOPATH/src/github.com/Financial-Times/internal-content-api
 dep ensure
 go build .
+```
 
 ## Running
 
-
 ## Running locally
-_How can I run it_
+
+### How can I run it
 
 1. Run the tests and install the binary:
 
@@ -26,7 +28,7 @@ _How can I run it_
         go install
 2. Run the binary locally with properties set:
 
-```
+```bash
 go install
 $GOPATH/bin/internal-content-api \
 --app-port  "8084" \
@@ -42,42 +44,43 @@ $GOPATH/bin/internal-content-api \
 --content-unroller-app-health-uri "http://localhost:8080/__content-unroller-api/__health" \
 --graphite-tcp-address "graphite.ft.com:2003" \
 --graphite-prefix "coco.services.$ENV.internal-content.%i"
- 
 ```
 
-With Docker:
-
-* Built by Docker Hub on merge to master: [coco/internal-content-api](https://hub.docker.com/r/coco/internal-content-api/)
 * CI provided by CircleCI: [internal-content-api](https://circleci.com/gh/Financial-Times/internal-content-api)
-	
+
 When deployed locally arguments are optional.
 
 ## Endpoints
+
 ### GET
-/internalcontent/{uuid}    
+
+/internalcontent/{uuid}
 Example
 `curl -v http://localhost:8084/internalcontent/9358ba1e-c07f-11e5-846f-79b0e3d20eaf`
 
 The read should return the internal content of an article (i.e. an aggregation of enriched content plus internal components).
 
 #### Optional Parameters
+
 `unrollContent={boolean}`, default *false*
 
-When `true` all the dynamic content components in the response(main image, body embedded images, lead images and alternative images) get expanded with the content as content-public-read service was called for that dynamic component. This service does not call content-public-read directly, but uses content-unroller which is responsible to get the requested dynamic components. When `false` the response contains only the IDs to the dynamic components.
+When `true` dynamic content, main image, body embedded images, lead images and alternative images get expanded with the content as content-public-read service was called for that dynamic component. This service uses content-unroller which is responsible to get the requested dynamic components.
+When `false` the response contains only the IDs of the dynamic content and images (main image, body embedded images, lead images and alternative images).
 
-404 if article with given uuid does not exist.
+`404` if article with given uuid does not exist.
 
-503 when one of the collaborating mandatory services is inaccessible.
+`503` when one of the collaborating mandatory services is inaccessible.
 
 In case `handler-path` / `HANDLER_PATH` is set to something else other than `internalcontent`,
 for example to `internalcontent-preview`, the endpoint will change accordingly to:
 
-/internalcontent-preview/{uuid}
+`/internalcontent-preview/{uuid}`
 
 Example in this case will be:
 `curl -v http://localhost:8084/internalcontent-preview/9358ba1e-c07f-11e5-846f-79b0e3d20eaf`
 
 ### Admin endpoints
+
 Healthchecks: [http://localhost:8084/__health](http://localhost:8084/__health)
 
 good-to-go: [http://localhost:8084/__gtg](http://localhost:8084/__gtg)
@@ -87,12 +90,16 @@ Health and gtg are based on enriched-content-read-api and content-public-read's 
 Ping: [http://localhost:8084/__ping](http://localhost:8084/__ping)
 
 Build-info: [http://localhost:8084/__build-info](http://localhost:8084/__build-info)  -  [Documentation on how to generate build-info] (https://github.com/Financial-Times/service-status-go) 
- 
 Metrics:  [http://localhost:8084/__metrics](http://localhost:8084/__metrics)
 
 ## Model
 
 For the model spec please refer to:
+
 * [enriched-content-read-api](https://github.com/Financial-Times/enriched-content-read-api) - returns enriched content (content + complementary content + annotations + relations)
+
 * [content-public-read](https://github.com/Financial-Times/content-public-read) - it allows public access to content data provided by the platform
-* [content-unroller](https://github.com/Financial-Times/image-resolver) - expands dynamic content of an article
+
+* [content-unroller](https://github.com/Financial-Times/image-resolver) - expands images and dynamic content of an article
+
+* [unrolled-content-public-read](https://github.com/Financial-Times/unrolled-content-public-read) - expands images and dynamic content of an article in preview mode
