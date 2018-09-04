@@ -27,11 +27,11 @@
 
 [[constraint]]
   name = "github.com/Financial-Times/go-fthealth"
-  version = "0.4.0"
+  version = "0.5.0"
 
 [[constraint]]
   name = "github.com/Financial-Times/http-handlers-go"
-  version = "0.1.0"
+  version = "0.1.2"
 
 [[constraint]]
   name = "github.com/Financial-Times/service-status-go"
@@ -47,7 +47,35 @@
 
 [[constraint]]
   name = "github.com/gorilla/handlers"
+  version = "1.4.0"
+
+[[constraint]]
+  name = "github.com/gorilla/mux"
+  version = "1.6.2"
+
+[[constraint]]
+  name = "github.com/jawher/mow.cli"
+  version = "1.0.4"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/rcrowley/go-metrics"
+
+[[constraint]]
+  name = "github.com/satori/go.uuid"
   version = "1.2.0"
+
+[[constraint]]
+  name = "github.com/sirupsen/logrus"
+  version = "1.0.6"
+
+[[constraint]]
+  name = "github.com/stretchr/testify"
+  version = "1.2.2"
+
+[[constraint]]
+  branch = "master"
+  name = "golang.org/x/net"
 
 [prune]
   go-tests = true

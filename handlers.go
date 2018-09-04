@@ -14,9 +14,9 @@ import (
 	"strings"
 
 	transactionidutils "github.com/Financial-Times/transactionid-utils-go"
-	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	gouuid "github.com/satori/go.uuid"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 )
 
@@ -101,8 +101,8 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 	ctx = context.WithValue(ctx, unrollContentKey, unrollContent)
 
 	retrievers := []retriever{
-		{h.serviceConfig.contentSourceURI, h.serviceConfig.contentSourceAppName, true, transformContentSourceContent},
-		{h.serviceConfig.internalComponentsSourceURI, h.serviceConfig.internalComponentsSourceAppName, false, transformInternalComponentsContent},
+		{h.serviceConfig.content.appURI, h.serviceConfig.content.appName, true, transformContentSourceContent},
+		{h.serviceConfig.internalComponents.appURI, h.serviceConfig.internalComponents.appName, false, transformInternalComponentsContent},
 	}
 	parts := h.asyncRetrievalsAndUnmarshalls(ctx, retrievers, uuid, tid)
 	for _, p := range parts {
@@ -180,17 +180,16 @@ func replaceUUID(content map[string]interface{}) {
 func (h internalContentHandler) unrollContent(ctx context.Context, content map[string]interface{}) map[string]interface{} {
 	var transformedContent map[string]interface{}
 	unrollContent := ctx.Value(unrollContentKey).(bool)
-	if unrollContent {
-		replaceUUID(content)
-		var err error
-		transformedContent, err = h.getUnrolledContent(ctx, content)
-		if err != nil {
-			uuid := ctx.Value(uuidKey).(string)
-			transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
-			h.handleError(err, h.serviceConfig.contentUnrollerAppName, h.serviceConfig.contentUnrollerSourceURI, transactionID, uuid)
-			return content
-		}
-	} else {
+	if !unrollContent {
+		return content
+	}
+	replaceUUID(content)
+	var err error
+	transformedContent, err = h.getUnrolledContent(ctx, content)
+	if err != nil {
+		uuid := ctx.Value(uuidKey).(string)
+		transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
+		h.handleError(err, h.serviceConfig.contentUnroller.appName, h.serviceConfig.contentUnroller.appURI, transactionID, uuid)
 		return content
 	}
 	return transformedContent
@@ -377,7 +376,7 @@ func (h internalContentHandler) getUnrolledContent(ctx context.Context, content 
 	if err != nil {
 		return expandedContent, err
 	}
-	req, err := http.NewRequest(http.MethodPost, h.serviceConfig.contentUnrollerSourceURI, bytes.NewReader(body))
+	req, err := http.NewRequest(http.MethodPost, h.serviceConfig.contentUnroller.appURI, bytes.NewReader(body))
 	if err != nil {
 		return expandedContent, err
 	}
@@ -392,12 +391,12 @@ func (h internalContentHandler) getUnrolledContent(ctx context.Context, content 
 
 	uuid := ctx.Value(uuidKey).(string)
 	if resp.StatusCode != http.StatusOK {
-		h.log.RequestFailedEvent(h.serviceConfig.contentUnrollerAppName, req.URL.String(), resp, uuid)
+		h.log.RequestFailedEvent(h.serviceConfig.contentUnroller.appName, req.URL.String(), resp, uuid)
 		h.metrics.recordRequestFailedEvent()
-		errMsg := fmt.Sprintf("Received status code %d from %v.", resp.StatusCode, h.serviceConfig.contentUnrollerAppName)
+		errMsg := fmt.Sprintf("Received status code %d from %v.", resp.StatusCode, h.serviceConfig.contentUnroller.appName)
 		return expandedContent, errors.New(errMsg)
 	}
-	h.log.ResponseEvent(h.serviceConfig.contentUnrollerAppName, req.URL.String(), resp, uuid)
+	h.log.ResponseEvent(h.serviceConfig.contentUnroller.appName, req.URL.String(), resp, uuid)
 
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -481,7 +480,7 @@ func (h internalContentHandler) callService(ctx context.Context, r retriever) (r
 	req.Header.Set("Content-Type", "application/json")
 
 	unrollContent, ok := ctx.Value(unrollContentKey).(bool)
-	if ok && r.sourceAppName == h.serviceConfig.contentSourceAppName {
+	if ok && r.sourceAppName == h.serviceConfig.content.appName {
 		q := req.URL.Query()
 		q.Add(unrollContentKey.String(), strconv.FormatBool(unrollContent))
 		req.URL.RawQuery = q.Encode()

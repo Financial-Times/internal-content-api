@@ -10,10 +10,10 @@ import (
 	oldhttphandlers "github.com/Financial-Times/http-handlers-go/httphandlers"
 	"github.com/Financial-Times/service-status-go/gtg"
 	"github.com/Financial-Times/service-status-go/httphandlers"
-	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jawher/mow.cli"
+	"github.com/sirupsen/logrus"
 )
 
 const serviceDescription = "A RESTful API for retrieving and transforming internal content"
@@ -169,36 +169,43 @@ func main() {
 			Timeout: 10 * time.Second,
 			Transport: &http.Transport{
 				MaxIdleConnsPerHost: 100,
-				Dial: (&net.Dialer{
+				DialContext: (&net.Dialer{
+					Timeout:   30 * time.Second,
 					KeepAlive: 30 * time.Second,
-				}).Dial,
+				}).DialContext,
 			},
 		}
 		sc := serviceConfig{
-			*appSystemCode,
-			*appName,
-			*appPort,
-			*handlerPath,
-			*cacheControlPolicy,
-			*contentSourceURI,
-			*contentSourceAppName,
-			*contentSourceAppHealthURI,
-			*contentSourceAppPanicGuide,
-			*contentSourceAppBusinessImpact,
-			*internalComponentsSourceURI,
-			*internalComponentsSourceAppName,
-			*internalComponentsSourceAppHealthURI,
-			*internalComponentsSourceAppPanicGuide,
-			*internalComponentsSourceAppBusinessImpact,
-			*contentUnrollerURI,
-			*contentUnrollerAppName,
-			*contentUnrollerAppHealthURI,
-			*contentUnrollerAppPanicGuide,
-			*contentUnrollerAppBusinessImpact,
-			*envAPIHost,
-			*graphiteTCPAddress,
-			*graphitePrefix,
-			httpClient,
+			appSystemCode:      *appSystemCode,
+			appName:            *appName,
+			appPort:            *appPort,
+			handlerPath:        *handlerPath,
+			cacheControlPolicy: *cacheControlPolicy,
+			content: externalService{
+				*contentSourceAppName,
+				*contentSourceURI,
+				*contentSourceAppHealthURI,
+				*contentSourceAppPanicGuide,
+				*contentSourceAppBusinessImpact,
+				1},
+			internalComponents: externalService{
+				*internalComponentsSourceAppName,
+				*internalComponentsSourceURI,
+				*internalComponentsSourceAppHealthURI,
+				*internalComponentsSourceAppPanicGuide,
+				*internalComponentsSourceAppBusinessImpact,
+				2},
+			contentUnroller: externalService{
+				*contentUnrollerAppName,
+				*contentUnrollerURI,
+				*contentUnrollerAppHealthURI,
+				*contentUnrollerAppPanicGuide,
+				*contentUnrollerAppBusinessImpact,
+				2},
+			envAPIHost:         *envAPIHost,
+			graphiteTCPAddress: *graphiteTCPAddress,
+			graphitePrefix:     *graphitePrefix,
+			httpClient:         httpClient,
 		}
 		appLogger := newAppLogger()
 		metricsHandler := NewMetrics()
@@ -226,7 +233,9 @@ func setupServiceHandler(sc serviceConfig, metricsHandler Metrics, contentHandle
 			SystemCode:  sc.appSystemCode,
 			Description: serviceDescription,
 			Name:        sc.appName,
-			Checks:      []fthealth.Check{sc.contentSourceAppCheck(), sc.internalComponentsSourceAppCheck(), sc.contentUnrollerAppCheck()},
+			Checks: []fthealth.Check{sc.Check(sc.content),
+				sc.Check(sc.internalComponents),
+				sc.Check(sc.contentUnroller)},
 		},
 		Timeout: 10 * time.Second,
 	}
@@ -238,57 +247,51 @@ func setupServiceHandler(sc serviceConfig, metricsHandler Metrics, contentHandle
 	return r
 }
 
+type externalService struct {
+	appName           string
+	appURI            string
+	appHealthURI      string
+	appPanicGuide     string
+	appBusinessImpact string
+	severity          uint8
+}
+
 type serviceConfig struct {
-	appSystemCode                             string
-	appName                                   string
-	appPort                                   string
-	handlerPath                               string
-	cacheControlPolicy                        string
-	contentSourceURI                          string
-	contentSourceAppName                      string
-	contentSourceAppHealthURI                 string
-	contentSourceAppPanicGuide                string
-	contentSourceAppBusinessImpact            string
-	internalComponentsSourceURI               string
-	internalComponentsSourceAppName           string
-	internalComponentsSourceAppHealthURI      string
-	internalComponentsSourceAppPanicGuide     string
-	internalComponentsSourceAppBusinessImpact string
-	contentUnrollerSourceURI                  string
-	contentUnrollerAppName                    string
-	contentUnrollerAppHealthURI               string
-	contentUnrollerAppPanicGuide              string
-	contentUnrollerAppBusinessImpact          string
-	envAPIHost                                string
-	graphiteTCPAddress                        string
-	graphitePrefix                            string
-	httpClient                                *http.Client
+	appSystemCode      string
+	appName            string
+	appPort            string
+	handlerPath        string
+	cacheControlPolicy string
+	content            externalService
+	internalComponents externalService
+	contentUnroller    externalService
+	envAPIHost         string
+	graphiteTCPAddress string
+	graphitePrefix     string
+	httpClient         *http.Client
+}
+
+func (e externalService) asMap() map[string]interface{} {
+	return map[string]interface{}{
+		"app-uri":             e.appURI,
+		"app-name":            e.appName,
+		"app-health-uri":      e.appHealthURI,
+		"app-panic-guide":     e.appPanicGuide,
+		"app-business-impact": e.appBusinessImpact}
 }
 
 func (sc serviceConfig) asMap() map[string]interface{} {
 	return map[string]interface{}{
-		"app-system-code":                                sc.appSystemCode,
-		"app-name":                                       sc.appName,
-		"app-port":                                       sc.appPort,
-		"cache-control-policy":                           sc.cacheControlPolicy,
-		"handler-path":                                   sc.handlerPath,
-		"content-source-uri":                             sc.contentSourceURI,
-		"content-source-app-name":                        sc.contentSourceAppName,
-		"content-source-app-health-uri":                  sc.contentSourceAppHealthURI,
-		"content-source-app-panic-guide":                 sc.contentSourceAppPanicGuide,
-		"content-source-app-business-impact":             sc.contentSourceAppBusinessImpact,
-		"internal-components-source-uri":                 sc.internalComponentsSourceURI,
-		"internal-components-source-app-name":            sc.internalComponentsSourceAppName,
-		"internal-components-source-app-health-uri":      sc.internalComponentsSourceAppHealthURI,
-		"internal-components-source-app-panic-guide":     sc.internalComponentsSourceAppPanicGuide,
-		"internal-components-source-app-business-impact": sc.internalComponentsSourceAppBusinessImpact,
-		"content-unroller-source-uri":                    sc.contentUnrollerSourceURI,
-		"content-unroller-app-name":                      sc.contentUnrollerAppName,
-		"content-unroller-app-health-uri":                sc.contentUnrollerAppHealthURI,
-		"content-unroller-app-panic-guide":               sc.contentUnrollerAppPanicGuide,
-		"content-unroller-app-bussines-impact":           sc.contentUnrollerAppBusinessImpact,
-		"env-api-host":                                   sc.envAPIHost,
-		"graphite-tcp-address":                           sc.graphiteTCPAddress,
-		"graphite-prefix":                                sc.graphitePrefix,
+		"app-system-code":      sc.appSystemCode,
+		"app-name":             sc.appName,
+		"app-port":             sc.appPort,
+		"cache-control-policy": sc.cacheControlPolicy,
+		"handler-path":         sc.handlerPath,
+		"content-source":       sc.content.asMap(),
+		"internal-components":  sc.internalComponents.asMap(),
+		"content-unroller":     sc.contentUnroller.asMap(),
+		"env-api-host":         sc.envAPIHost,
+		"graphite-tcp-address": sc.graphiteTCPAddress,
+		"graphite-prefix":      sc.graphitePrefix,
 	}
 }

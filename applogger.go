@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	tid "github.com/Financial-Times/transactionid-utils-go"
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 type event struct {

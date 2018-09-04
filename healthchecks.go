@@ -13,13 +13,21 @@ import (
 func (sc *serviceConfig) GTG() gtg.Status {
 	return gtg.FailFastParallelCheck([]gtg.StatusChecker{
 		func() gtg.Status {
-			return gtgCheck(sc.contentSourceAppChecker)
+			return gtgCheck(func() (string, error) {
+				return sc.checkServiceAvailability(sc.content.appName, sc.content.appHealthURI)
+			})
 		},
 		func() gtg.Status {
-			return gtgCheck(sc.internalComponentsSourceAppChecker)
+			return gtgCheck(
+				func() (string, error) {
+					return sc.checkServiceAvailability(sc.internalComponents.appName, sc.internalComponents.appHealthURI)
+				})
 		},
 		func() gtg.Status {
-			return gtgCheck(sc.contentUnrollerAppChecker)
+			return gtgCheck(
+				func() (string, error) {
+					return sc.checkServiceAvailability(sc.contentUnroller.appName, sc.contentUnroller.appHealthURI)
+				})
 		},
 	})()
 }
@@ -31,49 +39,17 @@ func gtgCheck(handler func() (string, error)) gtg.Status {
 	return gtg.Status{GoodToGo: true}
 }
 
-func (sc *serviceConfig) contentSourceAppCheck() fthealth.Check {
+func (sc *serviceConfig) Check(e externalService) fthealth.Check {
 	return fthealth.Check{
-		BusinessImpact:   sc.contentSourceAppBusinessImpact,
-		Name:             sc.contentSourceAppName,
-		PanicGuide:       sc.contentSourceAppPanicGuide,
-		Severity:         1,
-		TechnicalSummary: "Checks that " + sc.contentSourceAppName + " is reachable. " + sc.appName + " requests content from " + sc.contentSourceAppName,
-		Checker:          sc.contentSourceAppChecker,
+		BusinessImpact:   e.appBusinessImpact,
+		Name:             e.appName,
+		PanicGuide:       e.appPanicGuide,
+		Severity:         e.severity,
+		TechnicalSummary: e.appBusinessImpact,
+		Checker: func() (string, error) {
+			return sc.checkServiceAvailability(e.appName, e.appHealthURI)
+		},
 	}
-}
-
-func (sc *serviceConfig) internalComponentsSourceAppCheck() fthealth.Check {
-	return fthealth.Check{
-		BusinessImpact:   sc.internalComponentsSourceAppBusinessImpact,
-		Name:             sc.internalComponentsSourceAppName,
-		PanicGuide:       sc.internalComponentsSourceAppPanicGuide,
-		Severity:         2,
-		TechnicalSummary: "Checks that " + sc.internalComponentsSourceAppName + " is reachable. " + sc.appName + " relies on " + sc.internalComponentsSourceAppName + " to get the internal components",
-		Checker:          sc.internalComponentsSourceAppChecker,
-	}
-}
-
-func (sc *serviceConfig) contentUnrollerAppCheck() fthealth.Check {
-	return fthealth.Check{
-		BusinessImpact:   sc.contentUnrollerAppBusinessImpact,
-		Name:             sc.contentUnrollerAppName,
-		PanicGuide:       sc.contentUnrollerAppPanicGuide,
-		Severity:         2,
-		TechnicalSummary: "Checks that " + sc.contentUnrollerAppName + " is reachable. " + sc.appName + " relies on " + sc.contentUnrollerAppName + " to get the expanded images",
-		Checker:          sc.contentUnrollerAppChecker,
-	}
-}
-
-func (sc *serviceConfig) contentSourceAppChecker() (string, error) {
-	return sc.checkServiceAvailability(sc.contentSourceAppName, sc.contentSourceAppHealthURI)
-}
-
-func (sc *serviceConfig) internalComponentsSourceAppChecker() (string, error) {
-	return sc.checkServiceAvailability(sc.internalComponentsSourceAppName, sc.internalComponentsSourceAppHealthURI)
-}
-
-func (sc *serviceConfig) contentUnrollerAppChecker() (string, error) {
-	return sc.checkServiceAvailability(sc.contentUnrollerAppName, sc.contentUnrollerAppHealthURI)
 }
 
 func (sc *serviceConfig) checkServiceAvailability(serviceName string, healthURI string) (string, error) {

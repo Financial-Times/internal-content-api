@@ -526,30 +526,3 @@ func AreEqualJSON(s1, s2 string) (bool, error) {
 
 	return reflect.DeepEqual(o1, o2), nil
 }
-
-func TestResolvingOverlappingMergesFullContentDC(t *testing.T) {
-
-	contentJSON, e := ioutil.ReadFile("test-resources/embedded-enrichedcontent-outputDC.json")
-	assert.Nil(t, e, "Couldn't read enrichedcontent json")
-
-	internalComponentJSON, e := ioutil.ReadFile("test-resources/embedded-internalcomponents-outputDC.json")
-	assert.Nil(t, e, "Couldn't read internalcomponents json")
-
-	expectedContent, e := ioutil.ReadFile("test-resources/expanded-internal-content-api-outputDC.json")
-	assert.Nil(t, e, "Couldn't read enrichedcontent json")
-
-	var content, internalComponent map[string]interface{}
-
-	err := json.Unmarshal(contentJSON, &content)
-	assert.Equal(t, nil, err, "Error %v", err)
-	err = json.Unmarshal([]byte(internalComponentJSON), &internalComponent)
-	assert.Equal(t, nil, err, "Error %v", err)
-
-	results := mergeParts([]responsePart{{content: content}, {content: internalComponent}}, testBaseURL)
-	jsonResult, errJSON := json.Marshal(results)
-	assert.Equal(t, nil, errJSON, "Error %v", errJSON)
-
-	areEqual, e := AreEqualJSON(string(jsonResult), string(expectedContent))
-	assert.Equal(t, nil, e, "Error %v", e)
-	assert.Equal(t, true, areEqual, "Error %v", areEqual)
-}
