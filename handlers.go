@@ -406,7 +406,6 @@ func (h internalContentHandler) getUnrolledContent(ctx context.Context, content 
 	if err != nil {
 		return expandedContent, err
 	}
-
 	return h.expandLeadImages(expandedContent)
 }
 
@@ -414,13 +413,11 @@ func (h internalContentHandler) transformLeadImage(leadImage map[string]interfac
 	if id, found := leadImage["id"]; found {
 		leadImage["id"] = "https://" + h.serviceConfig.envAPIHost + "/content/" + extractIDValue(id.(string))
 	}
-
 	imageModel, found := leadImage["image"]
 	if !found {
 		//if image field is not found inside the image, continue the processing
 		return
 	}
-
 	var apiURL interface{}
 	imageModelAsMap, ok := imageModel.(map[string]interface{})
 	if !ok {
@@ -431,7 +428,6 @@ func (h internalContentHandler) transformLeadImage(leadImage map[string]interfac
 			return
 		}
 	}
-
 	apiURLAsString, ok := apiURL.(string)
 	if !ok {
 		return
@@ -469,7 +465,6 @@ func (h internalContentHandler) callService(ctx context.Context, r retriever) (r
 	uuid := ctx.Value(uuidKey).(string)
 	requestURL := fmt.Sprintf("%s%s", r.uri, uuid)
 	transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
-
 	req, err := http.NewRequest(http.MethodGet, requestURL, nil)
 	if err != nil {
 		h.handleError(err, r.sourceAppName, requestURL, req.Header.Get(transactionidutils.TransactionIDHeader), uuid)
@@ -491,7 +486,6 @@ func (h internalContentHandler) callService(ctx context.Context, r retriever) (r
 		h.handleError(err, r.sourceAppName, req.URL.String(), req.Header.Get(transactionidutils.TransactionIDHeader), uuid)
 		return responsePart{isOk: false, statusCode: http.StatusServiceUnavailable}, nil
 	}
-
 	return h.handleResponse(req, resp, uuid, r.sourceAppName, r.doFail), resp
 }
 
@@ -541,7 +535,6 @@ func extractRequestURL(resp *http.Response) string {
 	if resp == nil {
 		return "N/A"
 	}
-
 	return resp.Request.URL.String()
 }
 
