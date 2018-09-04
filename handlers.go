@@ -282,7 +282,6 @@ func transformEmbeds(vMap []interface{}, baseURL string) {
 			valueMap["id"] = baseURL + uuid.(string)
 			delete(valueMap, "uuid")
 		}
-
 	}
 }
 
