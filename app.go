@@ -146,24 +146,6 @@ func main() {
 		Desc:   "API host to use for URLs in responses",
 		EnvVar: "ENV_API_HOST",
 	})
-	graphiteTCPAddress := app.String(cli.StringOpt{
-		Name:   "graphite-tcp-address",
-		Value:  "",
-		Desc:   "Graphite TCP address, e.g. graphite.ft.com:2003. Leave as default if you do NOT want to output to graphite (e.g. if running locally)",
-		EnvVar: "GRAPHITE_TCP_ADDRESS",
-	})
-	graphitePrefix := app.String(cli.StringOpt{
-		Name:   "graphite-prefix",
-		Value:  "coco.services.$ENV.content-preview.0",
-		Desc:   "Prefix to use. Should start with content, include the environment, and the host name. e.g. coco.pre-prod.sections-rw-neo4j.1",
-		EnvVar: "GRAPHITE_PREFIX",
-	})
-	logMetrics := app.Bool(cli.BoolOpt{
-		Name:   "log-metrics",
-		Value:  false,
-		Desc:   "Whether to log metrics. Set to true if running locally and you want metrics output",
-		EnvVar: "LOG_METRICS",
-	})
 	app.Action = func() {
 		httpClient := &http.Client{
 			Timeout: 10 * time.Second,
@@ -196,8 +178,6 @@ func main() {
 			*imageResolverAppPanicGuide,
 			*imageResolverAppBusinessImpact,
 			*envAPIHost,
-			*graphiteTCPAddress,
-			*graphitePrefix,
 			httpClient,
 		}
 		appLogger := newAppLogger()
@@ -205,7 +185,6 @@ func main() {
 		contentHandler := internalContentHandler{&sc, appLogger, &metricsHandler}
 		h := setupServiceHandler(sc, metricsHandler, contentHandler)
 		appLogger.ServiceStartedEvent(*appSystemCode, sc.asMap())
-		metricsHandler.OutputMetricsIfRequired(*graphiteTCPAddress, *graphitePrefix, *logMetrics)
 		err := http.ListenAndServe(":"+*appPort, h)
 		if err != nil {
 			logrus.Fatalf("Unable to start server: %v", err)
@@ -260,8 +239,6 @@ type serviceConfig struct {
 	imageResolverAppPanicGuide                string
 	imageResolverAppBusinessImpact            string
 	envAPIHost                                string
-	graphiteTCPAddress                        string
-	graphitePrefix                            string
 	httpClient                                *http.Client
 }
 
@@ -288,7 +265,5 @@ func (sc serviceConfig) asMap() map[string]interface{} {
 		"image-resolver-app-panic-guide":                 sc.imageResolverAppPanicGuide,
 		"image-resolver-app-bussines-impact":             sc.imageResolverAppBusinessImpact,
 		"env-api-host":                                   sc.envAPIHost,
-		"graphite-tcp-address":                           sc.graphiteTCPAddress,
-		"graphite-prefix":                                sc.graphitePrefix,
 	}
 }

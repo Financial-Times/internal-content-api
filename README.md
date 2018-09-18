@@ -37,9 +37,7 @@ $GOPATH/bin/internal-content-api \
 --internal-components-source-app-name  "Internal Components Source Service" \
 --content-source-app-health-uri  "http://localhost:8080/__enriched-content-read-api/__health" \
 --internal-components-source-app-health-uri  "http://localhost:8080/__document-store-api/__health" \
---graphite-tcp-address "graphite.ft.com:2003" \
---graphite-prefix "coco.services.$ENV.content-preview.%i"
- 
+
 ```
 
 With Docker:
@@ -58,9 +56,7 @@ docker run -ti
 --env "INTERNAL_COMPONENTS_SOURCE_APP_NAME=Document Store Service" \
 --env "CONTENT_SOURCE_APP_HEALTH_URI=http://localhost:8080/__enriched-content-read-api/__health" \
 --env "INTERNAL_COMPONENTS_SOURCE_APP_HEALTH_URI=http://localhost:8080/__document-store-api/__health" \
---env "GRAPHITE_TCP_ADDRESS=graphite.ft.com:2003" \  
---env "GRAPHITE_PREFIX=coco.services.$ENV.content-preview.%i" \  
-coco/internal-content-api  
+coco/internal-content-api
 ```
 
 When deployed locally arguments are optional.
