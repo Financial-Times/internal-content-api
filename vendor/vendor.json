@@ -47,12 +47,6 @@
 			"revisionTime": "2017-03-17T14:32:14Z"
 		},
 		{
-			"checksumSHA1": "/6H1rhQmbq8mEP29pnmLmdwBKUE=",
-			"path": "github.com/cyberdelia/go-metrics-graphite",
-			"revision": "39f87cc3b432bbb898d7c643c0e93cac2bc865ad",
-			"revisionTime": "2016-12-19T23:08:53Z"
-		},
-		{
 			"checksumSHA1": "OFu4xJEIjiI8Suu+j/gabfp+y6Q=",
 			"origin": "github.com/stretchr/testify/vendor/github.com/davecgh/go-spew/spew",
 			"path": "github.com/davecgh/go-spew/spew",
