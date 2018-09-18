@@ -165,8 +165,6 @@ func startInternalContentService() {
 		"panic guide",
 		"Image resolver app business imapct",
 		"api.ft.com",
-		"",
-		"",
 		http.DefaultClient,
 	}
 
