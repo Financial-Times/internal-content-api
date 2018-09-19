@@ -42,10 +42,6 @@
   version = "0.2.0"
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/cyberdelia/go-metrics-graphite"
-
-[[constraint]]
   name = "github.com/gorilla/handlers"
   version = "1.4.0"
 
