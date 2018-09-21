@@ -16,8 +16,8 @@ import (
 
 var internalContentAPI *httptest.Server
 var enrichedContentAPIMock *httptest.Server
-var documentStoreAPIMock *httptest.Server
-var imageResolverMock *httptest.Server
+var contentPublicReadAPIMock *httptest.Server
+var contentUnrollerMock *httptest.Server
 
 func startEnrichedContentAPIMock(status string) {
 	router := mux.NewRouter()
@@ -27,7 +27,9 @@ func startEnrichedContentAPIMock(status string) {
 	if status == "happy" {
 		getContent = happyEnrichedContentAPIMock
 		health = happyHandler
-
+	} else if status == "unrollContent" {
+		getContent = unrollContentEnrichedContentAPIMock
+		health = happyHandler
 	} else if status == "notFound" {
 		getContent = notFoundHandler
 		health = happyHandler
@@ -40,6 +42,15 @@ func startEnrichedContentAPIMock(status string) {
 	router.Path("/__health").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(health)})
 
 	enrichedContentAPIMock = httptest.NewServer(router)
+}
+
+func unrollContentEnrichedContentAPIMock(writer http.ResponseWriter, request *http.Request) {
+	file, err := os.Open("test-resources/enriched-content-api-output-unrollContent.json")
+	if err != nil {
+		return
+	}
+	defer file.Close()
+	io.Copy(writer, file)
 }
 
 func happyEnrichedContentAPIMock(writer http.ResponseWriter, request *http.Request) {
@@ -67,15 +78,17 @@ func happyHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func startDocumentStoreAPIMock(status string) {
+func startContentPublicReadAPIMock(status string) {
 	router := mux.NewRouter()
 	var getContent http.HandlerFunc
 	var health http.HandlerFunc
 
 	if status == "happy" {
-		getContent = happyDocumentStoreAPIMock
+		getContent = happyContentPublicReadAPIMock
 		health = happyHandler
-
+	} else if status == "unrollContent" {
+		getContent = unrollContentPublicReadAPIMock
+		health = happyHandler
 	} else if status == "notFound" {
 		getContent = notFoundHandler
 		health = happyHandler
@@ -84,19 +97,22 @@ func startDocumentStoreAPIMock(status string) {
 		health = internalErrorHandler
 	}
 
-	router.Path("/internalcomponents/{uuid}").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(getContent)})
+	router.Path("/internalcontent/{uuid}").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(getContent)})
 	router.Path("/__health").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(health)})
 
-	documentStoreAPIMock = httptest.NewServer(router)
+	contentPublicReadAPIMock = httptest.NewServer(router)
 }
 
-func startImageResolverServiceMock(status string) {
+func startContentUnrollerServiceMock(status string) {
 	router := mux.NewRouter()
 	var getExpandedContent http.HandlerFunc
 	var health http.HandlerFunc
 
 	if status == "happy" {
-		getExpandedContent = happyImageResolverMock
+		getExpandedContent = happyContentUnrollerMock
+		health = happyHandler
+	} else if status == "unrollContent" {
+		getExpandedContent = unrollContentContentUnrollerMock
 		health = happyHandler
 	} else if status == "badRequest" {
 		getExpandedContent = badRequestHandler
@@ -106,14 +122,14 @@ func startImageResolverServiceMock(status string) {
 		health = internalErrorHandler
 	}
 
-	router.Path("/internalcontent/image").Handler(handlers.MethodHandler{http.MethodPost: http.HandlerFunc(getExpandedContent)})
+	router.Path("/internalcontent").Handler(handlers.MethodHandler{http.MethodPost: http.HandlerFunc(getExpandedContent)})
 	router.Path("/__health").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(health)})
 
-	imageResolverMock = httptest.NewServer(router)
+	contentUnrollerMock = httptest.NewServer(router)
 }
 
-func happyDocumentStoreAPIMock(writer http.ResponseWriter, request *http.Request) {
-	file, err := os.Open("test-resources/document-store-api-output.json")
+func happyContentPublicReadAPIMock(writer http.ResponseWriter, request *http.Request) {
+	file, err := os.Open("test-resources/content-public-read-output.json")
 	if err != nil {
 		return
 	}
@@ -121,8 +137,26 @@ func happyDocumentStoreAPIMock(writer http.ResponseWriter, request *http.Request
 	io.Copy(writer, file)
 }
 
-func happyImageResolverMock(w http.ResponseWriter, r *http.Request) {
-	file, err := os.Open("test-resources/image-resolver-output.json")
+func unrollContentPublicReadAPIMock(writer http.ResponseWriter, request *http.Request) {
+	file, err := os.Open("test-resources/content-public-read-output-unrollContent.json")
+	if err != nil {
+		return
+	}
+	defer file.Close()
+	io.Copy(writer, file)
+}
+
+func happyContentUnrollerMock(w http.ResponseWriter, r *http.Request) {
+	file, err := os.Open("test-resources/content-unroller-output.json")
+	if err != nil {
+		return
+	}
+	defer file.Close()
+	io.Copy(w, file)
+}
+
+func unrollContentContentUnrollerMock(w http.ResponseWriter, r *http.Request) {
+	file, err := os.Open("test-resources/content-unroller-output-unrollContent.json")
 	if err != nil {
 		return
 	}
@@ -133,37 +167,43 @@ func happyImageResolverMock(w http.ResponseWriter, r *http.Request) {
 func stopServices() {
 	internalContentAPI.Close()
 	enrichedContentAPIMock.Close()
-	documentStoreAPIMock.Close()
+	contentPublicReadAPIMock.Close()
 }
 
 func startInternalContentService() {
 	enrichedContentAPIURI := enrichedContentAPIMock.URL + "/enrichedcontent/"
 	enrichedContentAPIHealthURI := enrichedContentAPIMock.URL + "/__health"
-	documentStoreAPIURI := documentStoreAPIMock.URL + "/internalcomponents/"
-	documentStoreAPIHealthURI := documentStoreAPIMock.URL + "/__health"
-	imageResolverURI := imageResolverMock.URL + "/internalcontent/image"
-	imageResolverHealthURI := imageResolverMock.URL + "/__health"
+	contentPublicReadAPIURI := contentPublicReadAPIMock.URL + "/internalcontent/"
+	contentPublicReadAPIHealthURI := contentPublicReadAPIMock.URL + "/__health"
+	contentUnrollerURI := contentUnrollerMock.URL + "/internalcontent"
+	contentUnrollerHealthURI := contentUnrollerMock.URL + "/__health"
 	sc := serviceConfig{
 		"internal-content-api",
 		"Internal Content API",
 		"8084",
 		"internalcontent",
 		"max-age=10",
-		enrichedContentAPIURI,
-		"enriched-content-read-api",
-		enrichedContentAPIHealthURI,
-		"panic guide",
-		"Source app business impact",
-		documentStoreAPIURI,
-		"document-store-api",
-		documentStoreAPIHealthURI,
-		"panic guide",
-		"Internal components app business impact",
-		imageResolverURI,
-		"image-resolver",
-		imageResolverHealthURI,
-		"panic guide",
-		"Image resolver app business imapct",
+		externalService{
+			"enriched-content-read-api",
+			enrichedContentAPIURI,
+			enrichedContentAPIHealthURI,
+			"panic guide",
+			"Source app business impact",
+			1},
+		externalService{
+			"content-public-read",
+			contentPublicReadAPIURI,
+			contentPublicReadAPIHealthURI,
+			"panic guide",
+			"Internal components app business impact",
+			2},
+		externalService{
+			"content-unroller",
+			contentUnrollerURI,
+			contentUnrollerHealthURI,
+			"panic guide",
+			"Image resolver app business imapct",
+			2},
 		"api.ft.com",
 		http.DefaultClient,
 	}
@@ -183,10 +223,27 @@ func getMapFromReader(r io.Reader) map[string]interface{} {
 	return m
 }
 
+func compareResults(expectedOutput map[string]interface{}, actualOutput map[string]interface{}) (bool, error) {
+	expectedOutputJSON, errJSON := json.Marshal(expectedOutput)
+	if errJSON != nil {
+		return false, errJSON
+	}
+	actualOutputJSON, errJSON := json.Marshal(actualOutput)
+	if errJSON != nil {
+		return false, errJSON
+	}
+
+	areEqual, e := AreEqualJSON(string(expectedOutputJSON), string(actualOutputJSON))
+	if e != nil {
+		return false, e
+	}
+	return areEqual, nil
+}
+
 func TestShouldReturn200AndInternalComponentOutput(t *testing.T) {
 	startEnrichedContentAPIMock("happy")
-	startDocumentStoreAPIMock("happy")
-	startImageResolverServiceMock("happy")
+	startContentPublicReadAPIMock("happy")
+	startContentUnrollerServiceMock("happy")
 	startInternalContentService()
 	defer stopServices()
 	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
@@ -202,21 +259,25 @@ func TestShouldReturn200AndInternalComponentOutput(t *testing.T) {
 
 	expectedOutput := getMapFromReader(file)
 	actualOutput := getMapFromReader(resp.Body)
-
-	assert.Equal(t, expectedOutput, actualOutput, "Response body shoud be equal to transformer response body")
+	areEqual, e := compareResults(expectedOutput, actualOutput)
+	assert.Equal(t, nil, e, "Error %v", e)
+	assert.Equal(t, true, areEqual, "Error %v", areEqual)
 	assert.Equal(t, "max-age=10", resp.Header.Get("Cache-Control"), "Should have cache control set")
 }
 
-func TestShouldReturn200WhenExpandImagesIsTrueAndInternalComponentOutput(t *testing.T) {
-	startEnrichedContentAPIMock("happy")
-	startDocumentStoreAPIMock("happy")
-	startImageResolverServiceMock("happy")
+func TestShouldReturn200WhenUnrollContentIsTrueAndInternalComponentOutput(t *testing.T) {
+	startEnrichedContentAPIMock("unrollContent")
+	startContentPublicReadAPIMock("unrollContent")
+	startContentUnrollerServiceMock("unrollContent")
 	startInternalContentService()
 	defer stopServices()
 
-	req, err := http.NewRequest(http.MethodGet, internalContentAPI.URL+"/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce", nil)
+	req, err := http.NewRequest(http.MethodGet, internalContentAPI.URL+"/internalcontent/9607cb04-7ac4-11e8-8e17-ed45e46cf554", nil)
+	if err != nil {
+		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
+	}
 	q := req.URL.Query()
-	q.Add("expandImages", "true")
+	q.Add("unrollContent", "true")
 	req.URL.RawQuery = q.Encode()
 
 	resp, err := http.DefaultClient.Do(req)
@@ -227,26 +288,31 @@ func TestShouldReturn200WhenExpandImagesIsTrueAndInternalComponentOutput(t *test
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode, "Response status should be 200")
 
-	file, _ := os.Open("test-resources/full-expanded-internal-content-api-output.json")
+	file, _ := os.Open("test-resources/internal-content-api-output-unrollContent.json")
 	defer file.Close()
 
 	expectedOutput := getMapFromReader(file)
 	actualOutput := getMapFromReader(resp.Body)
 
-	assert.Equal(t, expectedOutput, actualOutput, "Response body shoud be equal to transformer response body")
+	areEqual, e := compareResults(expectedOutput, actualOutput)
+	assert.Equal(t, nil, e, "Error %v", e)
+	assert.Equal(t, true, areEqual, "Error %v", areEqual)
 	assert.Equal(t, "max-age=10", resp.Header.Get("Cache-Control"), "Should have cache control set")
 }
 
-func TestShouldReturn200AndInternalComponentOutputWhenExpandImagesReturns400(t *testing.T) {
+func TestShouldReturn200AndInternalComponentOutputWhenUnrollContentReturns400(t *testing.T) {
 	startEnrichedContentAPIMock("happy")
-	startDocumentStoreAPIMock("happy")
-	startImageResolverServiceMock("badRequest")
+	startContentPublicReadAPIMock("happy")
+	startContentUnrollerServiceMock("badRequest")
 	startInternalContentService()
 	defer stopServices()
 
 	req, err := http.NewRequest(http.MethodGet, internalContentAPI.URL+"/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce", nil)
+	if err != nil {
+		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
+	}
 	q := req.URL.Query()
-	q.Add("expandImages", "true")
+	q.Add("unrollContent", "true")
 	req.URL.RawQuery = q.Encode()
 
 	resp, err := http.DefaultClient.Do(req)
@@ -267,16 +333,19 @@ func TestShouldReturn200AndInternalComponentOutputWhenExpandImagesReturns400(t *
 	assert.Equal(t, "max-age=10", resp.Header.Get("Cache-Control"), "Should have cache control set")
 }
 
-func TestShouldReturn200AndInternalComponentOutputWhenExpandImagesReturns500(t *testing.T) {
+func TestShouldReturn200AndInternalComponentOutputWhenUnrollContentReturns500(t *testing.T) {
 	startEnrichedContentAPIMock("happy")
-	startDocumentStoreAPIMock("happy")
-	startImageResolverServiceMock("unhappy")
+	startContentPublicReadAPIMock("happy")
+	startContentUnrollerServiceMock("unhappy")
 	startInternalContentService()
 	defer stopServices()
 
 	req, err := http.NewRequest(http.MethodGet, internalContentAPI.URL+"/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce", nil)
+	if err != nil {
+		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
+	}
 	q := req.URL.Query()
-	q.Add("expandImages", "true")
+	q.Add("unrollContent", "true")
 	req.URL.RawQuery = q.Encode()
 
 	resp, err := http.DefaultClient.Do(req)
@@ -299,8 +368,8 @@ func TestShouldReturn200AndInternalComponentOutputWhenExpandImagesReturns500(t *
 
 func TestShouldReturn404(t *testing.T) {
 	startEnrichedContentAPIMock("notFound")
-	startDocumentStoreAPIMock("notFound")
-	startImageResolverServiceMock("badRequest")
+	startContentPublicReadAPIMock("notFound")
+	startContentUnrollerServiceMock("badRequest")
 	startInternalContentService()
 	defer stopServices()
 
@@ -315,8 +384,8 @@ func TestShouldReturn404(t *testing.T) {
 
 func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentNotFound(t *testing.T) {
 	startEnrichedContentAPIMock("happy")
-	startDocumentStoreAPIMock("notFound")
-	startImageResolverServiceMock("badRequest")
+	startContentPublicReadAPIMock("notFound")
+	startContentUnrollerServiceMock("badRequest")
 	startInternalContentService()
 	defer stopServices()
 	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
@@ -338,8 +407,8 @@ func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentNotFound(t 
 
 func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentFailed(t *testing.T) {
 	startEnrichedContentAPIMock("happy")
-	startDocumentStoreAPIMock("unhappy")
-	startImageResolverServiceMock("badRequest")
+	startContentPublicReadAPIMock("unhappy")
+	startContentUnrollerServiceMock("badRequest")
 	startInternalContentService()
 	defer stopServices()
 	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
@@ -361,8 +430,8 @@ func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentFailed(t *t
 
 func TestShouldReturn503whenEnrichedContentApiIsNotAvailable(t *testing.T) {
 	startEnrichedContentAPIMock("unhappy")
-	startDocumentStoreAPIMock("happy")
-	startImageResolverServiceMock("happy")
+	startContentPublicReadAPIMock("happy")
+	startContentUnrollerServiceMock("happy")
 	startInternalContentService()
 	defer stopServices()
 
@@ -378,8 +447,8 @@ func TestShouldReturn503whenEnrichedContentApiIsNotAvailable(t *testing.T) {
 
 func TestShouldBeHealthy(t *testing.T) {
 	startEnrichedContentAPIMock("happy")
-	startDocumentStoreAPIMock("happy")
-	startImageResolverServiceMock("happy")
+	startContentPublicReadAPIMock("happy")
+	startContentUnrollerServiceMock("happy")
 	startInternalContentService()
 	defer stopServices()
 
@@ -400,8 +469,8 @@ func TestShouldBeHealthy(t *testing.T) {
 
 func TestShouldBeUnhealthyWhenMethodeApiIsNotHappy(t *testing.T) {
 	startEnrichedContentAPIMock("unhappy")
-	startDocumentStoreAPIMock("happy")
-	startImageResolverServiceMock("happy")
+	startContentPublicReadAPIMock("happy")
+	startContentUnrollerServiceMock("happy")
 	startInternalContentService()
 	defer stopServices()
 
@@ -423,9 +492,9 @@ func TestShouldBeUnhealthyWhenMethodeApiIsNotHappy(t *testing.T) {
 		switch res.Checks[i].Name {
 		case "enriched-content-read-api":
 			assert.Equal(t, false, res.Checks[i].Ok, "The Enriched Content should be unhealthy")
-		case "document-store-api":
+		case "content-public-read":
 			assert.Equal(t, true, res.Checks[i].Ok, "The Document Store should be healthy")
-		case "image-resolver":
+		case "content-unroller":
 			assert.Equal(t, true, res.Checks[i].Ok, "The Image Resolver should be healthy")
 		default:
 			assert.FailNow(t, "Not a valid check")
@@ -435,8 +504,8 @@ func TestShouldBeUnhealthyWhenMethodeApiIsNotHappy(t *testing.T) {
 
 func TestShouldBeUnhealthyWhenTransformerIsNotHappy(t *testing.T) {
 	startEnrichedContentAPIMock("happy")
-	startDocumentStoreAPIMock("unhappy")
-	startImageResolverServiceMock("happy")
+	startContentPublicReadAPIMock("unhappy")
+	startContentUnrollerServiceMock("happy")
 	startInternalContentService()
 	defer stopServices()
 
@@ -458,9 +527,9 @@ func TestShouldBeUnhealthyWhenTransformerIsNotHappy(t *testing.T) {
 		switch res.Checks[i].Name {
 		case "enriched-content-read-api":
 			assert.Equal(t, true, res.Checks[i].Ok, "The Enriched Content should be unhealthy")
-		case "document-store-api":
+		case "content-public-read":
 			assert.Equal(t, false, res.Checks[i].Ok, "The Document Store should be healthy")
-		case "image-resolver":
+		case "content-unroller":
 			assert.Equal(t, true, res.Checks[i].Ok, "The Image Resolver should be healthy")
 		default:
 			assert.FailNow(t, "Not a valid check")
@@ -469,10 +538,10 @@ func TestShouldBeUnhealthyWhenTransformerIsNotHappy(t *testing.T) {
 
 }
 
-func TestShouldBeUnhealthyWhenImageResolverIsUnhealthy(t *testing.T) {
+func TestShouldBeUnhealthyWhenContentUnrollerIsUnhealthy(t *testing.T) {
 	startEnrichedContentAPIMock("happy")
-	startDocumentStoreAPIMock("happy")
-	startImageResolverServiceMock("unhappy")
+	startContentPublicReadAPIMock("happy")
+	startContentUnrollerServiceMock("unhappy")
 	startInternalContentService()
 	defer stopServices()
 
@@ -494,9 +563,9 @@ func TestShouldBeUnhealthyWhenImageResolverIsUnhealthy(t *testing.T) {
 		switch res.Checks[i].Name {
 		case "enriched-content-read-api":
 			assert.Equal(t, true, res.Checks[i].Ok, "The Enriched Content should be healthy")
-		case "document-store-api":
+		case "content-public-read":
 			assert.Equal(t, true, res.Checks[i].Ok, "The Document Store should be healthy")
-		case "image-resolver":
+		case "content-unroller":
 			assert.Equal(t, false, res.Checks[i].Ok, "The Image Resolver should be unhealthy")
 		default:
 			assert.FailNow(t, "Not a valid check")
@@ -506,8 +575,8 @@ func TestShouldBeUnhealthyWhenImageResolverIsUnhealthy(t *testing.T) {
 
 func TestShouldBeGoodToGo(t *testing.T) {
 	startEnrichedContentAPIMock("happy")
-	startDocumentStoreAPIMock("happy")
-	startImageResolverServiceMock("happy")
+	startContentPublicReadAPIMock("happy")
+	startContentUnrollerServiceMock("happy")
 	startInternalContentService()
 	defer stopServices()
 
@@ -521,8 +590,8 @@ func TestShouldBeGoodToGo(t *testing.T) {
 
 func TestShouldNotBeGoodToGoWhenMethodeApiIsNotHappy(t *testing.T) {
 	startEnrichedContentAPIMock("unhappy")
-	startDocumentStoreAPIMock("happy")
-	startImageResolverServiceMock("happy")
+	startContentPublicReadAPIMock("happy")
+	startContentUnrollerServiceMock("happy")
 	startInternalContentService()
 	defer stopServices()
 
@@ -536,8 +605,8 @@ func TestShouldNotBeGoodToGoWhenMethodeApiIsNotHappy(t *testing.T) {
 
 func TestShouldNotBeGoodToGoWhenTransformerIsNotHappy(t *testing.T) {
 	startEnrichedContentAPIMock("happy")
-	startDocumentStoreAPIMock("unhappy")
-	startImageResolverServiceMock("happy")
+	startContentPublicReadAPIMock("unhappy")
+	startContentUnrollerServiceMock("happy")
 	startInternalContentService()
 	defer stopServices()
 
@@ -549,10 +618,10 @@ func TestShouldNotBeGoodToGoWhenTransformerIsNotHappy(t *testing.T) {
 	assert.Equal(t, http.StatusServiceUnavailable, resp.StatusCode, "Response status should be 503")
 }
 
-func TestShouldNotBeGoodToGoWhenImageResolverNotHappy(t *testing.T) {
+func TestShouldNotBeGoodToGoWhenContentUnrollerNotHappy(t *testing.T) {
 	startEnrichedContentAPIMock("happy")
-	startDocumentStoreAPIMock("happy")
-	startImageResolverServiceMock("unhappy")
+	startContentPublicReadAPIMock("happy")
+	startContentUnrollerServiceMock("unhappy")
 	startInternalContentService()
 	defer stopServices()
 
@@ -566,8 +635,8 @@ func TestShouldNotBeGoodToGoWhenImageResolverNotHappy(t *testing.T) {
 
 func TestShouldReturn400WhenInvalidUUID(t *testing.T) {
 	startEnrichedContentAPIMock("happy")
-	startDocumentStoreAPIMock("happy")
-	startImageResolverServiceMock("happy")
+	startContentPublicReadAPIMock("happy")
+	startContentUnrollerServiceMock("happy")
 	startInternalContentService()
 	defer stopServices()
 
@@ -579,4 +648,65 @@ func TestShouldReturn400WhenInvalidUUID(t *testing.T) {
 	defer resp.Body.Close()
 
 	assert.Equal(t, http.StatusBadRequest, resp.StatusCode, "Response status should be 400")
+}
+
+func TestServiceAsMap(t *testing.T) {
+	sc := serviceConfig{
+		"appSystemCode",
+		"appName",
+		"appPort",
+		"handlerPath",
+		"cacheControlPolicy",
+		externalService{
+			"contentSourceAppName",
+			"contentSourceURI",
+			"contentSourceAppHealthURI",
+			"contentSourceAppPanicGuide",
+			"contentSourceAppBusinessImpact",
+			1},
+		externalService{
+			"internalComponentsSourceAppName",
+			"internalComponentsSourceURI",
+			"internalComponentsSourceAppHealthURI",
+			"internalComponentsSourceAppPanicGuide",
+			"internalComponentsSourceAppBusinessImpact",
+			2},
+		externalService{
+			"contentUnrollerAppName",
+			"contentUnrollerSourceURI",
+			"contentUnrollerAppHealthURI",
+			"contentUnrollerAppPanicGuide",
+			"contentUnrollerAppBusinessImpact",
+			2},
+		"envAPIHost",
+		nil,
+	}
+	resp := sc.asMap()
+	expected := map[string]interface{}{
+		"app-system-code":      "appSystemCode",
+		"app-name":             "appName",
+		"app-port":             "appPort",
+		"cache-control-policy": "cacheControlPolicy",
+		"handler-path":         "handlerPath",
+		"content-source": map[string]interface{}{
+			"app-uri":             "contentSourceURI",
+			"app-name":            "contentSourceAppName",
+			"app-health-uri":      "contentSourceAppHealthURI",
+			"app-panic-guide":     "contentSourceAppPanicGuide",
+			"app-business-impact": "contentSourceAppBusinessImpact"},
+		"internal-components": map[string]interface{}{
+			"app-uri":             "internalComponentsSourceURI",
+			"app-name":            "internalComponentsSourceAppName",
+			"app-health-uri":      "internalComponentsSourceAppHealthURI",
+			"app-panic-guide":     "internalComponentsSourceAppPanicGuide",
+			"app-business-impact": "internalComponentsSourceAppBusinessImpact"},
+		"content-unroller": map[string]interface{}{
+			"app-uri":             "contentUnrollerSourceURI",
+			"app-name":            "contentUnrollerAppName",
+			"app-health-uri":      "contentUnrollerAppHealthURI",
+			"app-panic-guide":     "contentUnrollerAppPanicGuide",
+			"app-business-impact": "contentUnrollerAppBusinessImpact"},
+		"env-api-host":         "envAPIHost",
+	}
+	assert.Equal(t, resp, expected, "Wrong return from asMap")
 }

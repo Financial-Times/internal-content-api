@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/rcrowley/go-metrics"
 	"net/http"
+
+	"github.com/rcrowley/go-metrics"
 )
 
 type Metrics struct {

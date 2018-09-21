@@ -59,16 +59,16 @@ spec:
           value: {{ .Values.env.CONTENT_SOURCE_APP_BUSINESS_IMPACT }}
         - name: INTERNAL_COMPONENTS_SOURCE_APP_BUSINESS_IMPACT
           value: {{ .Values.env.INTERNAL_COMPONENTS_SOURCE_APP_BUSINESS_IMPACT }}
-        - name: IMAGE_RESOLVER_URI
-          value: {{ .Values.env.IMAGE_RESOLVER_URI }}
-        - name: IMAGE_RESOLVER_APP_NAME
-          value: {{ .Values.env.IMAGE_RESOLVER_APP_NAME }}
-        - name: IMAGE_RESOLVER_APP_HEALTH_URI
-          value: {{ .Values.env.IMAGE_RESOLVER_APP_HEALTH_URI }}
-        - name: IMAGE_RESOLVER_APP_PANIC_GUIDE
-          value: {{ .Values.env.IMAGE_RESOLVER_APP_PANIC_GUIDE }}
-        - name: IMAGE_RESOLVER_APP_BUSINESS_IMPACT
-          value: {{ .Values.env.IMAGE_RESOLVER_APP_BUSINESS_IMPACT }}
+        - name: CONTENT_UNROLLER_URI
+          value: {{ .Values.env.CONTENT_UNROLLER_URI }}
+        - name: CONTENT_UNROLLER_APP_NAME
+          value: {{ .Values.env.CONTENT_UNROLLER_APP_NAME }}
+        - name: CONTENT_UNROLLER_APP_HEALTH_URI
+          value: {{ .Values.env.CONTENT_UNROLLER_APP_HEALTH_URI }}
+        - name: CONTENT_UNROLLER_APP_PANIC_GUIDE
+          value: {{ .Values.env.CONTENT_UNROLLER_APP_PANIC_GUIDE }}
+        - name: CONTENT_UNROLLER_APP_BUSINESS_IMPACT
+          value: {{ .Values.env.CONTENT_UNROLLER_APP_BUSINESS_IMPACT }}
         - name: APP_SYSTEM_CODE
           value: {{ .Values.env.APP_SYSTEM_CODE }}
         - name: ENV_API_HOST

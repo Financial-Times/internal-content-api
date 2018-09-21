@@ -14,23 +14,26 @@ import (
 	"strings"
 
 	transactionidutils "github.com/Financial-Times/transactionid-utils-go"
-	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	gouuid "github.com/satori/go.uuid"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 )
 
 const (
-	previewSuffix              = "-preview"
-	uuidKey         contextKey = "uuid"
-	expandImagesKey contextKey = "expandImages"
+	previewSuffix               = "-preview"
+	uuidKey          contextKey = "uuid"
+	unrollContentKey contextKey = "unrollContent"
 )
 
 var internalComponentsFilter = map[string]interface{}{
+	"id":               "",
 	"uuid":             "",
 	"lastModified":     "",
 	"publishReference": "",
 }
+
+var embedsComponentsFilter = []string{"requestUrl"}
 
 type internalContentHandler struct {
 	serviceConfig *serviceConfig
@@ -49,13 +52,26 @@ type responsePart struct {
 	content    map[string]interface{}
 }
 
+type transformContent func(ctx context.Context, content map[string]interface{}, h internalContentHandler) map[string]interface{}
+
 type retriever struct {
 	uri           string
 	sourceAppName string
 	doFail        bool
+	transformContent
 }
 
 type contextKey string
+
+func transformContentSourceContent(ctx context.Context, content map[string]interface{}, h internalContentHandler) map[string]interface{} {
+	return content
+}
+
+func transformInternalComponentsContent(ctx context.Context, content map[string]interface{}, h internalContentHandler) map[string]interface{} {
+	transformedContent := h.unrollContent(ctx, content)
+	transformedContent = filterKeys(transformedContent, internalComponentsFilter)
+	return transformedContent
+}
 
 func (c contextKey) String() string {
 	return string(c)
@@ -68,25 +84,25 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusBadRequest)
 		msg, _ := json.Marshal(ErrorMessage{fmt.Sprintf("The given uuid is not valid, err=%v", err)})
-		w.Write([]byte(msg))
+		w.Write(msg)
 		return
 	}
 
 	tid := transactionidutils.GetTransactionIDFromRequest(r)
 	h.log.TransactionStartedEvent(r.RequestURI, tid, uuid)
 
-	expandImagesParam := r.URL.Query().Get(expandImagesKey.String())
-	expandImages, err := strconv.ParseBool(expandImagesParam)
+	unrollContentParam := r.URL.Query().Get(unrollContentKey.String())
+	unrollContent, err := strconv.ParseBool(unrollContentParam)
 	if err != nil {
-		expandImages = false
+		unrollContent = false
 	}
 
 	ctx := context.WithValue(transactionidutils.TransactionAwareContext(context.Background(), tid), uuidKey, uuid)
-	ctx = context.WithValue(ctx, expandImagesKey, expandImages)
+	ctx = context.WithValue(ctx, unrollContentKey, unrollContent)
 
 	retrievers := []retriever{
-		{h.serviceConfig.contentSourceURI, h.serviceConfig.contentSourceAppName, true},
-		{h.serviceConfig.internalComponentsSourceURI, h.serviceConfig.internalComponentsSourceAppName, false},
+		{h.serviceConfig.content.appURI, h.serviceConfig.content.appName, true, transformContentSourceContent},
+		{h.serviceConfig.internalComponents.appURI, h.serviceConfig.internalComponents.appName, false, transformInternalComponentsContent},
 	}
 	parts := h.asyncRetrievalsAndUnmarshalls(ctx, retrievers, uuid, tid)
 	for _, p := range parts {
@@ -100,8 +116,9 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 			return
 		}
 	}
-
-	mergedContent := h.resolveAdditionalFields(ctx, parts)
+	baseURL := "https://" + h.serviceConfig.envAPIHost + "/content/"
+	mergedContent := mergeParts(parts, baseURL)
+	mergedContent = h.resolveAdditionalFields(ctx, mergedContent)
 	resultBytes, _ := json.Marshal(mergedContent)
 	w.Header().Set("Cache-Control", h.serviceConfig.cacheControlPolicy)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -115,13 +132,13 @@ func validateUUID(contentUUID string) error {
 		return err
 	}
 	if contentUUID != parsedUUID.String() {
-		return fmt.Errorf("Parsed UUID (%v) is different than the given uuid (%v).", parsedUUID, contentUUID)
+		return fmt.Errorf("Parsed UUID (%v) is different than the given uuid (%v)", parsedUUID, contentUUID)
 	}
 	return nil
 }
 
 func (h internalContentHandler) asyncRetrievalsAndUnmarshalls(ctx context.Context, retrievers []retriever, uuid string, tid string) []responsePart {
-	responseParts := make([]responsePart, len(retrievers), len(retrievers))
+	responseParts := make([]responsePart, len(retrievers))
 	m := sync.RWMutex{}
 	var wg sync.WaitGroup
 	wg.Add(len(retrievers))
@@ -131,6 +148,7 @@ func (h internalContentHandler) asyncRetrievalsAndUnmarshalls(ctx context.Contex
 			m.Lock()
 			defer m.Unlock()
 			defer wg.Done()
+			part.content = r.transformContent(ctx, part.content, h)
 			responseParts[i] = part
 		}(i, r)
 	}
@@ -143,7 +161,6 @@ func (h internalContentHandler) retrieveAndUnmarshall(ctx context.Context, r ret
 	defer cleanupResp(resp, h.log.log)
 
 	part.e = event{
-		serviceName:   r.sourceAppName,
 		requestURL:    extractRequestURL(resp),
 		transactionID: tid,
 		uuid:          uuid,
@@ -152,15 +169,38 @@ func (h internalContentHandler) retrieveAndUnmarshall(ctx context.Context, r ret
 	return part
 }
 
-func (h internalContentHandler) resolveAdditionalFields(ctx context.Context, parts []responsePart) map[string]interface{} {
+func replaceUUID(content map[string]interface{}) {
+	recUUID, ok := content["uuid"]
+	if ok {
+		content["id"] = recUUID
+		delete(content, "uuid")
+	}
+}
+
+func (h internalContentHandler) unrollContent(ctx context.Context, content map[string]interface{}) map[string]interface{} {
+	var transformedContent map[string]interface{}
+	unrollContent := ctx.Value(unrollContentKey).(bool)
+	if !unrollContent {
+		return content
+	}
+	replaceUUID(content)
+	var err error
+	transformedContent, err = h.getUnrolledContent(ctx, content)
+	if err != nil {
+		uuid := ctx.Value(uuidKey).(string)
+		transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
+		h.handleError(err, h.serviceConfig.contentUnroller.appName, h.serviceConfig.contentUnroller.appURI, transactionID, uuid)
+		return content
+	}
+	return transformedContent
+}
+
+func (h internalContentHandler) resolveAdditionalFields(ctx context.Context, content map[string]interface{}) map[string]interface{} {
 	uuid := ctx.Value(uuidKey).(string)
-	parts[1].content = filterKeys(parts[1].content, internalComponentsFilter)
-	mergedContent := mergeParts(parts)
-	mergedContent = resolveLeadImages(ctx, mergedContent, h)
-	resolveRequestUrl(mergedContent, h, uuid)
-	resolveApiUrl(mergedContent, h, uuid)
-	removeEmptyMapFields(mergedContent)
-	return mergedContent
+	resolveRequestURL(content, h, uuid)
+	resolveAPIURL(content, h, uuid)
+	removeEmptyMapFields(content)
+	return content
 }
 
 func filterKeys(m map[string]interface{}, filter map[string]interface{}) map[string]interface{} {
@@ -179,7 +219,7 @@ func filterKeys(m map[string]interface{}, filter map[string]interface{}) map[str
 	return m
 }
 
-func mergeParts(parts []responsePart) map[string]interface{} {
+func mergeParts(parts []responsePart, baseURL string) map[string]interface{} {
 	if len(parts) == 0 {
 		return make(map[string]interface{})
 	}
@@ -189,25 +229,118 @@ func mergeParts(parts []responsePart) map[string]interface{} {
 
 	contents := make([]map[string]interface{}, len(parts))
 	for i, p := range parts {
-		contents[i] = p.content
+		if p.content != nil {
+			contents[i] = p.content
+		} else {
+			contents[i] = make(map[string]interface{})
+		}
 	}
 
 	for i := 1; i < len(contents); i++ {
-		contents[0] = mergeTwoContents(contents[0], contents[i])
+		contents[0] = mergeTwoContents(contents[0], contents[i], baseURL)
 	}
 	return contents[0]
 }
 
-func mergeTwoContents(a map[string]interface{}, b map[string]interface{}) map[string]interface{} {
+func extractIDValue(id string) string {
+	y := strings.Split(id, "/")
+	return y[len(y)-1]
+}
+
+func matchIDs(idA string, idB string) bool {
+	return extractIDValue(idA) == extractIDValue(idB)
+}
+
+func sameIds(idA string, idB string) bool {
+	return idA == idB || matchIDs(idA, idB)
+}
+
+func filterEmbedsKeys(m map[string]interface{}, filter []string) map[string]interface{} {
+	for _, valueInFilter := range filter {
+		_, foundInM := m[valueInFilter]
+		if foundInM {
+			delete(m, valueInFilter)
+		}
+	}
+	return m
+}
+
+func transformEmbeds(vMap []interface{}, baseURL string) {
+	for _, valueMapB := range vMap {
+		valueMap, ok := valueMapB.(map[string]interface{})
+		if !ok {
+			return
+		}
+		valueMap = filterEmbedsKeys(valueMap, embedsComponentsFilter)
+		id, ok := valueMap["id"]
+		if ok {
+			valueMap["id"] = baseURL + extractIDValue(id.(string))
+		}
+
+		uuid, ok := valueMap["uuid"]
+		if ok {
+			valueMap["id"] = baseURL + uuid.(string)
+			delete(valueMap, "uuid")
+		}
+	}
+}
+
+func mergeTwoEmbeds(a []interface{}, b []interface{}, baseURL string) []interface{} {
+	if len(a) == 0 {
+		return b
+	}
+	if len(b) == 0 {
+		return a
+	}
+	for _, valueInB := range b {
+		valueMapB, isMapInB := valueInB.(map[string]interface{})
+		if isMapInB {
+			lbFound := false
+			for aKey, valueInA := range a {
+				valueMapA, isMapInA := valueInA.(map[string]interface{})
+				if isMapInA {
+					if sameIds(valueMapB["id"].(string), valueMapA["id"].(string)) {
+						a[aKey] = mergeTwoContents(valueMapA, valueMapB, baseURL)
+						lbFound = true
+						break
+					}
+				}
+			}
+			if !lbFound {
+				a = append(a, valueMapB)
+			}
+		}
+	}
+	return a
+}
+
+func mergeTwoContents(a map[string]interface{}, b map[string]interface{}, baseURL string) map[string]interface{} {
 	for key, valueInB := range b {
 		foundValInA, foundInA := a[key]
 		if foundInA {
-			mapInA, isMapInA := foundValInA.(map[string]interface{})
-			mapInB, isMapInB := valueInB.(map[string]interface{})
-			if isMapInA && isMapInB {
-				a[key] = mergeTwoContents(mapInA, mapInB)
+			if key == "embeds" {
+				arrInA, isArrInA := foundValInA.([]interface{})
+				if isArrInA {
+					transformEmbeds(arrInA, baseURL)
+				}
+				arrInB, isArrInB := valueInB.([]interface{})
+				if isArrInB {
+					transformEmbeds(arrInB, baseURL)
+				}
+
+				if isArrInA && isArrInB {
+					a[key] = mergeTwoEmbeds(arrInA, arrInB, baseURL)
+				} else {
+					a[key] = arrInB
+				}
 			} else {
-				a[key] = valueInB
+				mapInA, isMapInA := foundValInA.(map[string]interface{})
+				mapInB, isMapInB := valueInB.(map[string]interface{})
+				if isMapInA && isMapInB {
+					a[key] = mergeTwoContents(mapInA, mapInB, baseURL)
+				} else {
+					a[key] = valueInB
+				}
 			}
 		} else {
 			a[key] = valueInB
@@ -216,39 +349,23 @@ func mergeTwoContents(a map[string]interface{}, b map[string]interface{}) map[st
 	return a
 }
 
-func resolveLeadImages(ctx context.Context, content map[string]interface{}, h internalContentHandler) map[string]interface{} {
-	leadImages, ok := content["leadImages"].([]interface{})
-	if !ok {
-		return content
+func (h internalContentHandler) expandLeadImages(ec map[string]interface{}) (map[string]interface{}, error) {
+	leadImages, found := ec["leadImages"]
+	if !found {
+		return ec, errors.New("cannot find leadImages in response")
 	}
 
-	for _, img := range leadImages {
-		img, ok := img.(map[string]interface{})
-		if !ok {
-			continue
+	leadImagesAsArray := (leadImages).([]interface{})
+	for i := 0; i < len(leadImagesAsArray); i++ {
+		leadImageAsMap, ok := leadImagesAsArray[i].(map[string]interface{})
+		if ok {
+			h.transformLeadImage(leadImageAsMap)
 		}
-		imgURL := "http://" + h.serviceConfig.envAPIHost + "/content/" + img["id"].(string)
-		img["id"] = imgURL
 	}
-
-	var transformedContent map[string]interface{}
-	expandImages := ctx.Value(expandImagesKey).(bool)
-	if expandImages {
-		var err error
-		uuid := ctx.Value(uuidKey).(string)
-		transformedContent, err = h.getExpandedImages(ctx, content)
-		if err != nil {
-			transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
-			h.handleError(err, h.serviceConfig.imageResolverAppName, h.serviceConfig.imageResolverSourceURI, transactionID, uuid)
-			return content
-		}
-	} else {
-		return content
-	}
-	return transformedContent
+	return ec, nil
 }
 
-func (h internalContentHandler) getExpandedImages(ctx context.Context, content map[string]interface{}) (map[string]interface{}, error) {
+func (h internalContentHandler) getUnrolledContent(ctx context.Context, content map[string]interface{}) (map[string]interface{}, error) {
 	var expandedContent map[string]interface{}
 	transactionID, err := transactionidutils.GetTransactionIDFromContext(ctx)
 	if err != nil {
@@ -258,8 +375,7 @@ func (h internalContentHandler) getExpandedImages(ctx context.Context, content m
 	if err != nil {
 		return expandedContent, err
 	}
-
-	req, err := http.NewRequest(http.MethodPost, h.serviceConfig.imageResolverSourceURI, bytes.NewReader(body))
+	req, err := http.NewRequest(http.MethodPost, h.serviceConfig.contentUnroller.appURI, bytes.NewReader(body))
 	if err != nil {
 		return expandedContent, err
 	}
@@ -268,18 +384,18 @@ func (h internalContentHandler) getExpandedImages(ctx context.Context, content m
 
 	resp, err := h.serviceConfig.httpClient.Do(req)
 	if err != nil {
-		return expandedContent, err
+		return content, err
 	}
 	defer resp.Body.Close()
 
 	uuid := ctx.Value(uuidKey).(string)
 	if resp.StatusCode != http.StatusOK {
-		h.log.RequestFailedEvent(h.serviceConfig.imageResolverAppName, req.URL.String(), resp, uuid)
+		h.log.RequestFailedEvent(h.serviceConfig.contentUnroller.appName, req.URL.String(), resp, uuid)
 		h.metrics.recordRequestFailedEvent()
-		errMsg := fmt.Sprintf("Received status code %d from %v.", resp.StatusCode, h.serviceConfig.imageResolverAppName)
+		errMsg := fmt.Sprintf("Received status code %d from %v.", resp.StatusCode, h.serviceConfig.contentUnroller.appName)
 		return expandedContent, errors.New(errMsg)
 	}
-	h.log.ResponseEvent(h.serviceConfig.imageResolverAppName, req.URL.String(), resp, uuid)
+	h.log.ResponseEvent(h.serviceConfig.contentUnroller.appName, req.URL.String(), resp, uuid)
 
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -290,35 +406,28 @@ func (h internalContentHandler) getExpandedImages(ctx context.Context, content m
 	if err != nil {
 		return expandedContent, err
 	}
-
-	leadImages, found := expandedContent["leadImages"]
-	if !found {
-		return expandedContent, errors.New("Cannot find leadImages in response.")
-	}
-
-	leadImagesAsArray := (leadImages).([]interface{})
-	for i := 0; i < len(leadImagesAsArray); i++ {
-		leadImageAsMap := leadImagesAsArray[i].(map[string]interface{})
-		transformLeadImage(leadImageAsMap)
-	}
-	return expandedContent, nil
+	return h.expandLeadImages(expandedContent)
 }
 
-func transformLeadImage(leadImage map[string]interface{}) {
+func (h internalContentHandler) transformLeadImage(leadImage map[string]interface{}) {
+	if id, found := leadImage["id"]; found {
+		leadImage["id"] = "https://" + h.serviceConfig.envAPIHost + "/content/" + extractIDValue(id.(string))
+	}
 	imageModel, found := leadImage["image"]
 	if !found {
 		//if image field is not found inside the image, continue the processing
 		return
 	}
-
 	var apiURL interface{}
-	imageModelAsMap := imageModel.(map[string]interface{})
+	imageModelAsMap, ok := imageModel.(map[string]interface{})
+	if !ok {
+		return
+	}
 	if apiURL, found = imageModelAsMap["requestUrl"]; !found {
 		if apiURL, found = leadImage["id"]; !found {
 			return
 		}
 	}
-
 	apiURLAsString, ok := apiURL.(string)
 	if !ok {
 		return
@@ -328,14 +437,16 @@ func transformLeadImage(leadImage map[string]interface{}) {
 	delete(imageModelAsMap, "requestUrl")
 }
 
-func resolveRequestUrl(content map[string]interface{}, handler internalContentHandler, contentUUID string) {
-	content["requestUrl"] = createRequestUrl(handler.serviceConfig.envAPIHost, handler.serviceConfig.handlerPath, contentUUID)
+func resolveRequestURL(content map[string]interface{}, handler internalContentHandler, contentUUID string) {
+	content["requestUrl"] = createRequestURL(handler.serviceConfig.envAPIHost, handler.serviceConfig.handlerPath, contentUUID)
 }
 
-func resolveApiUrl(content map[string]interface{}, handler internalContentHandler, contentUUID string) {
+func resolveAPIURL(content map[string]interface{}, handler internalContentHandler, contentUUID string) {
 	handlerPath := handler.serviceConfig.handlerPath
 	if !isPreview(handlerPath) {
-		content["apiUrl"] = createRequestUrl(handler.serviceConfig.envAPIHost, handlerPath, contentUUID)
+		content["apiUrl"] = createRequestURL(handler.serviceConfig.envAPIHost, handlerPath, contentUUID)
+	} else {
+		delete(content, "apiUrl")
 	}
 }
 
@@ -343,19 +454,17 @@ func isPreview(handlerPath string) bool {
 	return strings.HasSuffix(handlerPath, previewSuffix)
 }
 
-func createRequestUrl(APIHost string, handlerPath string, uuid string) string {
+func createRequestURL(APIHost string, handlerPath string, uuid string) string {
 	if isPreview(handlerPath) {
 		handlerPath = strings.TrimSuffix(handlerPath, previewSuffix)
 	}
-	return "http://" + APIHost + "/" + handlerPath + "/" + uuid
+	return "https://" + APIHost + "/" + handlerPath + "/" + uuid
 }
 
 func (h internalContentHandler) callService(ctx context.Context, r retriever) (responsePart, *http.Response) {
 	uuid := ctx.Value(uuidKey).(string)
 	requestURL := fmt.Sprintf("%s%s", r.uri, uuid)
 	transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
-	h.log.RequestEvent(r.sourceAppName, requestURL, transactionID, uuid)
-
 	req, err := http.NewRequest(http.MethodGet, requestURL, nil)
 	if err != nil {
 		h.handleError(err, r.sourceAppName, requestURL, req.Header.Get(transactionidutils.TransactionIDHeader), uuid)
@@ -364,10 +473,10 @@ func (h internalContentHandler) callService(ctx context.Context, r retriever) (r
 	req.Header.Set(transactionidutils.TransactionIDHeader, transactionID)
 	req.Header.Set("Content-Type", "application/json")
 
-	expandImages, ok := ctx.Value(expandImagesKey).(bool)
-	if ok && r.sourceAppName == h.serviceConfig.contentSourceAppName {
+	unrollContent, ok := ctx.Value(unrollContentKey).(bool)
+	if ok && r.sourceAppName == h.serviceConfig.content.appName {
 		q := req.URL.Query()
-		q.Add(expandImagesKey.String(), strconv.FormatBool(expandImages))
+		q.Add(unrollContentKey.String(), strconv.FormatBool(unrollContent))
 		req.URL.RawQuery = q.Encode()
 	}
 
@@ -377,7 +486,6 @@ func (h internalContentHandler) callService(ctx context.Context, r retriever) (r
 		h.handleError(err, r.sourceAppName, req.URL.String(), req.Header.Get(transactionidutils.TransactionIDHeader), uuid)
 		return responsePart{isOk: false, statusCode: http.StatusServiceUnavailable}, nil
 	}
-
 	return h.handleResponse(req, resp, uuid, r.sourceAppName, r.doFail), resp
 }
 
@@ -420,18 +528,13 @@ func unmarshallToMap(resp *http.Response) (map[string]interface{}, error) {
 		return content, err
 	}
 	err = json.Unmarshal(contentBytes, &content)
-	if err != nil {
-		return content, err
-	}
-
-	return content, nil
+	return content, err
 }
 
 func extractRequestURL(resp *http.Response) string {
 	if resp == nil {
 		return "N/A"
 	}
-
 	return resp.Request.URL.String()
 }
 

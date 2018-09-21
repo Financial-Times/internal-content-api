@@ -10,10 +10,10 @@ import (
 	oldhttphandlers "github.com/Financial-Times/http-handlers-go/httphandlers"
 	"github.com/Financial-Times/service-status-go/gtg"
 	"github.com/Financial-Times/service-status-go/httphandlers"
-	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jawher/mow.cli"
+	"github.com/sirupsen/logrus"
 )
 
 const serviceDescription = "A RESTful API for retrieving and transforming internal content"
@@ -58,7 +58,7 @@ func main() {
 	})
 	internalComponentsSourceURI := app.String(cli.StringOpt{
 		Name:   "internal-components-source-uri",
-		Value:  "http://localhost:8080/__document-store-api/internalcomponents/",
+		Value:  "http://localhost:8080/__content-public-read/internalcontent/",
 		Desc:   "Internal components source URI",
 		EnvVar: "INTERNAL_COMPONENTS_SOURCE_URI",
 	})
@@ -82,7 +82,7 @@ func main() {
 	})
 	internalComponentsSourceAppHealthURI := app.String(cli.StringOpt{
 		Name:   "internal-components-source-app-health-uri",
-		Value:  "http://localhost:8080/__document-store-api/__health",
+		Value:  "http://localhost:8080/__content-public-read/__health",
 		Desc:   "URI of the Internal Components Source Application health endpoint",
 		EnvVar: "INTERNAL_COMPONENTS_SOURCE_APP_HEALTH_URI",
 	})
@@ -94,7 +94,7 @@ func main() {
 	})
 	internalComponentsSourceAppPanicGuide := app.String(cli.StringOpt{
 		Name:   "internal-components-source-app-panic-guide",
-		Value:  "https://dewey.ft.com/document-store-api.html",
+		Value:  "https://dewey.in.ft.com/runbooks/contentreadapi.html",
 		Desc:   "Internal components source application panic guide url for healthcheck. Default panic guide is for Document Store API.",
 		EnvVar: "INTERNAL_COMPONENTS_SOURCE_APP_PANIC_GUIDE",
 	})
@@ -110,35 +110,35 @@ func main() {
 		Desc:   "Describe the business impact the internal components source app would produce if it is broken.",
 		EnvVar: "INTERNAL_COMPONENTS_SOURCE_APP_BUSINESS_IMPACT",
 	})
-	imageResolverURI := app.String(cli.StringOpt{
-		Name:   "image-resolver-uri",
-		Value:  "http://localhost:8080/__image-resolver/internalcontent/image",
-		Desc:   "URI of the image resolver application",
-		EnvVar: "IMAGE_RESOLVER_URI",
+	contentUnrollerURI := app.String(cli.StringOpt{
+		Name:   "content-unroller-uri",
+		Value:  "http://localhost:8080/__content-unroller/internalcontent",
+		Desc:   "URI of the content unroller application",
+		EnvVar: "CONTENT_UNROLLER_URI",
 	})
-	imageResolverAppName := app.String(cli.StringOpt{
-		Name:   "image-resolver-app-name",
-		Value:  "image-resolver",
-		Desc:   "Service of the image resolver application",
-		EnvVar: "IMAGE_RESOLVER_APP_NAME",
+	contentUnrollerAppName := app.String(cli.StringOpt{
+		Name:   "content-unroller-app-name",
+		Value:  "content-unroller",
+		Desc:   "Service of the content unroller application",
+		EnvVar: "CONTENT_UNROLLER_APP_NAME",
 	})
-	imageResolverAppHealthURI := app.String(cli.StringOpt{
-		Name:   "image-resolver-app-health-uri",
-		Value:  "http://localhost:8080/__image-resolver/__health",
-		Desc:   "URI of the Image Resolver service health endpoint",
-		EnvVar: "IMAGE_RESOLVER_APP_HEALTH_URI",
+	contentUnrollerAppHealthURI := app.String(cli.StringOpt{
+		Name:   "content-unroller-app-health-uri",
+		Value:  "http://localhost:8080/__content-unroller/__health",
+		Desc:   "URI of the Content Unroller service health endpoint",
+		EnvVar: "CONTENT_UNROLLER_APP_HEALTH_URI",
 	})
-	imageResolverAppPanicGuide := app.String(cli.StringOpt{
-		Name:   "image-resolver-app-panic-guide",
-		Value:  "https://dewey.ft.com/image-resolver.html",
-		Desc:   "Image Resolver application panic guide url for healthcheck.",
-		EnvVar: "IMAGE_RESOLVER_APP_PANIC_GUIDE",
+	contentUnrollerAppPanicGuide := app.String(cli.StringOpt{
+		Name:   "content-unroller-app-panic-guide",
+		Value:  "https://dewey.in.ft.com/runbooks/content-unroller",
+		Desc:   "Content Unroller application panic guide url for healthcheck.",
+		EnvVar: "CONTENT_UNROLLER_APP_PANIC_GUIDE",
 	})
-	imageResolverAppBusinessImpact := app.String(cli.StringOpt{
-		Name:   "image-resolver-app-business-impact",
-		Value:  "Expanded images would not be available",
-		Desc:   "Describe the business impact the image resolver app would produce if it is broken.",
-		EnvVar: "IMAGE_RESOLVER_APP_BUSINESS_IMPACT",
+	contentUnrollerAppBusinessImpact := app.String(cli.StringOpt{
+		Name:   "content-unroller-app-business-impact",
+		Value:  "Dynamic Content and images would not be expanded",
+		Desc:   "Describe the business impact the content unroller app would produce if it is broken.",
+		EnvVar: "CONTENT_UNROLLER_APP_BUSINESS_IMPACT",
 	})
 	envAPIHost := app.String(cli.StringOpt{
 		Name:   "env-api-host",
@@ -151,34 +151,41 @@ func main() {
 			Timeout: 10 * time.Second,
 			Transport: &http.Transport{
 				MaxIdleConnsPerHost: 100,
-				Dial: (&net.Dialer{
+				DialContext: (&net.Dialer{
+					Timeout:   30 * time.Second,
 					KeepAlive: 30 * time.Second,
-				}).Dial,
+				}).DialContext,
 			},
 		}
 		sc := serviceConfig{
-			*appSystemCode,
-			*appName,
-			*appPort,
-			*handlerPath,
-			*cacheControlPolicy,
-			*contentSourceURI,
-			*contentSourceAppName,
-			*contentSourceAppHealthURI,
-			*contentSourceAppPanicGuide,
-			*contentSourceAppBusinessImpact,
-			*internalComponentsSourceURI,
-			*internalComponentsSourceAppName,
-			*internalComponentsSourceAppHealthURI,
-			*internalComponentsSourceAppPanicGuide,
-			*internalComponentsSourceAppBusinessImpact,
-			*imageResolverURI,
-			*imageResolverAppName,
-			*imageResolverAppHealthURI,
-			*imageResolverAppPanicGuide,
-			*imageResolverAppBusinessImpact,
-			*envAPIHost,
-			httpClient,
+			appSystemCode:      *appSystemCode,
+			appName:            *appName,
+			appPort:            *appPort,
+			handlerPath:        *handlerPath,
+			cacheControlPolicy: *cacheControlPolicy,
+			content: externalService{
+				*contentSourceAppName,
+				*contentSourceURI,
+				*contentSourceAppHealthURI,
+				*contentSourceAppPanicGuide,
+				*contentSourceAppBusinessImpact,
+				1},
+			internalComponents: externalService{
+				*internalComponentsSourceAppName,
+				*internalComponentsSourceURI,
+				*internalComponentsSourceAppHealthURI,
+				*internalComponentsSourceAppPanicGuide,
+				*internalComponentsSourceAppBusinessImpact,
+				2},
+			contentUnroller: externalService{
+				*contentUnrollerAppName,
+				*contentUnrollerURI,
+				*contentUnrollerAppHealthURI,
+				*contentUnrollerAppPanicGuide,
+				*contentUnrollerAppBusinessImpact,
+				2},
+			envAPIHost:         *envAPIHost,
+			httpClient:         httpClient,
 		}
 		appLogger := newAppLogger()
 		metricsHandler := NewMetrics()
@@ -205,7 +212,9 @@ func setupServiceHandler(sc serviceConfig, metricsHandler Metrics, contentHandle
 			SystemCode:  sc.appSystemCode,
 			Description: serviceDescription,
 			Name:        sc.appName,
-			Checks:      []fthealth.Check{sc.contentSourceAppCheck(), sc.internalComponentsSourceAppCheck(), sc.imageResolverAppCheck()},
+			Checks: []fthealth.Check{sc.Check(sc.content),
+				sc.Check(sc.internalComponents),
+				sc.Check(sc.contentUnroller)},
 		},
 		Timeout: 10 * time.Second,
 	}
@@ -217,53 +226,48 @@ func setupServiceHandler(sc serviceConfig, metricsHandler Metrics, contentHandle
 	return r
 }
 
+type externalService struct {
+	appName           string
+	appURI            string
+	appHealthURI      string
+	appPanicGuide     string
+	appBusinessImpact string
+	severity          uint8
+}
+
 type serviceConfig struct {
-	appSystemCode                             string
-	appName                                   string
-	appPort                                   string
-	handlerPath                               string
-	cacheControlPolicy                        string
-	contentSourceURI                          string
-	contentSourceAppName                      string
-	contentSourceAppHealthURI                 string
-	contentSourceAppPanicGuide                string
-	contentSourceAppBusinessImpact            string
-	internalComponentsSourceURI               string
-	internalComponentsSourceAppName           string
-	internalComponentsSourceAppHealthURI      string
-	internalComponentsSourceAppPanicGuide     string
-	internalComponentsSourceAppBusinessImpact string
-	imageResolverSourceURI                    string
-	imageResolverAppName                      string
-	imageResolverAppHealthURI                 string
-	imageResolverAppPanicGuide                string
-	imageResolverAppBusinessImpact            string
-	envAPIHost                                string
-	httpClient                                *http.Client
+	appSystemCode      string
+	appName            string
+	appPort            string
+	handlerPath        string
+	cacheControlPolicy string
+	content            externalService
+	internalComponents externalService
+	contentUnroller    externalService
+	envAPIHost         string
+	httpClient         *http.Client
+}
+
+func (e externalService) asMap() map[string]interface{} {
+	return map[string]interface{}{
+		"app-uri":             e.appURI,
+		"app-name":            e.appName,
+		"app-health-uri":      e.appHealthURI,
+		"app-panic-guide":     e.appPanicGuide,
+		"app-business-impact": e.appBusinessImpact}
 }
 
 func (sc serviceConfig) asMap() map[string]interface{} {
 	return map[string]interface{}{
-		"app-system-code":                                sc.appSystemCode,
-		"app-name":                                       sc.appName,
-		"app-port":                                       sc.appPort,
-		"cache-control-policy":                           sc.cacheControlPolicy,
-		"handler-path":                                   sc.handlerPath,
-		"content-source-uri":                             sc.contentSourceURI,
-		"content-source-app-name":                        sc.contentSourceAppName,
-		"content-source-app-health-uri":                  sc.contentSourceAppHealthURI,
-		"content-source-app-panic-guide":                 sc.contentSourceAppPanicGuide,
-		"content-source-app-business-impact":             sc.contentSourceAppBusinessImpact,
-		"internal-components-source-uri":                 sc.internalComponentsSourceURI,
-		"internal-components-source-app-name":            sc.internalComponentsSourceAppName,
-		"internal-components-source-app-health-uri":      sc.internalComponentsSourceAppHealthURI,
-		"internal-components-source-app-panic-guide":     sc.internalComponentsSourceAppPanicGuide,
-		"internal-components-source-app-business-impact": sc.internalComponentsSourceAppBusinessImpact,
-		"image-resolver-source-uri":                      sc.imageResolverSourceURI,
-		"image-resolver-app-name":                        sc.imageResolverAppName,
-		"image-resolver-app-health-uri":                  sc.imageResolverAppHealthURI,
-		"image-resolver-app-panic-guide":                 sc.imageResolverAppPanicGuide,
-		"image-resolver-app-bussines-impact":             sc.imageResolverAppBusinessImpact,
-		"env-api-host":                                   sc.envAPIHost,
+		"app-system-code":      sc.appSystemCode,
+		"app-name":             sc.appName,
+		"app-port":             sc.appPort,
+		"cache-control-policy": sc.cacheControlPolicy,
+		"handler-path":         sc.handlerPath,
+		"content-source":       sc.content.asMap(),
+		"internal-components":  sc.internalComponents.asMap(),
+		"content-unroller":     sc.contentUnroller.asMap(),
+		"env-api-host":         sc.envAPIHost,
+
 	}
 }
