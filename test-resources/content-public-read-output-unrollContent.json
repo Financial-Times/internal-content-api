@@ -1,135 +1,35 @@
 {
-    "alternativeStandfirsts": {
-        "promotionalStandfirstVariant": ""
-    },
-    "alternativeTitles": {
-        "promotionalTitleVariant": "",
-        "shortTeaser": ""
-    },
-    "bodyXML": "<body><ft-content data-embedded=\"true\" type=\"http://www.ft.com/ontology/content/ImageSet\" url=\"http://test.api.ft.com/content/b7c8e40e-73a7-11e8-17fc-56e8d19c9a20\"></ft-content><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.</p>\n<ft-content data-embedded=\"true\" type=\"http://www.ft.com/ontology/content/DynamicContent\" url=\"http://test.api.ft.com/content/f22b581a-7ac4-11e8-8e17-ed45e46cf554\"></ft-content>\n<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.</p>\n<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in </p>\n<h2>Image set below</h2>\n<ft-content data-embedded=\"true\" type=\"http://www.ft.com/ontology/content/ImageSet\" url=\"http://test.api.ft.com/content/504f6678-fcc8-36cb-9bfb-025f33758e90\"></ft-content>\n<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.</p>\n<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.</p>\n</body>",
-    "design": {
-        "layout": "default",
-        "theme": "basic"
-    },
-    "embeds": [
-        {
-            "alternativeStandfirsts": {
-                "promotionalStandfirstVariant": ""
-            },
-            "alternativeTitles": {
-                "promotionalTitleVariant": "",
-                "shortTeaser": ""
-            },
-            "blocks": [
-                {
-                    "key": "Block with html value",
-                    "type": "html-block",
-                    "valueXML": "<h2>H2</h2>\n<p>Para of text</p>\n"
-                },
-                {
-                    "key": "Another with html value",
-                    "type": "html-block",
-                    "valueXML": "<h2>Another H2</h2>\n<p>Another para of text</p>\n"
-                }
-            ],
-            "design": {
-                "layout": "default",
-                "theme": "basic"
-            },
-            "id": "http://www.ft.com/thing/f22b581a-7ac4-11e8-8e17-ed45e46cf554",
-            "lastModified": "2018-07-18T07:01:27.767Z",
-            "publishReference": "Postman_1531897287",
-            "requestUrl": "https://test.api.ft.com/internalcontent/f22b581a-7ac4-11e8-8e17-ed45e46cf554"
-        }
-    ],
-    "id": "http://www.ft.com/thing/9607cb04-7ac4-11e8-8e17-ed45e46cf554",
-    "lastModified": "2018-07-13T15:51:11.057Z",
-    "leadImages": [
-        {
-            "id": "https://test.api.ft.com/content/bc5db2a2-22e8-11e8-8d6c-a1920d9e946f",
-            "image": {
-                "alternativeImages": {},
-                "alternativeStandfirsts": {},
-                "alternativeTitles": {},
-                "binaryUrl": "http://com.ft.imagepublish.k8s-content-test.test.s3.amazonaws.com/bc5db2a2-22e8-11e8-8d6c-a1920d9e946f",
-                "canBeDistributed": "verify",
-                "description": "Rafaela Souza Lima, 17, a student from the city of Inajá holds her son Marcos Guilherme, born in July 2015 as she tries to schedule a tomography for him at a hospital in Recife, Brazil, Wednesday, January, 20, 2016. The city has been the national epicenter of hundreds of cases of microcephaly linked to a Zika virus outbreak that has its roots on poor sanitation, unattended garbage and urban sprawl. These factors contribute to Aedes aegypt mosquitoes' proliferation and along with them the viruses that use it as vector, like dengue, zika and chikungunya. (Hilaea Media/Dado Galdieri for Financial Times)\n",
-                "firstPublishedDate": "2018-06-28T11:27:00.000Z",
-                "id": "http://www.ft.com/thing/bc5db2a2-22e8-11e8-8d6c-a1920d9e946f",
-                "identifiers": [
-                    {
-                        "authority": "http://api.ft.com/system/FTCOM-METHODE",
-                        "identifierValue": "bc5db2a2-22e8-11e8-8d6c-a1920d9e946f"
-                    }
-                ],
-                "lastModified": "2018-06-28T11:27:16.720Z",
-                "pixelHeight": 2048,
-                "pixelWidth": 2048,
-                "publishReference": "tid_ei8k6myfth",
-                "publishedDate": "2018-06-28T11:27:00.000Z",
-                "requestUrl": "https://test.api.ft.com/content/bc5db2a2-22e8-11e8-8d6c-a1920d9e946f",
-                "title": "",
-                "type": "http://www.ft.com/ontology/content/Image"
-            },
-            "type": "square"
-        },
-        {
-            "id": "https://test.api.ft.com/content/b880868c-22e8-11e8-8d6c-a1920d9e946f",
-            "image": {
-                "alternativeImages": {},
-                "alternativeStandfirsts": {},
-                "alternativeTitles": {},
-                "binaryUrl": "http://com.ft.imagepublish.k8s-content-test.test.s3.amazonaws.com/b880868c-22e8-11e8-8d6c-a1920d9e946f",
-                "canBeDistributed": "verify",
-                "description": "Rafaela Souza Lima, 17, a student from the city of Inajá holds her son Marcos Guilherme, born in July 2015 as she tries to schedule a tomography for him at a hospital in Recife, Brazil, Wednesday, January, 20, 2016. The city has been the national epicenter of hundreds of cases of microcephaly linked to a Zika virus outbreak that has its roots on poor sanitation, unattended garbage and urban sprawl. These factors contribute to Aedes aegypt mosquitoes' proliferation and along with them the viruses that use it as vector, like dengue, zika and chikungunya. (Hilaea Media/Dado Galdieri for Financial Times)",
-                "firstPublishedDate": "2018-06-28T11:27:00.000Z",
-                "id": "http://www.ft.com/thing/b880868c-22e8-11e8-8d6c-a1920d9e946f",
-                "identifiers": [
-                    {
-                        "authority": "http://api.ft.com/system/FTCOM-METHODE",
-                        "identifierValue": "b880868c-22e8-11e8-8d6c-a1920d9e946f"
-                    }
-                ],
-                "lastModified": "2018-06-28T11:27:16.690Z",
-                "pixelHeight": 1152,
-                "pixelWidth": 2048,
-                "publishReference": "tid_uast7v25fl",
-                "publishedDate": "2018-06-28T11:27:00.000Z",
-                "requestUrl": "https://test.api.ft.com/content/b880868c-22e8-11e8-8d6c-a1920d9e946f",
-                "title": "Rafaela Souza Lima, 17, a student from the city of Inajá holds her son Marcos Guilherme, born in July 2015 as she tries to schedule a tomography for him at a hospital in Recife, Brazil, Wednesday, January, 20, 2016. The city has been the national epicenter of hundreds of cases of microcephaly linked to a Zika virus outbreak that has its roots on poor sanitation, unattended garbage and urban sprawl. These factors contribute to Aedes aegypt mosquitoes' proliferation and along with them the viruses that use it as vector, like dengue, zika and chikungunya. (Hilaea Media/Dado Galdieri for Financial Times)",
-                "type": "http://www.ft.com/ontology/content/Image"
-            },
-            "type": "standard"
-        },
-        {
-            "id": "https://test.api.ft.com/content/bd50ede6-22e8-11e8-8d6c-a1920d9e946f",
-            "image": {
-                "alternativeImages": {},
-                "alternativeStandfirsts": {},
-                "alternativeTitles": {},
-                "binaryUrl": "http://com.ft.imagepublish.k8s-content-test.test.s3.amazonaws.com/bd50ede6-22e8-11e8-8d6c-a1920d9e946f",
-                "canBeDistributed": "verify",
-                "description": "Rafaela Souza Lima, 17, a student from the city of Inajá holds her son Marcos Guilherme, born in July 2015 as she tries to schedule a tomography for him at a hospital in Recife, Brazil, Wednesday, January, 20, 2016. The city has been the national epicenter of hundreds of cases of microcephaly linked to a Zika virus outbreak that has its roots on poor sanitation, unattended garbage and urban sprawl. These factors contribute to Aedes aegypt mosquitoes' proliferation and along with them the viruses that use it as vector, like dengue, zika and chikungunya. (Hilaea Media/Dado Galdieri for Financial Times)\n",
-                "firstPublishedDate": "2018-06-28T11:27:00.000Z",
-                "id": "http://www.ft.com/thing/bd50ede6-22e8-11e8-8d6c-a1920d9e946f",
-                "identifiers": [
-                    {
-                        "authority": "http://api.ft.com/system/FTCOM-METHODE",
-                        "identifierValue": "bd50ede6-22e8-11e8-8d6c-a1920d9e946f"
-                    }
-                ],
-                "lastModified": "2018-06-28T11:27:16.782Z",
-                "pixelHeight": 694,
-                "pixelWidth": 2048,
-                "publishReference": "tid_ojcc9ym10x",
-                "publishedDate": "2018-06-28T11:27:00.000Z",
-                "requestUrl": "https://test.api.ft.com/content/bd50ede6-22e8-11e8-8d6c-a1920d9e946f",
-                "title": "",
-                "type": "http://www.ft.com/ontology/content/Image"
-            },
-            "type": "wide"
-        }
-    ],
-    "publishReference": "tid_nybzmzlduw",
-    "requestUrl": "https://test.api.ft.com/internalcontent/9607cb04-7ac4-11e8-8e17-ed45e46cf554"
+"id": "http://www.ft.com/thing/9607cb04-7ac4-11e8-8e17-ed45e46cf554",
+"design": {
+"layout": "default",
+"theme": "basic"
+},
+"bodyXML": "<body><ft-content data-embedded=\"true\" type=\"http://www.ft.com/ontology/content/ImageSet\" url=\"http://test.api.ft.com/content/b7c8e40e-73a7-11e8-17fc-56e8d19c9a20\"></ft-content><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.</p>\n<ft-content data-embedded=\"true\" type=\"http://www.ft.com/ontology/content/DynamicContent\" url=\"http://test.api.ft.com/content/f22b581a-7ac4-11e8-8e17-ed45e46cf554\"></ft-content>\n<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.</p>\n<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in </p>\n<h2>Image set below</h2>\n<ft-content data-embedded=\"true\" type=\"http://www.ft.com/ontology/content/ImageSet\" url=\"http://test.api.ft.com/content/504f6678-fcc8-36cb-9bfb-025f33758e90\"></ft-content>\n<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.</p>\n<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.</p>\n</body>",
+"alternativeTitles": {
+"promotionalTitleVariant": "",
+"shortTeaser": ""
+},
+"alternativeStandfirsts": {
+"promotionalStandfirstVariant": ""
+},
+"leadImages": [
+{
+"id": "http://www.ft.com/thing/bc5db2a2-22e8-11e8-8d6c-a1920d9e946f",
+"apiUrl": "https://test.api.ft.com/content/bc5db2a2-22e8-11e8-8d6c-a1920d9e946f",
+"type": "square"
+},
+{
+"id": "http://www.ft.com/thing/b880868c-22e8-11e8-8d6c-a1920d9e946f",
+"apiUrl": "https://test.api.ft.com/content/b880868c-22e8-11e8-8d6c-a1920d9e946f",
+"type": "standard"
+},
+{
+"id": "http://www.ft.com/thing/bd50ede6-22e8-11e8-8d6c-a1920d9e946f",
+"apiUrl": "https://test.api.ft.com/content/bd50ede6-22e8-11e8-8d6c-a1920d9e946f",
+"type": "wide"
+}
+],
+"publishReference": "Postman_1537267923",
+"lastModified": "2018-09-18T10:52:03.223Z",
+"requestUrl": "https://test.api.ft.com/internalcontent/9607cb04-7ac4-11e8-8e17-ed45e46cf554"
 }
