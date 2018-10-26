@@ -39,7 +39,7 @@
             "id": "http://www.ft.com/thing/f22b581a-7ac4-11e8-8e17-ed45e46cf554",
             "lastModified": "2018-09-19T06:10:08.458Z",
             "publishReference": "Postman_1537337408",
-            "requestUrl": "https://test.api.ft.com/internalcontent/f22b581a-7ac4-11e8-8e17-ed45e46cf554"
+            "requestUrl": "https://test.api.ft.com/content/f22b581a-7ac4-11e8-8e17-ed45e46cf554"
         }
     ],
     "id": "http://www.ft.com/thing/9607cb04-7ac4-11e8-8e17-ed45e46cf554",
@@ -49,6 +49,7 @@
             "apiUrl": "https://test.api.ft.com/content/bc5db2a2-22e8-11e8-8d6c-a1920d9e946f",
             "id": "http://www.ft.com/thing/bc5db2a2-22e8-11e8-8d6c-a1920d9e946f",
             "image": {
+                "apiUrl": "https://test.api.ft.com/content/bc5db2a2-22e8-11e8-8d6c-a1920d9e946f",
                 "alternativeImages": {},
                 "alternativeStandfirsts": {},
                 "alternativeTitles": {},
@@ -78,6 +79,7 @@
             "apiUrl": "https://test.api.ft.com/content/b880868c-22e8-11e8-8d6c-a1920d9e946f",
             "id": "http://www.ft.com/thing/b880868c-22e8-11e8-8d6c-a1920d9e946f",
             "image": {
+		"apiUrl": "https://test.api.ft.com/content/b880868c-22e8-11e8-8d6c-a1920d9e946f",
                 "alternativeImages": {},
                 "alternativeStandfirsts": {},
                 "alternativeTitles": {},
@@ -107,6 +109,7 @@
             "apiUrl": "https://test.api.ft.com/content/bd50ede6-22e8-11e8-8d6c-a1920d9e946f",
             "id": "http://www.ft.com/thing/bd50ede6-22e8-11e8-8d6c-a1920d9e946f",
             "image": {
+                "apiUrl": "https://test.api.ft.com/content/bd50ede6-22e8-11e8-8d6c-a1920d9e946f",
                 "alternativeImages": {},
                 "alternativeStandfirsts": {},
                 "alternativeTitles": {},
