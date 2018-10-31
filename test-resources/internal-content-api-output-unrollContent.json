@@ -66,7 +66,7 @@
         },
         {
             "accessLevel": "subscribed",
-            "apiUrl": "https://test.api.ft.com/content/f22b581a-7ac4-11e8-8e17-ed45e46cf554",
+            "apiUrl": "https://test.api.ft.com/internalcontent/f22b581a-7ac4-11e8-8e17-ed45e46cf554",
             "blocks": [
                 {
                     "key": "Block with html value",
