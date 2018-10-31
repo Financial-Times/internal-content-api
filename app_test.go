@@ -205,8 +205,6 @@ func startInternalContentService() {
 			"Image resolver app business imapct",
 			2},
 		"test.api.ft.com",
-		"",
-		"",
 		http.DefaultClient,
 	}
 
@@ -650,7 +648,7 @@ func TestShouldReturn400WhenInvalidUUID(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, resp.StatusCode, "Response status should be 400")
 }
 
-func TestServiceasMap(t *testing.T) {
+func TestServiceAsMap(t *testing.T) {
 	sc := serviceConfig{
 		"appSystemCode",
 		"appName",
@@ -679,8 +677,6 @@ func TestServiceasMap(t *testing.T) {
 			"contentUnrollerAppBusinessImpact",
 			2},
 		"envAPIHost",
-		"graphiteTCPAddress",
-		"graphitePrefix",
 		nil,
 	}
 	resp := sc.asMap()
@@ -708,9 +704,7 @@ func TestServiceasMap(t *testing.T) {
 			"app-health-uri":      "contentUnrollerAppHealthURI",
 			"app-panic-guide":     "contentUnrollerAppPanicGuide",
 			"app-business-impact": "contentUnrollerAppBusinessImpact"},
-		"env-api-host":         "envAPIHost",
-		"graphite-tcp-address": "graphiteTCPAddress",
-		"graphite-prefix":      "graphitePrefix",
+		"env-api-host": "envAPIHost",
 	}
 	assert.Equal(t, resp, expected, "Wrong return from asMap")
 }

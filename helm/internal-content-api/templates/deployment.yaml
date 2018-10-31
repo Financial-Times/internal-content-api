@@ -78,14 +78,7 @@ spec:
               key: api.host
         - name: CACHE_CONTROL_POLICY
           value: {{ .Values.env.CACHE_CONTROL_POLICY }}
-        - name: GRAPHITE_ADDRESS
-          valueFrom:
-            configMapKeyRef:
-              name: global-config
-              key: graphite.address
-        - name: GRAPHITE_PREFIX
-          value: "coco.services.{{.Values.target_env}}.{{ .Values.service.name }}"
-        ports: 
+        ports:
         - containerPort: 8080
         livenessProbe: 
           tcpSocket: 
