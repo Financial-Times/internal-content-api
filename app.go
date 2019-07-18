@@ -112,19 +112,19 @@ func main() {
 	})
 	contentUnrollerURI := app.String(cli.StringOpt{
 		Name:   "content-unroller-uri",
-		Value:  "http://localhost:8080/__content-unroller/internalcontent",
+		Value:  "",
 		Desc:   "URI of the content unroller application",
 		EnvVar: "CONTENT_UNROLLER_URI",
 	})
 	contentUnrollerAppName := app.String(cli.StringOpt{
 		Name:   "content-unroller-app-name",
-		Value:  "content-unroller",
+		Value:  "",
 		Desc:   "Service of the content unroller application",
 		EnvVar: "CONTENT_UNROLLER_APP_NAME",
 	})
 	contentUnrollerAppHealthURI := app.String(cli.StringOpt{
 		Name:   "content-unroller-app-health-uri",
-		Value:  "http://localhost:8080/__content-unroller/__health",
+		Value:  "",
 		Desc:   "URI of the Content Unroller service health endpoint",
 		EnvVar: "CONTENT_UNROLLER_APP_HEALTH_URI",
 	})

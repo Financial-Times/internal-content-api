@@ -98,6 +98,6 @@ For the model spec please refer to:
 
 * [content-public-read](https://github.com/Financial-Times/content-public-read) - it allows public access to content data provided by the platform
 
-* [content-unroller](https://github.com/Financial-Times/image-resolver) - expands images and dynamic content of an article
+* [content-unroller](https://github.com/Financial-Times/content-unroller) - expands images and dynamic content of an article
 
 * [unrolled-content-public-read](https://github.com/Financial-Times/unrolled-content-public-read) - expands images and dynamic content of an article in preview mode
