@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: /go/src/github.com/Financial-Times/internal-content-api
     docker:
-      - image: circleci/golang:1.10
+      - image: golang:1
         environment:
           CIRCLE_TEST_REPORTS: /tmp/test-results
           CIRCLE_COVERAGE_REPORT: /tmp/coverage-results
