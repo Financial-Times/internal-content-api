@@ -59,12 +59,9 @@ No
 
 ## Dependencies
 
-- editorial-worry-bot
-- ft-annotations-chrome-extension
-- next-syndication-api
-- thing-displayer
-- upp-prod-delivery-eu
-- upp-prod-delivery-us
+- enriched-content-read-api
+- contentreadapi
+- content-unroller
 
 ## Failover Architecture Type
 
