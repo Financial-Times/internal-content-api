@@ -59,9 +59,9 @@ No
 
 ## Dependencies
 
-- next-preview
-- upp-prod-delivery-eu
-- upp-prod-delivery-us
+- content-public-read-preview
+- unrolled-content-public-read
+- content-preview-unroller
 
 ## Failover Architecture Type
 
