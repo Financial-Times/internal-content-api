@@ -11,7 +11,6 @@ For the first time:
 ```bash
 go get -u github.com/Financial-Times/internal-content-api
 cd $GOPATH/src/github.com/Financial-Times/internal-content-api
-dep ensure
 go build .
 ```
 
@@ -23,8 +22,7 @@ go build .
 
 1. Run the tests and install the binary:
 
-        dep ensure
-        go test -race ./...
+        go test -mod=readonly -race -cover  ./...
         go install
 2. Run the binary locally with properties set:
 
