@@ -11,7 +11,6 @@ For the first time:
 ```bash
 go get -u github.com/Financial-Times/internal-content-api
 cd $GOPATH/src/github.com/Financial-Times/internal-content-api
-dep ensure
 go build .
 ```
 
@@ -23,8 +22,7 @@ go build .
 
 1. Run the tests and install the binary:
 
-        dep ensure
-        go test -race ./...
+        go test -mod=readonly -race -cover  ./...
         go install
 2. Run the binary locally with properties set:
 
@@ -69,14 +67,6 @@ When `false` the response contains only the IDs of the dynamic content and image
 
 `503` when one of the collaborating mandatory services is inaccessible.
 
-In case `handler-path` / `HANDLER_PATH` is set to something else other than `internalcontent`,
-for example to `internalcontent-preview`, the endpoint will change accordingly to:
-
-`/internalcontent-preview/{uuid}`
-
-Example in this case will be:
-`curl -v http://localhost:8084/internalcontent-preview/9358ba1e-c07f-11e5-846f-79b0e3d20eaf`
-
 ### Admin endpoints
 
 Healthchecks: [http://localhost:8084/__health](http://localhost:8084/__health)
@@ -99,5 +89,3 @@ For the model spec please refer to:
 * [content-public-read](https://github.com/Financial-Times/content-public-read) - it allows public access to content data provided by the platform
 
 * [content-unroller](https://github.com/Financial-Times/content-unroller) - expands images and dynamic content of an article
-
-* [unrolled-content-public-read](https://github.com/Financial-Times/unrolled-content-public-read) - expands images and dynamic content of an article in preview mode

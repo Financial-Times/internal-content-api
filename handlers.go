@@ -21,7 +21,6 @@ import (
 )
 
 const (
-	previewSuffix               = "-preview"
 	uuidKey          contextKey = "uuid"
 	unrollContentKey contextKey = "unrollContent"
 )
@@ -197,8 +196,8 @@ func (h internalContentHandler) unrollContent(ctx context.Context, content map[s
 
 func (h internalContentHandler) resolveAdditionalFields(ctx context.Context, content map[string]interface{}) map[string]interface{} {
 	uuid := ctx.Value(uuidKey).(string)
-	resolveRequestURL(content, h, uuid)
-	resolveAPIURL(content, h, uuid)
+	content["requestUrl"] = createRequestURL(h.serviceConfig.envAPIHost, h.serviceConfig.handlerPath, uuid)
+	content["apiUrl"] = createRequestURL(h.serviceConfig.envAPIHost, h.serviceConfig.handlerPath, uuid)
 	removeEmptyMapFields(content)
 	return content
 }
@@ -437,27 +436,7 @@ func (h internalContentHandler) transformLeadImage(leadImage map[string]interfac
 	delete(imageModelAsMap, "requestUrl")
 }
 
-func resolveRequestURL(content map[string]interface{}, handler internalContentHandler, contentUUID string) {
-	content["requestUrl"] = createRequestURL(handler.serviceConfig.envAPIHost, handler.serviceConfig.handlerPath, contentUUID)
-}
-
-func resolveAPIURL(content map[string]interface{}, handler internalContentHandler, contentUUID string) {
-	handlerPath := handler.serviceConfig.handlerPath
-	if !isPreview(handlerPath) {
-		content["apiUrl"] = createRequestURL(handler.serviceConfig.envAPIHost, handlerPath, contentUUID)
-	} else {
-		delete(content, "apiUrl")
-	}
-}
-
-func isPreview(handlerPath string) bool {
-	return strings.HasSuffix(handlerPath, previewSuffix)
-}
-
 func createRequestURL(APIHost string, handlerPath string, uuid string) string {
-	if isPreview(handlerPath) {
-		handlerPath = strings.TrimSuffix(handlerPath, previewSuffix)
-	}
 	return "https://" + APIHost + "/" + handlerPath + "/" + uuid
 }
 

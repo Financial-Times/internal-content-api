@@ -36,4 +36,3 @@ runbooks:
   systemCodes:
     # paths are relative to root, omitting ./ (case-insensitive)
     up-ica: runbooks/internal-content-api_runbook.md
-    internal-content-preview-api: runbooks/internal-content-preview-api_runbook.md
