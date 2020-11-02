@@ -2,7 +2,6 @@
 replicaCount: 2
 service:
   name: internal-content-api
-eksCluster: true
 env:
   HANDLER_PATH: "internalcontent"
   CONTENT_SOURCE_URI: "http://enriched-content-read-api:8080/enrichedcontent/"
