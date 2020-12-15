@@ -10,7 +10,8 @@ image:
   pullPolicy: IfNotPresent
 resources:
   requests:
-    memory: 20Mi
+    memory: 14Mi
+    cpu: 64m
   limits:
     memory: 128Mi
 env: # environment variable for the app
@@ -31,5 +32,5 @@ env: # environment variable for the app
   CONTENT_UNROLLER_APP_NAME: ""
   CONTENT_UNROLLER_APP_HEALTH_URI: ""
   CONTENT_UNROLLER_APP_PANIC_GUIDE: ""
-  CONTENT_UNROLLER_APP_BUSINESS_IMPACT: ""  
+  CONTENT_UNROLLER_APP_BUSINESS_IMPACT: ""
   APP_SYSTEM_CODE: ""
