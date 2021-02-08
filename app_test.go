@@ -204,7 +204,7 @@ func startInternalContentService() {
 			"panic guide",
 			"Image resolver app business imapct",
 			2},
-		"test.api.ft.com",
+		"api.ft.com",
 		http.DefaultClient,
 	}
 
@@ -246,7 +246,7 @@ func TestShouldReturn200AndInternalComponentOutput(t *testing.T) {
 	startContentUnrollerServiceMock("happy")
 	startInternalContentService()
 	defer stopServices()
-	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/9607cb04-7ac4-11e8-8e17-ed45e46cf554")
+	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
 	if err != nil {
 		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
 	}
@@ -254,7 +254,7 @@ func TestShouldReturn200AndInternalComponentOutput(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode, "Response status should be 200")
 
-	file, _ := os.Open("test-resources/internal-content-api-output.json")
+	file, _ := os.Open("test-resources/full-internal-content-api-output.json")
 	defer file.Close()
 
 	expectedOutput := getMapFromReader(file)
@@ -307,7 +307,7 @@ func TestShouldReturn200AndInternalComponentOutputWhenUnrollContentReturns400(t 
 	startInternalContentService()
 	defer stopServices()
 
-	req, err := http.NewRequest(http.MethodGet, internalContentAPI.URL+"/internalcontent/9607cb04-7ac4-11e8-8e17-ed45e46cf554", nil)
+	req, err := http.NewRequest(http.MethodGet, internalContentAPI.URL+"/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce", nil)
 	if err != nil {
 		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
 	}
@@ -323,7 +323,7 @@ func TestShouldReturn200AndInternalComponentOutputWhenUnrollContentReturns400(t 
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode, "Response status should be 200")
 
-	file, _ := os.Open("test-resources/internal-content-api-output.json")
+	file, _ := os.Open("test-resources/full-internal-content-api-output.json")
 	defer file.Close()
 
 	expectedOutput := getMapFromReader(file)
@@ -340,7 +340,7 @@ func TestShouldReturn200AndInternalComponentOutputWhenUnrollContentReturns500(t 
 	startInternalContentService()
 	defer stopServices()
 
-	req, err := http.NewRequest(http.MethodGet, internalContentAPI.URL+"/internalcontent/9607cb04-7ac4-11e8-8e17-ed45e46cf554", nil)
+	req, err := http.NewRequest(http.MethodGet, internalContentAPI.URL+"/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce", nil)
 	if err != nil {
 		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
 	}
@@ -356,7 +356,7 @@ func TestShouldReturn200AndInternalComponentOutputWhenUnrollContentReturns500(t 
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode, "Response status should be 200")
 
-	file, _ := os.Open("test-resources/internal-content-api-output.json")
+	file, _ := os.Open("test-resources/full-internal-content-api-output.json")
 	defer file.Close()
 
 	expectedOutput := getMapFromReader(file)
@@ -388,7 +388,7 @@ func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentNotFound(t 
 	startContentUnrollerServiceMock("badRequest")
 	startInternalContentService()
 	defer stopServices()
-	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/9607cb04-7ac4-11e8-8e17-ed45e46cf554")
+	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
 	if err != nil {
 		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
 	}
@@ -401,6 +401,7 @@ func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentNotFound(t 
 
 	expectedOutput := getMapFromReader(file)
 	actualOutput := getMapFromReader(resp.Body)
+
 	assert.Equal(t, expectedOutput, actualOutput, "Response body shoud be equal to transformer response body")
 }
 
@@ -410,7 +411,7 @@ func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentFailed(t *t
 	startContentUnrollerServiceMock("badRequest")
 	startInternalContentService()
 	defer stopServices()
-	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/9607cb04-7ac4-11e8-8e17-ed45e46cf554")
+	resp, err := http.Get(internalContentAPI.URL + "/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce")
 	if err != nil {
 		assert.FailNow(t, "Cannot send request to internalcontent endpoint", err.Error())
 	}
@@ -423,6 +424,7 @@ func TestShouldReturn200AndPartialInternalComponentOutputWhenDocumentFailed(t *t
 
 	expectedOutput := getMapFromReader(file)
 	actualOutput := getMapFromReader(resp.Body)
+
 	assert.Equal(t, expectedOutput, actualOutput, "Response body shoud be equal to transformer response body")
 }
 
@@ -704,7 +706,7 @@ func TestServiceAsMap(t *testing.T) {
 			"app-health-uri":      "contentUnrollerAppHealthURI",
 			"app-panic-guide":     "contentUnrollerAppPanicGuide",
 			"app-business-impact": "contentUnrollerAppBusinessImpact"},
-		"env-api-host": "envAPIHost",
+		"env-api-host":         "envAPIHost",
 	}
 	assert.Equal(t, resp, expected, "Wrong return from asMap")
 }
