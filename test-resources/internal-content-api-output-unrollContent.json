@@ -1,7 +1,7 @@
 {
     "accessLevel": "subscribed",
     "annotations": [],
-    "apiUrl": "https://api.ft.com/internalcontent/9607cb04-7ac4-11e8-8e17-ed45e46cf554",
+    "apiUrl": "https://test.api.ft.com/internalcontent/9607cb04-7ac4-11e8-8e17-ed45e46cf554",
     "bodyXML": "\u003cbody\u003e\u003cft-content data-embedded=\"true\" type=\"http://www.ft.com/ontology/content/ImageSet\" url=\"http://test.api.ft.com/content/b7c8e40e-73a7-11e8-17fc-56e8d19c9a20\"\u003e\u003c/ft-content\u003e\u003cp\u003eLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.\u003c/p\u003e\n\u003cft-content data-embedded=\"true\" type=\"http://www.ft.com/ontology/content/DynamicContent\" url=\"http://test.api.ft.com/content/f22b581a-7ac4-11e8-8e17-ed45e46cf554\"\u003e\u003c/ft-content\u003e\n\u003cp\u003eLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.\u003c/p\u003e\n\u003cp\u003eLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in \u003c/p\u003e\n\u003ch2\u003eImage set below\u003c/h2\u003e\n\u003cft-content data-embedded=\"true\" type=\"http://www.ft.com/ontology/content/ImageSet\" url=\"http://test.api.ft.com/content/504f6678-fcc8-36cb-9bfb-025f33758e90\"\u003e\u003c/ft-content\u003e\n\u003cp\u003eLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.\u003c/p\u003e\n\u003cp\u003eLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.\u003c/p\u003e\n\u003c/body\u003e",
     "brands": [
         "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
@@ -24,7 +24,7 @@
             "canBeDistributed": "yes",
             "description": "Ai Sakai (C) greets the audience at Namba Grand Kagetsu theater in Osaka on July 26, 2017, after becoming the first female among six directors of the Shin Yoshimoto theatrical comedy troupe, one of Japan's leading comedy companies. (Kyodo)\n==Kyodo\n(Photo by Kyodo News via Getty Images)",
             "firstPublishedDate": "2018-06-28T11:27:00.000Z",
-            "id": "https://api.ft.com/content/b7c8e40e-73a7-11e8-17fc-56e8d19c9a20",
+            "id": "http://www.ft.com/thing/b7c8e40e-73a7-11e8-17fc-56e8d19c9a20",
             "identifiers": [
                 {
                     "authority": "http://api.ft.com/system/FTCOM-METHODE",
@@ -40,7 +40,7 @@
                     "canBeSyndicated": "no",
                     "description": "Ai Sakai (C) greets the audience at Namba Grand Kagetsu theater in Osaka on July 26, 2017, after becoming the first female among six directors of the Shin Yoshimoto theatrical comedy troupe, one of Japan's leading comedy companies. (Kyodo)\n==Kyodo\n(Photo by Kyodo News via Getty Images)",
                     "firstPublishedDate": "2018-06-28T11:27:00.000Z",
-                    "id": "https://test.api.ft.com/content/b7c8e40e-73a7-11e8-899a-c1720be83169",
+                    "id": "http://www.ft.com/thing/b7c8e40e-73a7-11e8-899a-c1720be83169",
                     "identifiers": [
                         {
                             "authority": "http://api.ft.com/system/FTCOM-METHODE",
@@ -66,7 +66,7 @@
         },
         {
             "accessLevel": "subscribed",
-            "apiUrl": "https://test.api.ft.com/content/f22b581a-7ac4-11e8-8e17-ed45e46cf554",
+            "apiUrl": "https://test.api.ft.com/internalcontent/f22b581a-7ac4-11e8-8e17-ed45e46cf554",
             "blocks": [
                 {
                     "key": "Block with html value",
@@ -94,7 +94,7 @@
             },
             "editorialDesk": "/FT/WorldNews",
             "firstPublishedDate": "2018-06-28T11:20:10.000Z",
-            "id": "https://api.ft.com/content/f22b581a-7ac4-11e8-8e17-ed45e46cf554",
+            "id": "http://www.ft.com/thing/f22b581a-7ac4-11e8-8e17-ed45e46cf554",
             "identifiers": [
                 {
                     "authority": "http://api.ft.com/system/FTCOM-IG",
@@ -105,8 +105,8 @@
                     "identifierValue": "f22b581a-7ac4-11e8-8e17-ed45e46cf554"
                 }
             ],
-            "lastModified": "2018-07-18T07:01:27.767Z",
-            "publishReference": "Postman_1531897287",
+            "lastModified": "2018-09-19T06:10:08.458Z",
+            "publishReference": "Postman_1537337408",
             "publishedDate": "2018-06-28T11:20:10.000Z",
             "standout": {
                 "editorsChoice": false,
@@ -121,14 +121,14 @@
             "apiUrl": "https://test.api.ft.com/content/504f6678-fcc8-36cb-9bfb-025f33758e90",
             "canBeDistributed": "yes",
             "firstPublishedDate": "2018-06-28T11:27:06.000Z",
-            "id": "https://api.ft.com/content/504f6678-fcc8-36cb-9bfb-025f33758e90",
+            "id": "http://www.ft.com/thing/504f6678-fcc8-36cb-9bfb-025f33758e90",
             "identifiers": [
                 {
                     "authority": "http://api.ft.com/system/FTCOM-METHODE",
                     "identifierValue": "504f6678-fcc8-36cb-9bfb-025f33758e90"
                 }
             ],
-            "lastModified": "2018-07-13T15:51:11.057Z",
+            "lastModified": "2018-09-18T10:52:03.223Z",
             "members": [
                 {
                     "apiUrl": "https://test.api.ft.com/content/f5f5cd46-4e13-11e8-9625-2fc6a20bb261",
@@ -136,7 +136,7 @@
                     "canBeDistributed": "verify",
                     "description": "A mother of twins, one with microcephaly, holds them at the couch just hours after being born at IMIP, a public hospital in Recife, Brazil, Thursday, January, 21, 2016. The city has been the national epicenter of hundreds of cases of microcephaly linked to a Zika virus outbreak that has its roots on poor sanitation, unattended garbage and urban sprawl. These factors contribute to Aedes aegypt mosquitoes' proliferation and along with them the viruses that use it as vector, like dengue, zika and chikungunya. (Hilaea Media/Dado Galdieri for Financial Times)\n",
                     "firstPublishedDate": "2018-06-28T11:27:00.000Z",
-                    "id": "https://test.api.ft.com/content/f5f5cd46-4e13-11e8-9625-2fc6a20bb261",
+                    "id": "http://www.ft.com/thing/f5f5cd46-4e13-11e8-9625-2fc6a20bb261",
                     "identifiers": [
                         {
                             "authority": "http://api.ft.com/system/FTCOM-METHODE",
@@ -156,7 +156,7 @@
                     "canBeDistributed": "verify",
                     "description": "A mother of twins, one with microcephaly, holds them at the couch just hours after being born at IMIP, a public hospital in Recife, Brazil, Thursday, January, 21, 2016. The city has been the national epicenter of hundreds of cases of microcephaly linked to a Zika virus outbreak that has its roots on poor sanitation, unattended garbage and urban sprawl. These factors contribute to Aedes aegypt mosquitoes' proliferation and along with them the viruses that use it as vector, like dengue, zika and chikungunya. (Hilaea Media/Dado Galdieri for Financial Times)\n",
                     "firstPublishedDate": "2018-06-28T11:27:00.000Z",
-                    "id": "https://test.api.ft.com/content/f42e8a48-4e13-11e8-9625-2fc6a20bb261",
+                    "id": "http://www.ft.com/thing/f42e8a48-4e13-11e8-9625-2fc6a20bb261",
                     "identifiers": [
                         {
                             "authority": "http://api.ft.com/system/FTCOM-METHODE",
@@ -177,7 +177,7 @@
                     "canBeDistributed": "verify",
                     "description": "A mother of twins, one with microcephaly, holds them at the couch just hours after being born at IMIP, a public hospital in Recife, Brazil, Thursday, January, 21, 2016. The city has been the national epicenter of hundreds of cases of microcephaly linked to a Zika virus outbreak that has its roots on poor sanitation, unattended garbage and urban sprawl. These factors contribute to Aedes aegypt mosquitoes' proliferation and along with them the viruses that use it as vector, like dengue, zika and chikungunya. (Hilaea Media/Dado Galdieri for Financial Times)\n",
                     "firstPublishedDate": "2018-06-28T11:27:00.000Z",
-                    "id": "https://test.api.ft.com/content/ed641b38-4e13-11e8-9625-2fc6a20bb261",
+                    "id": "http://www.ft.com/thing/ed641b38-4e13-11e8-9625-2fc6a20bb261",
                     "identifiers": [
                         {
                             "authority": "http://api.ft.com/system/FTCOM-METHODE",
@@ -193,7 +193,7 @@
                     "type": "http://www.ft.com/ontology/content/Image"
                 }
             ],
-            "publishReference": "tid_nybzmzlduw",
+            "publishReference": "Postman_1537267923",
             "publishedDate": "2018-06-28T11:27:06.000Z",
             "type": "http://www.ft.com/ontology/content/ImageSet"
         }
@@ -206,17 +206,18 @@
             "identifierValue": "9607cb04-7ac4-11e8-8e17-ed45e46cf554"
         }
     ],
-    "lastModified": "2018-07-13T15:51:11.057Z",
+    "lastModified": "2018-09-18T10:52:03.223Z",
     "leadImages": [
         {
-            "id": "https://api.ft.com/content/bc5db2a2-22e8-11e8-8d6c-a1920d9e946f",
+	    "apiUrl": "https://test.api.ft.com/content/bc5db2a2-22e8-11e8-8d6c-a1920d9e946f",
+            "id": "http://www.ft.com/thing/bc5db2a2-22e8-11e8-8d6c-a1920d9e946f",
             "image": {
                 "apiUrl": "https://test.api.ft.com/content/bc5db2a2-22e8-11e8-8d6c-a1920d9e946f",
                 "binaryUrl": "http://com.ft.imagepublish.k8s-content-test.test.s3.amazonaws.com/bc5db2a2-22e8-11e8-8d6c-a1920d9e946f",
                 "canBeDistributed": "verify",
                 "description": "Rafaela Souza Lima, 17, a student from the city of Inajá holds her son Marcos Guilherme, born in July 2015 as she tries to schedule a tomography for him at a hospital in Recife, Brazil, Wednesday, January, 20, 2016. The city has been the national epicenter of hundreds of cases of microcephaly linked to a Zika virus outbreak that has its roots on poor sanitation, unattended garbage and urban sprawl. These factors contribute to Aedes aegypt mosquitoes' proliferation and along with them the viruses that use it as vector, like dengue, zika and chikungunya. (Hilaea Media/Dado Galdieri for Financial Times)\n",
                 "firstPublishedDate": "2018-06-28T11:27:00.000Z",
-                "id": "https://test.api.ft.com/content/bc5db2a2-22e8-11e8-8d6c-a1920d9e946f",
+                "id": "http://www.ft.com/thing/bc5db2a2-22e8-11e8-8d6c-a1920d9e946f",
                 "identifiers": [
                     {
                         "authority": "http://api.ft.com/system/FTCOM-METHODE",
@@ -233,14 +234,15 @@
             "type": "square"
         },
         {
-            "id": "https://api.ft.com/content/b880868c-22e8-11e8-8d6c-a1920d9e946f",
+   	    "apiUrl": "https://test.api.ft.com/content/b880868c-22e8-11e8-8d6c-a1920d9e946f",
+            "id": "http://www.ft.com/thing/b880868c-22e8-11e8-8d6c-a1920d9e946f",
             "image": {
                 "apiUrl": "https://test.api.ft.com/content/b880868c-22e8-11e8-8d6c-a1920d9e946f",
                 "binaryUrl": "http://com.ft.imagepublish.k8s-content-test.test.s3.amazonaws.com/b880868c-22e8-11e8-8d6c-a1920d9e946f",
                 "canBeDistributed": "verify",
                 "description": "Rafaela Souza Lima, 17, a student from the city of Inajá holds her son Marcos Guilherme, born in July 2015 as she tries to schedule a tomography for him at a hospital in Recife, Brazil, Wednesday, January, 20, 2016. The city has been the national epicenter of hundreds of cases of microcephaly linked to a Zika virus outbreak that has its roots on poor sanitation, unattended garbage and urban sprawl. These factors contribute to Aedes aegypt mosquitoes' proliferation and along with them the viruses that use it as vector, like dengue, zika and chikungunya. (Hilaea Media/Dado Galdieri for Financial Times)",
                 "firstPublishedDate": "2018-06-28T11:27:00.000Z",
-                "id": "https://test.api.ft.com/content/b880868c-22e8-11e8-8d6c-a1920d9e946f",
+                "id": "http://www.ft.com/thing/b880868c-22e8-11e8-8d6c-a1920d9e946f",
                 "identifiers": [
                     {
                         "authority": "http://api.ft.com/system/FTCOM-METHODE",
@@ -258,14 +260,15 @@
             "type": "standard"
         },
         {
-            "id": "https://api.ft.com/content/bd50ede6-22e8-11e8-8d6c-a1920d9e946f",
+   	    "apiUrl": "https://test.api.ft.com/content/bd50ede6-22e8-11e8-8d6c-a1920d9e946f",
+            "id": "http://www.ft.com/thing/bd50ede6-22e8-11e8-8d6c-a1920d9e946f",
             "image": {
                 "apiUrl": "https://test.api.ft.com/content/bd50ede6-22e8-11e8-8d6c-a1920d9e946f",
                 "binaryUrl": "http://com.ft.imagepublish.k8s-content-test.test.s3.amazonaws.com/bd50ede6-22e8-11e8-8d6c-a1920d9e946f",
                 "canBeDistributed": "verify",
                 "description": "Rafaela Souza Lima, 17, a student from the city of Inajá holds her son Marcos Guilherme, born in July 2015 as she tries to schedule a tomography for him at a hospital in Recife, Brazil, Wednesday, January, 20, 2016. The city has been the national epicenter of hundreds of cases of microcephaly linked to a Zika virus outbreak that has its roots on poor sanitation, unattended garbage and urban sprawl. These factors contribute to Aedes aegypt mosquitoes' proliferation and along with them the viruses that use it as vector, like dengue, zika and chikungunya. (Hilaea Media/Dado Galdieri for Financial Times)\n",
                 "firstPublishedDate": "2018-06-28T11:27:00.000Z",
-                "id": "https://test.api.ft.com/content/bd50ede6-22e8-11e8-8d6c-a1920d9e946f",
+                "id": "http://www.ft.com/thing/bd50ede6-22e8-11e8-8d6c-a1920d9e946f",
                 "identifiers": [
                     {
                         "authority": "http://api.ft.com/system/FTCOM-METHODE",
@@ -287,7 +290,7 @@
         "canBeDistributed": "yes",
         "description": "Ai Sakai (C) greets the audience at Namba Grand Kagetsu theater in Osaka on July 26, 2017, after becoming the first female among six directors of the Shin Yoshimoto theatrical comedy troupe, one of Japan's leading comedy companies. (Kyodo)\n==Kyodo\n(Photo by Kyodo News via Getty Images)",
         "firstPublishedDate": "2018-06-28T11:27:00.000Z",
-        "id": "https://test.api.ft.com/content/b7c8e40e-73a7-11e8-17fc-56e8d19c9a20",
+        "id": "http://www.ft.com/thing/b7c8e40e-73a7-11e8-17fc-56e8d19c9a20",
         "identifiers": [
             {
                 "authority": "http://api.ft.com/system/FTCOM-METHODE",
@@ -303,7 +306,7 @@
                 "canBeSyndicated": "no",
                 "description": "Ai Sakai (C) greets the audience at Namba Grand Kagetsu theater in Osaka on July 26, 2017, after becoming the first female among six directors of the Shin Yoshimoto theatrical comedy troupe, one of Japan's leading comedy companies. (Kyodo)\n==Kyodo\n(Photo by Kyodo News via Getty Images)",
                 "firstPublishedDate": "2018-06-28T11:27:00.000Z",
-                "id": "https://test.api.ft.com/content/b7c8e40e-73a7-11e8-899a-c1720be83169",
+                "id": "http://www.ft.com/thing/b7c8e40e-73a7-11e8-899a-c1720be83169",
                 "identifiers": [
                     {
                         "authority": "http://api.ft.com/system/FTCOM-METHODE",
@@ -328,9 +331,9 @@
         "type": "http://www.ft.com/ontology/content/ImageSet"
     },
     "prefLabel": "Story containing image sets, linking to a dynamic content story",
-    "publishReference": "tid_nybzmzlduw",
+    "publishReference": "Postman_1537267923",
     "publishedDate": "2018-06-28T11:27:06.000Z",
-    "requestUrl": "https://api.ft.com/internalcontent/9607cb04-7ac4-11e8-8e17-ed45e46cf554",
+    "requestUrl": "https://test.api.ft.com/internalcontent/9607cb04-7ac4-11e8-8e17-ed45e46cf554",
     "standout": {
         "editorsChoice": false,
         "exclusive": false,

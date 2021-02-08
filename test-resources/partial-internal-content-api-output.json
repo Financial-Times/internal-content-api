@@ -1,54 +1,44 @@
 {
     "accessLevel": "subscribed",
-    "annotations": [
-        {
-            "apiUrl": "http://api.ft.com/things/a5dcd3e2-3645-3f79-a4f5-90c3a4679326",
-            "directType": "http://www.ft.com/ontology/Genre",
-            "id": "http://api.ft.com/things/a5dcd3e2-3645-3f79-a4f5-90c3a4679326",
-            "predicate": "http://www.ft.com/ontology/classification/isClassifiedBy",
-            "prefLabel": "Feature",
-            "type": "GENRE",
-            "types": [
-                "http://www.ft.com/ontology/core/Thing",
-                "http://www.ft.com/ontology/concept/Concept",
-                "http://www.ft.com/ontology/classification/Classification",
-                "http://www.ft.com/ontology/Genre"
-            ]
-        }
-    ],
-    "apiUrl": "https://api.ft.com/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce",
-    "bodyXML": "\u003cbody\u003e\u003cp\u003ePellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi.\u003c/p\u003e\n\u003cp\u003ePellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi.\u003c/p\u003e\n\u003c/body\u003e",
+    "annotations": [],
+    "apiUrl": "https://test.api.ft.com/internalcontent/9607cb04-7ac4-11e8-8e17-ed45e46cf554",
+    "bodyXML": "\u003cbody\u003e\u003cft-content type=\"http://www.ft.com/ontology/content/ImageSet\" url=\"http://test.api.ft.com/content/b7c8e40e-73a7-11e8-17fc-56e8d19c9a20\" data-embedded=\"true\"\u003e\u003c/ft-content\u003e\u003cp\u003eLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.\u003c/p\u003e\n\u003cft-content data-embedded=\"true\" type=\"http://www.ft.com/ontology/content/DynamicContent\" url=\"http://test.api.ft.com/content/f22b581a-7ac4-11e8-8e17-ed45e46cf554\"\u003e\u003c/ft-content\u003e\n\u003cp\u003eLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.\u003c/p\u003e\n\u003cp\u003eLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in \u003c/p\u003e\n\u003ch2\u003eImage set below\u003c/h2\u003e\n\u003cft-content data-embedded=\"true\" type=\"http://www.ft.com/ontology/content/ImageSet\" url=\"http://test.api.ft.com/content/504f6678-fcc8-36cb-9bfb-025f33758e90\"\u003e\u003c/ft-content\u003e\n\u003cp\u003eLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.\u003c/p\u003e\n\u003cp\u003eLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.\u003c/p\u003e\n\u003c/body\u003e",
     "brands": [
         "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
     ],
-    "byline": "By ",
-    "canBeSyndicated": "yes",
+    "canBeDistributed": "yes",
+    "canBeSyndicated": "verify",
     "comments": {
         "enabled": true
     },
     "containedIn": [],
     "curatedRelatedContent": [],
-    "firstPublishedDate": "2014-01-29T12:39:06.000Z",
-    "id": "http://www.ft.com/thing/5c3cae78-dbef-11e6-9d7c-be108f1c1dce",
+    "editorialDesk": "/FT/WorldNews",
+    "firstPublishedDate": "2018-06-28T11:27:06.000Z",
+    "id": "http://www.ft.com/thing/9607cb04-7ac4-11e8-8e17-ed45e46cf554",
     "identifiers": [
         {
             "authority": "http://api.ft.com/system/FTCOM-METHODE",
-            "identifierValue": "5c3cae78-dbef-11e6-9d7c-be108f1c1dce"
+            "identifierValue": "9607cb04-7ac4-11e8-8e17-ed45e46cf554"
         }
     ],
-    "lastModified": "2017-02-27T14:23:14.709Z",
-    "prefLabel": "Lorem ipsum dolor sit amet",
-    "publishReference": "tid_9h0oph0oil",
-    "publishedDate": "2014-01-29T12:39:06.000Z",
-    "requestUrl": "https://api.ft.com/internalcontent/5c3cae78-dbef-11e6-9d7c-be108f1c1dce",
-    "standfirst": "Curabitur accumsan elit luctus nunc condimentum",
+    "lastModified": "2018-09-18T10:52:03.223Z",
+    "mainImage": {
+        "apiUrl": "https://test.api.ft.com/content/b7c8e40e-73a7-11e8-17fc-56e8d19c9a20",
+        "id": "http://www.ft.com/thing/b7c8e40e-73a7-11e8-17fc-56e8d19c9a20"
+    },
+    "prefLabel": "Story containing image sets, linking to a dynamic content story",
+    "publishReference": "Postman_1537267923",
+    "publishedDate": "2018-06-28T11:27:06.000Z",
+    "requestUrl": "https://test.api.ft.com/internalcontent/9607cb04-7ac4-11e8-8e17-ed45e46cf554",
     "standout": {
         "editorsChoice": false,
         "exclusive": false,
         "scoop": false
     },
-    "title": "Lorem ipsum dolor sit amet",
+    "title": "Story containing image sets, linking to a dynamic content story",
     "types": [
         "http://www.ft.com/ontology/content/Article"
-    ]
+    ],
+    "webUrl": "https://www.ft.com/content/9607cb04-7ac4-11e8-8e17-ed45e46cf554"
 }
