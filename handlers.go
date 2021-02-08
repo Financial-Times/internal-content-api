@@ -23,7 +23,6 @@ import (
 const (
 	uuidKey          contextKey = "uuid"
 	unrollContentKey contextKey = "unrollContent"
-	idURL            string     = "http://www.ft.com/thing/"
 )
 
 var internalComponentsFilter = map[string]interface{}{
@@ -32,6 +31,8 @@ var internalComponentsFilter = map[string]interface{}{
 	"lastModified":     "",
 	"publishReference": "",
 }
+
+var embedsComponentsFilter = []string{"requestUrl"}
 
 type internalContentHandler struct {
 	serviceConfig *serviceConfig
@@ -114,7 +115,8 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 			return
 		}
 	}
-	mergedContent := mergeParts(parts)
+	baseURL := "https://" + h.serviceConfig.envAPIHost + "/content/"
+	mergedContent := mergeParts(parts, baseURL)
 	mergedContent = h.resolveAdditionalFields(ctx, mergedContent)
 	resultBytes, _ := json.Marshal(mergedContent)
 	w.Header().Set("Cache-Control", h.serviceConfig.cacheControlPolicy)
@@ -216,7 +218,7 @@ func filterKeys(m map[string]interface{}, filter map[string]interface{}) map[str
 	return m
 }
 
-func mergeParts(parts []responsePart) map[string]interface{} {
+func mergeParts(parts []responsePart, baseURL string) map[string]interface{} {
 	if len(parts) == 0 {
 		return make(map[string]interface{})
 	}
@@ -234,7 +236,7 @@ func mergeParts(parts []responsePart) map[string]interface{} {
 	}
 
 	for i := 1; i < len(contents); i++ {
-		contents[0] = mergeTwoContents(contents[0], contents[i])
+		contents[0] = mergeTwoContents(contents[0], contents[i], baseURL)
 	}
 	return contents[0]
 }
@@ -252,31 +254,37 @@ func sameIds(idA string, idB string) bool {
 	return idA == idB || matchIDs(idA, idB)
 }
 
-func renameRequestURLKey(m map[string]interface{}) {
-	reqURL, foundInM := m["requestUrl"]
-
-	if foundInM {
-		m["apiUrl"] = reqURL
-		delete(m, "requestUrl")
+func filterEmbedsKeys(m map[string]interface{}, filter []string) map[string]interface{} {
+	for _, valueInFilter := range filter {
+		_, foundInM := m[valueInFilter]
+		if foundInM {
+			delete(m, valueInFilter)
+		}
 	}
+	return m
 }
 
-func transformEmbeds(vMap []interface{}) {
+func transformEmbeds(vMap []interface{}, baseURL string) {
 	for _, valueMapB := range vMap {
 		valueMap, ok := valueMapB.(map[string]interface{})
 		if !ok {
 			return
 		}
-		renameRequestURLKey(valueMap)
+		valueMap = filterEmbedsKeys(valueMap, embedsComponentsFilter)
+		id, ok := valueMap["id"]
+		if ok {
+			valueMap["id"] = baseURL + extractIDValue(id.(string))
+		}
+
 		uuid, ok := valueMap["uuid"]
 		if ok {
-			valueMap["id"] = idURL + uuid.(string)
+			valueMap["id"] = baseURL + uuid.(string)
 			delete(valueMap, "uuid")
 		}
 	}
 }
 
-func mergeTwoEmbeds(a []interface{}, b []interface{}) []interface{} {
+func mergeTwoEmbeds(a []interface{}, b []interface{}, baseURL string) []interface{} {
 	if len(a) == 0 {
 		return b
 	}
@@ -291,7 +299,7 @@ func mergeTwoEmbeds(a []interface{}, b []interface{}) []interface{} {
 				valueMapA, isMapInA := valueInA.(map[string]interface{})
 				if isMapInA {
 					if sameIds(valueMapB["id"].(string), valueMapA["id"].(string)) {
-						a[aKey] = mergeTwoContents(valueMapA, valueMapB)
+						a[aKey] = mergeTwoContents(valueMapA, valueMapB, baseURL)
 						lbFound = true
 						break
 					}
@@ -305,22 +313,22 @@ func mergeTwoEmbeds(a []interface{}, b []interface{}) []interface{} {
 	return a
 }
 
-func mergeTwoContents(a map[string]interface{}, b map[string]interface{}) map[string]interface{} {
+func mergeTwoContents(a map[string]interface{}, b map[string]interface{}, baseURL string) map[string]interface{} {
 	for key, valueInB := range b {
 		foundValInA, foundInA := a[key]
 		if foundInA {
 			if key == "embeds" {
 				arrInA, isArrInA := foundValInA.([]interface{})
 				if isArrInA {
-					transformEmbeds(arrInA)
+					transformEmbeds(arrInA, baseURL)
 				}
 				arrInB, isArrInB := valueInB.([]interface{})
 				if isArrInB {
-					transformEmbeds(arrInB)
+					transformEmbeds(arrInB, baseURL)
 				}
 
 				if isArrInA && isArrInB {
-					a[key] = mergeTwoEmbeds(arrInA, arrInB)
+					a[key] = mergeTwoEmbeds(arrInA, arrInB, baseURL)
 				} else {
 					a[key] = arrInB
 				}
@@ -328,7 +336,7 @@ func mergeTwoContents(a map[string]interface{}, b map[string]interface{}) map[st
 				mapInA, isMapInA := foundValInA.(map[string]interface{})
 				mapInB, isMapInB := valueInB.(map[string]interface{})
 				if isMapInA && isMapInB {
-					a[key] = mergeTwoContents(mapInA, mapInB)
+					a[key] = mergeTwoContents(mapInA, mapInB, baseURL)
 				} else {
 					a[key] = valueInB
 				}
@@ -401,16 +409,31 @@ func (h internalContentHandler) getUnrolledContent(ctx context.Context, content 
 }
 
 func (h internalContentHandler) transformLeadImage(leadImage map[string]interface{}) {
+	if id, found := leadImage["id"]; found {
+		leadImage["id"] = "https://" + h.serviceConfig.envAPIHost + "/content/" + extractIDValue(id.(string))
+	}
 	imageModel, found := leadImage["image"]
 	if !found {
 		//if image field is not found inside the image, continue the processing
 		return
 	}
+	var apiURL interface{}
 	imageModelAsMap, ok := imageModel.(map[string]interface{})
 	if !ok {
 		return
 	}
-	renameRequestURLKey(imageModelAsMap)
+	if apiURL, found = imageModelAsMap["requestUrl"]; !found {
+		if apiURL, found = leadImage["id"]; !found {
+			return
+		}
+	}
+	apiURLAsString, ok := apiURL.(string)
+	if !ok {
+		return
+	}
+	imageModelAsMap["id"] = apiURLAsString
+	imageModelAsMap["apiUrl"] = apiURLAsString
+	delete(imageModelAsMap, "requestUrl")
 }
 
 func createRequestURL(APIHost string, handlerPath string, uuid string) string {

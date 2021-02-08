@@ -11,6 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const testBaseURL = "http://test.api.ft.com/content/"
+
 func TestMergeEmbeds(t *testing.T) {
 	data := []struct {
 		name          string
@@ -49,7 +51,7 @@ func TestMergeEmbeds(t *testing.T) {
 			map[string]interface{}{
 				"embeds": []interface{}{
 					map[string]interface{}{
-						"id":                "2",
+						"id":                testBaseURL + "2",
 						"alternativeImages": map[string]interface{}{},
 						"alternativeTitles": map[string]interface{}{},
 						"description":       "Description2",
@@ -77,7 +79,7 @@ func TestMergeEmbeds(t *testing.T) {
 			map[string]interface{}{
 				"embeds": []interface{}{
 					map[string]interface{}{
-						"id":                "2",
+						"id":                testBaseURL + "2",
 						"alternativeImages": map[string]interface{}{},
 						"alternativeTitles": map[string]interface{}{},
 						"description":       "Description2",
@@ -113,14 +115,14 @@ func TestMergeEmbeds(t *testing.T) {
 			map[string]interface{}{
 				"embeds": []interface{}{
 					map[string]interface{}{
-						"id":                "1",
+						"id":                testBaseURL + "1",
 						"alternativeImages": map[string]interface{}{},
 						"alternativeTitles": map[string]interface{}{},
 						"description":       "Description1",
 						"lastModified":      "lastModified1",
 					},
 					map[string]interface{}{
-						"id":                "2",
+						"id":                testBaseURL + "2",
 						"alternativeImages": map[string]interface{}{},
 						"alternativeTitles": map[string]interface{}{},
 						"description":       "Description2",
@@ -155,7 +157,7 @@ func TestMergeEmbeds(t *testing.T) {
 			map[string]interface{}{
 				"embeds": []interface{}{
 					map[string]interface{}{
-						"id":                "1",
+						"id":                testBaseURL + "1",
 						"alternativeImages": map[string]interface{}{},
 						"alternativeTitles": map[string]interface{}{},
 						"description":       "Description2",
@@ -167,7 +169,7 @@ func TestMergeEmbeds(t *testing.T) {
 	}
 
 	for _, row := range data {
-		res := mergeParts([]responsePart{{content: row.content}, {content: row.component}})
+		res := mergeParts([]responsePart{{content: row.content}, {content: row.component}}, testBaseURL)
 		assert.True(t, reflect.DeepEqual(row.mergedContent, res), "Expected and actual merged content differs.\n Expected: %v\n Actual %v\n", row.mergedContent, res)
 	}
 }
@@ -398,7 +400,7 @@ func TestMergeEmbeddedMapsWithOverlappingFields(t *testing.T) {
 	}
 
 	for _, row := range data {
-		res := mergeParts([]responsePart{{content: row.content}, {content: row.component}})
+		res := mergeParts([]responsePart{{content: row.content}, {content: row.component}}, testBaseURL)
 		assert.True(t, reflect.DeepEqual(row.mergedContent, res), row.name+" - Expected and actual merged content differs.\n Expected: %v\n Actual: %v\n", row.mergedContent, res)
 	}
 
@@ -498,7 +500,7 @@ func TestResolvingOverlappingMergesFullContent(t *testing.T) {
 	err = json.Unmarshal([]byte(internalComponentJSON), &internalComponent)
 	assert.Equal(t, nil, err, "Error %v", err)
 
-	results := mergeParts([]responsePart{{content: content}, {content: internalComponent}})
+	results := mergeParts([]responsePart{{content: content}, {content: internalComponent}}, "")
 
 	promotionalTitle := results["alternativeTitles"].(map[string]interface{})["promotionalTitle"]
 	shortTeaser := results["alternativeTitles"].(map[string]interface{})["shortTeaser"]

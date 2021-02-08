@@ -1,35 +1,23 @@
 {
-    "id": "http://www.ft.com/thing/9607cb04-7ac4-11e8-8e17-ed45e46cf554",
-    "design": {
-        "layout": "default",
-        "theme": "basic"
+  "topper": {
+    "theme": "split-text-left",
+    "bgColor": "black",
+    "headline": "Topper headline",
+    "standfirst": "Topper standfirst"
+  },
+  "leadImages": [
+    {
+      "id": "https://test.api.ft.com/content/f3add2e0-dbfa-11e6-a7d5-ce30ecef69c7",
+      "type": "square"
     },
-    "bodyXML": "<body><ft-content data-embedded=\"true\" type=\"http://www.ft.com/ontology/content/ImageSet\" url=\"http://test.api.ft.com/content/b7c8e40e-73a7-11e8-17fc-56e8d19c9a20\"></ft-content><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.</p>\n<ft-content data-embedded=\"true\" type=\"http://www.ft.com/ontology/content/DynamicContent\" url=\"http://test.api.ft.com/content/f22b581a-7ac4-11e8-8e17-ed45e46cf554\"></ft-content>\n<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.</p>\n<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in </p>\n<h2>Image set below</h2>\n<ft-content data-embedded=\"true\" type=\"http://www.ft.com/ontology/content/ImageSet\" url=\"http://test.api.ft.com/content/504f6678-fcc8-36cb-9bfb-025f33758e90\"></ft-content>\n<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.</p>\n<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.</p>\n</body>",
-    "alternativeTitles": {
-        "promotionalTitleVariant": "",
-        "shortTeaser": ""
+    {
+      "id": "https://test.api.ft.com/content/35059e34-dc33-11e6-86ac-f253db7791c6",
+      "type": "standard"
     },
-    "alternativeStandfirsts": {
-        "promotionalStandfirstVariant": ""
-    },
-    "leadImages": [
-        {
-            "id": "http://www.ft.com/thing/bc5db2a2-22e8-11e8-8d6c-a1920d9e946f",
-            "apiUrl": "https://test.api.ft.com/content/bc5db2a2-22e8-11e8-8d6c-a1920d9e946f",
-            "type": "square"
-        },
-        {
-            "id": "http://www.ft.com/thing/b880868c-22e8-11e8-8d6c-a1920d9e946f",
-            "apiUrl": "https://test.api.ft.com/content/b880868c-22e8-11e8-8d6c-a1920d9e946f",
-            "type": "standard"
-        },
-        {
-            "id": "http://www.ft.com/thing/bd50ede6-22e8-11e8-8d6c-a1920d9e946f",
-            "apiUrl": "https://test.api.ft.com/content/bd50ede6-22e8-11e8-8d6c-a1920d9e946f",
-            "type": "wide"
-        }
-    ],
-    "publishReference": "Postman_1537267923",
-    "lastModified": "2018-09-18T10:52:03.223Z",
-    "requestUrl": "https://test.api.ft.com/internalcontent/9607cb04-7ac4-11e8-8e17-ed45e46cf554"
+    {
+      "id": "https://test.api.ft.com/content/c374c260-dd84-11e6-9d7c-be108f1c1dce",
+      "type": "wide"
+    }
+  ],
+  "uuid": "5c3cae78-dbef-11e6-9d7c-be108f1c1dce"
 }
