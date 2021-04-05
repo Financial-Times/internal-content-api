@@ -1,0 +1,256 @@
+openapi: 3.0.1
+info:
+  title: internal-content-api
+  description: "Serves published content that includes the internal components beside the enriched content fields"
+  version: 1.2.4
+  contact:
+    name: Universal Publishing
+    email: Universal.Publishing.Platform@ft.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+  - url: https://api.ft.com/
+paths:
+  /internalcontent/{uuid}:
+    get:
+      summary: Get content feed
+      description: Returns the internal content of an article (i.e. an aggregation of enriched content plus internal components).
+      parameters:
+        - name: uuid
+          in: path
+          description: The id of the requested content
+          required: true
+          schema:
+            type: string
+          example: fc6e182c-44e1-48d4-9bc8-77b5f5fa22e7
+        - name: unrollContent
+          in: query
+          description: whether to add or not in the response dynamic content, main image, body embedded images, lead images and alternative images get expanded with the content as content-public-read service was called for that dynamic component.
+          required: false
+          schema:
+            type: boolean
+        - name: X-Request-Id
+          in: header
+          description: The transaction id. If non is provided a new one would be generated
+          schema:
+            type: string
+      responses:
+        200:
+          description: Returns the content.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalContent"
+        400:
+          description: Bad request.
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+              example: If article with given uuid is not valid.
+        404:
+          description: If article with given uuid does not exist.
+        500:
+          description: When one of the collaborating mandatory services is inaccessible.
+        503:
+          description: When one of the collaborating mandatory services is inaccessible.
+  /__health:
+    get:
+      summary: Healthchecks
+      description: Runs application healthchecks and returns FT Healthcheck style
+        json.
+      responses:
+        200:
+          description: Should always return 200 along with the output of the healthchecks
+            - regardless of whether the healthchecks failed or not. Please inspect
+            the overall `ok` property to see whether or not the application is healthy.
+          content: { }
+  /__build-info:
+    get:
+      summary: Build Information
+      description: Returns application build info, such as the git repository and
+        revision, the golang version it was built with, and the app release version.
+      responses:
+        200:
+          description: Outputs build information as described in the summary.
+          content:
+            application/json; charset=UTF-8:
+              example:
+                version: "v1.2.4"
+                repository: "https://github.com/Financial-Times/internal-content-api.git"
+                revision: "f41fdecfdad7b6b6d2653e37b774fa60194fd265"
+                builder: "go version go1.15.6 linux/amd64"
+                dateTime: "20210105150601"
+  /__gtg:
+    get:
+      summary: Good To Go
+      description: Lightly healthchecks the application, and returns a 200 if it's
+        Good-To-Go.
+      responses:
+        200:
+          description: The application is healthy enough to perform all its functions
+            correctly - i.e. good to go.
+          content: { }
+        503:
+          description: One or more of the applications healthchecks have failed, so
+            please do not use the app. See the /__health endpoint for more detailed
+            information.
+  /__api:
+    get:
+      summary: API Documentation
+      description: Returns OpenAPI documentation for the application.
+      tags:
+        - Info
+      responses:
+        "200":
+          description: Returns OpenAPI information.
+          content:
+            text/plain;charset=utf-8:
+              schema:
+                type: string
+
+components:
+  schemas:
+    InternalContent:
+      type: object
+      properties:
+        id:
+          type: string
+          description: content ID
+        bodyXML:
+          type: string
+          description: XML Body
+        title:
+          type: string
+          description: Content title
+        alternativeTitles:
+          type: object
+          properties:
+            alternativeTitles:
+              type: object
+              properties:
+                promotionalTitle:
+                  type: string
+        standfirst:
+          type: string
+        alternativeStandFirst:
+          type: object
+        byline:
+          type: string
+        firstPublishedDate:
+          type: string
+        publishedDate:
+          type: string
+        webUrl:
+          type: string
+        identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Identifier'
+        requestUrl:
+          type: string
+          description: url
+          example: https://api-t.ft.com/enrichedcontent/b28ada3a-2a0c-49d9-93b0-fa8e312e1f77
+        brands:
+          type: array
+          items:
+            type: string
+        mainImage:
+          type: object
+          properties:
+            id:
+              type: string
+              example: https://api-t.ft.com/content/da57d673-6a9a-46b6-beed-fd3797b02f73
+        alternativeImages:
+          type: object
+        comments:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+        standout:
+          type: object
+          properties:
+            editorsChoice:
+              type: boolean
+            exclusive:
+              type: boolean
+            scoop:
+              type: boolean
+        publishReference:
+          type: string
+          example: fix_spark_carousel_1616663972_tid_qvILNfwr5S
+        lastModified:
+          type: string
+          example: 2021-03-25T11:58:35.351Z
+        canBeDistributed:
+          type: string
+          example: yes
+        canBeSyndicated:
+          type: string
+          example: no
+        accessLevel:
+          type: string
+          example: subscribed
+        editorialDesk:
+          type: string
+          example: /FT/WorldNews/UK
+        apiUrl:
+          type: string
+          example: https://api-t.ft.com/enrichedcontent/b28ada3a-2a0c-49d9-93b0-fa8e312e1f77
+        prefLabel:
+          type: string
+          example: Police declare Reading stabbings a terrorism incident
+        types:
+          type: array
+          items:
+            type: string
+        annotations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Annotation'
+        curatedRelatedContent:
+          type: array
+          items:
+            type: string
+        containedIn:
+          type: array
+          items:
+            type: string
+    Identifier:
+      type: object
+      properties:
+        authority:
+          type: string
+          description: link
+          example: http://api.ft.com/system/cct
+        identifierValue:
+          type: string
+          description: uuid
+          example: b28ada3a-2a0c-49d9-93b0-fa8e312e1f77
+    Annotation:
+      type: object
+      properties:
+        predicate:
+          type: string
+          example: http://www.ft.com/ontology/annotation/mentions
+        id:
+          type: string
+          example: http://api.ft.com/things/ed985837-77af-3ebb-acd4-44e54c9da4f4
+        apiUrl:
+          type: string
+          example: http://api.ft.com/things/ed985837-77af-3ebb-acd4-44e54c9da4f4
+        prefLabel:
+          type: string
+          example: Libya
+        types:
+          type: array
+          items:
+            type: string
+        type:
+          type: string
+          example: LOCATION
+        directType:
+          type: string
+          example: http://www.ft.com/ontology/Location
