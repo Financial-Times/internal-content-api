@@ -14,6 +14,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jawher/mow.cli"
 	"github.com/sirupsen/logrus"
+
+	api "github.com/Financial-Times/api-endpoint"
 )
 
 const serviceDescription = "A RESTful API for retrieving and transforming internal content"
@@ -146,6 +148,12 @@ func main() {
 		Desc:   "API host to use for URLs in responses",
 		EnvVar: "ENV_API_HOST",
 	})
+	apiYml := app.String(cli.StringOpt{
+		Name:   "api-yml",
+		Value:  "./api.yml",
+		Desc:   "Location of the API Swagger YML file.",
+		EnvVar: "API_YML",
+	})
 	app.Action = func() {
 		httpClient := &http.Client{
 			Timeout: 10 * time.Second,
@@ -190,7 +198,7 @@ func main() {
 		appLogger := newAppLogger()
 		metricsHandler := NewMetrics()
 		contentHandler := internalContentHandler{&sc, appLogger, &metricsHandler}
-		h := setupServiceHandler(sc, metricsHandler, contentHandler)
+		h := setupServiceHandler(sc, metricsHandler, contentHandler, apiYml)
 		appLogger.ServiceStartedEvent(*appSystemCode, sc.asMap())
 		err := http.ListenAndServe(":"+*appPort, h)
 		if err != nil {
@@ -200,13 +208,21 @@ func main() {
 	app.Run(os.Args)
 }
 
-func setupServiceHandler(sc serviceConfig, metricsHandler Metrics, contentHandler internalContentHandler) *mux.Router {
+func setupServiceHandler(sc serviceConfig, metricsHandler Metrics, contentHandler internalContentHandler, apiYml *string) *mux.Router {
 	r := mux.NewRouter()
 	r.Path("/" + sc.handlerPath + "/{uuid}").Handler(handlers.MethodHandler{"GET": oldhttphandlers.HTTPMetricsHandler(metricsHandler.registry,
 		oldhttphandlers.TransactionAwareRequestLoggingHandler(logrus.StandardLogger(), contentHandler))})
 	r.Path(httphandlers.BuildInfoPath).HandlerFunc(httphandlers.BuildInfoHandler)
 	r.Path(httphandlers.PingPath).HandlerFunc(httphandlers.PingHandler)
 
+	if apiYml != nil {
+		apiEndpoint, err := api.NewAPIEndpointForFile(*apiYml)
+		if err != nil {
+			logrus.WithError(err).WithField("file", *apiYml).Warn("Failed to serve the API Endpoint for this service. Please validate the OpenAPI YML and the file location")
+		} else {
+			r.Path(api.DefaultPath).HandlerFunc(apiEndpoint.ServeHTTP)
+		}
+	}
 	timedHC := fthealth.TimedHealthCheck{
 		HealthCheck: fthealth.HealthCheck{
 			SystemCode:  sc.appSystemCode,

@@ -17,6 +17,7 @@ RUN BUILDINFO_PACKAGE="github.com/Financial-Times/service-status-go/buildinfo." 
 # Multi-stage build - copy only the certs and the binary into the image
 FROM scratch
 WORKDIR /
+COPY ./api/api.yml /
 COPY --from=0 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=0 /artifacts/* /
 

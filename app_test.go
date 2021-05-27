@@ -212,7 +212,7 @@ func startInternalContentService() {
 	metricsHandler := NewMetrics()
 	contentHandler := internalContentHandler{&sc, appLogger, &metricsHandler}
 
-	h := setupServiceHandler(sc, metricsHandler, contentHandler)
+	h := setupServiceHandler(sc, metricsHandler, contentHandler, nil)
 
 	internalContentAPI = httptest.NewServer(h)
 }
@@ -706,7 +706,7 @@ func TestServiceAsMap(t *testing.T) {
 			"app-health-uri":      "contentUnrollerAppHealthURI",
 			"app-panic-guide":     "contentUnrollerAppPanicGuide",
 			"app-business-impact": "contentUnrollerAppBusinessImpact"},
-		"env-api-host":         "envAPIHost",
+		"env-api-host": "envAPIHost",
 	}
 	assert.Equal(t, resp, expected, "Wrong return from asMap")
 }
