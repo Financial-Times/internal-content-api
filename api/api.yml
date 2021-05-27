@@ -11,6 +11,9 @@ info:
     url: https://opensource.org/licenses/MIT
 servers:
   - url: https://api.ft.com/
+  - url: https://api-t.ft.com/
+security:
+  - ApiKeyAuth: []
 paths:
   /internalcontent/{uuid}:
     get:
@@ -56,10 +59,15 @@ paths:
         503:
           description: When one of the collaborating mandatory services is inaccessible.
   /__health:
+    servers:
+      - url: https://upp-prod-delivery-glb.upp.ft.com/__internal-content-api/
+      - url: https://upp-staging-delivery-glb.upp.ft.com/__internal-content-api/
     get:
       summary: Healthchecks
       description: Runs application healthchecks and returns FT Healthcheck style
         json.
+      security:
+        - BasicAuth: []
       responses:
         200:
           description: Should always return 200 along with the output of the healthchecks
@@ -67,10 +75,15 @@ paths:
             the overall `ok` property to see whether or not the application is healthy.
           content: { }
   /__build-info:
+    servers:
+      - url: https://upp-prod-delivery-glb.upp.ft.com/__internal-content-api/
+      - url: https://upp-staging-delivery-glb.upp.ft.com/__internal-content-api/
     get:
       summary: Build Information
       description: Returns application build info, such as the git repository and
         revision, the golang version it was built with, and the app release version.
+      security:
+        - BasicAuth: []
       responses:
         200:
           description: Outputs build information as described in the summary.
@@ -83,10 +96,15 @@ paths:
                 builder: "go version go1.15.6 linux/amd64"
                 dateTime: "20210105150601"
   /__gtg:
+    servers:
+      - url: https://upp-prod-delivery-glb.upp.ft.com/__internal-content-api/
+      - url: https://upp-staging-delivery-glb.upp.ft.com/__internal-content-api/
     get:
       summary: Good To Go
       description: Lightly healthchecks the application, and returns a 200 if it's
         Good-To-Go.
+      security:
+        - BasicAuth: []
       responses:
         200:
           description: The application is healthy enough to perform all its functions
@@ -97,6 +115,9 @@ paths:
             please do not use the app. See the /__health endpoint for more detailed
             information.
   /__api:
+    servers:
+      - url: https://upp-prod-delivery-glb.upp.ft.com/__internal-content-api/
+      - url: https://upp-staging-delivery-glb.upp.ft.com/__internal-content-api/
     get:
       summary: API Documentation
       description: Returns OpenAPI documentation for the application.
@@ -111,6 +132,14 @@ paths:
                 type: string
 
 components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+    BasicAuth:
+      type: http
+      scheme: basic
   schemas:
     InternalContent:
       type: object
