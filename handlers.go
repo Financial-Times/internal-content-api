@@ -14,8 +14,8 @@ import (
 	"strings"
 
 	transactionidutils "github.com/Financial-Times/transactionid-utils-go"
+	gouuid "github.com/google/uuid"
 	"github.com/gorilla/mux"
-	gouuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 )
@@ -126,7 +126,7 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 }
 
 func validateUUID(contentUUID string) error {
-	parsedUUID, err := gouuid.FromString(contentUUID)
+	parsedUUID, err := gouuid.Parse(contentUUID)
 	if err != nil {
 		return err
 	}
