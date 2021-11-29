@@ -12,3 +12,8 @@ workflows:
           name: build-docker-image
           requires:
             - build-and-test-project
+  snyk-scanning:
+    jobs:
+      - ft-golang-ci/scan:
+          name: scan-dependencies
+          context: cm-team-snyk
