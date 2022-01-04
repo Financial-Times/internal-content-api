@@ -90,5 +90,5 @@ func (appLogger *appLogger) ResponseEvent(serviceName string, requestURL string,
 		"transaction_id": resp.Header.Get(tid.TransactionIDHeader),
 		"uuid":           uuid,
 	}).
-		Info("Response from " + serviceName)
+		Debug("Response from " + serviceName)
 }
