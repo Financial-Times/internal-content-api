@@ -78,9 +78,9 @@ func (c contextKey) String() string {
 
 func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	uuid := mux.Vars(r)["uuid"]
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	err := validateUUID(uuid)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusBadRequest)
 		msg, _ := json.Marshal(ErrorMessage{fmt.Sprintf("The given uuid is not valid, err=%v", err)})
 		w.Write(msg)
