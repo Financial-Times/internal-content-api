@@ -501,12 +501,16 @@ func unmarshallToMap(resp *http.Response) (map[string]interface{}, error) {
 	if resp == nil || resp.StatusCode != http.StatusOK {
 		return content, nil
 	}
-
-	contentBytes, err := ioutil.ReadAll(resp.Body)
+	var buff bytes.Buffer
+	_, err := io.Copy(&buff, resp.Body)
 	if err != nil {
-		return content, err
+		fmt.Println("copy err", err)
 	}
-	err = json.Unmarshal(contentBytes, &content)
+	err = json.NewDecoder(bytes.NewReader(buff.Bytes())).Decode(&content)
+	if err != nil {
+		fmt.Println("<>", err)
+		fmt.Println("()", content)
+	}
 	return content, err
 }
 
