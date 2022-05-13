@@ -40,13 +40,14 @@ type internalContentHandler struct {
 	metrics       *Metrics
 }
 
-type ErrorMessage struct {
+type ResponseMessage struct {
 	Message string `json:"message"`
 }
 
 type responsePart struct {
 	isOk       bool
 	statusCode int
+	failMsg    string
 	e          event
 	content    map[string]interface{}
 }
@@ -77,13 +78,13 @@ func (c contextKey) String() string {
 }
 
 func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	uuid := mux.Vars(r)["uuid"]
 	err := validateUUID(uuid)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusBadRequest)
-		msg, _ := json.Marshal(ErrorMessage{fmt.Sprintf("The given uuid is not valid, err=%v", err)})
-		w.Write(msg)
+		msg, _ := json.Marshal(ResponseMessage{fmt.Sprintf("The given uuid is not valid, err=%v", err)})
+		_, _ = w.Write(msg)
 		return
 	}
 
@@ -107,11 +108,17 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 	for _, p := range parts {
 		if !p.isOk {
 			w.WriteHeader(p.statusCode)
+			if msg, err := json.Marshal(ResponseMessage{p.failMsg}); err == nil {
+				_, _ = w.Write(msg)
+			}
 			return
 		}
 		if p.e.err != nil {
 			h.handleErrorEvent(p.e, "Error while unmarshaling the response body")
 			w.WriteHeader(http.StatusInternalServerError)
+			if msg, err := json.Marshal(ResponseMessage{"Failed to process service responses"}); err == nil {
+				_, _ = w.Write(msg)
+			}
 			return
 		}
 	}
@@ -120,8 +127,7 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 	mergedContent = h.resolveAdditionalFields(ctx, mergedContent)
 	resultBytes, _ := json.Marshal(mergedContent)
 	w.Header().Set("Cache-Control", h.serviceConfig.cacheControlPolicy)
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.Write(resultBytes)
+	_, _ = w.Write(resultBytes)
 	h.metrics.recordResponseEvent()
 }
 
@@ -447,7 +453,7 @@ func (h internalContentHandler) callService(ctx context.Context, r retriever) (r
 	req, err := http.NewRequest(http.MethodGet, requestURL, nil)
 	if err != nil {
 		h.handleError(err, r.sourceAppName, requestURL, req.Header.Get(transactionidutils.TransactionIDHeader), uuid)
-		return responsePart{isOk: false, statusCode: http.StatusInternalServerError}, nil
+		return responsePart{isOk: false, failMsg: fmt.Sprintf("Failed to complete request to %s", r.sourceAppName), statusCode: http.StatusInternalServerError}, nil
 	}
 	req.Header.Set(transactionidutils.TransactionIDHeader, transactionID)
 	req.Header.Set("Content-Type", "application/json")
@@ -463,7 +469,7 @@ func (h internalContentHandler) callService(ctx context.Context, r retriever) (r
 	//this happens when hostname cannot be resolved or host is not accessible
 	if err != nil {
 		h.handleError(err, r.sourceAppName, req.URL.String(), req.Header.Get(transactionidutils.TransactionIDHeader), uuid)
-		return responsePart{isOk: false, statusCode: http.StatusServiceUnavailable}, nil
+		return responsePart{isOk: false, failMsg: fmt.Sprintf("%s is not available", r.sourceAppName), statusCode: http.StatusServiceUnavailable}, nil
 	}
 	return h.handleResponse(req, resp, uuid, r.sourceAppName, r.doFail), resp
 }
@@ -478,7 +484,7 @@ func (h internalContentHandler) handleResponse(req *http.Request, resp *http.Res
 	case http.StatusNotFound:
 		if doFail {
 			h.handleNotFound(resp, appName, req.URL.String(), uuid)
-			return responsePart{isOk: false, statusCode: http.StatusNotFound}
+			return responsePart{isOk: false, failMsg: fmt.Sprintf("Content was not found in %s", appName), statusCode: http.StatusNotFound}
 		}
 		h.log.RequestFailedEvent(appName, req.URL.String(), resp, uuid)
 		h.metrics.recordRequestFailedEvent()
@@ -487,7 +493,7 @@ func (h internalContentHandler) handleResponse(req *http.Request, resp *http.Res
 	default:
 		if doFail {
 			h.handleFailedRequest(resp, appName, req.URL.String(), uuid)
-			return responsePart{isOk: false, statusCode: http.StatusServiceUnavailable}
+			return responsePart{isOk: false, failMsg: fmt.Sprintf("%s is not available", appName), statusCode: http.StatusServiceUnavailable}
 		}
 		h.log.RequestFailedEvent(appName, req.URL.String(), resp, uuid)
 		h.metrics.recordRequestFailedEvent()
