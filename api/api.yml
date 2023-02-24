@@ -18,6 +18,8 @@ paths:
   /internalcontent/{uuid}:
     get:
       summary: Get content feed
+      tags:
+        - Public API
       description: Returns the internal content of an article (i.e. an aggregation of enriched content plus internal components).
       parameters:
         - name: uuid
@@ -64,6 +66,8 @@ paths:
       - url: https://upp-staging-delivery-glb.upp.ft.com/__internal-content-api/
     get:
       summary: Healthchecks
+      tags:
+        - Health
       description: Runs application healthchecks and returns FT Healthcheck style
         json.
       security:
@@ -80,6 +84,8 @@ paths:
       - url: https://upp-staging-delivery-glb.upp.ft.com/__internal-content-api/
     get:
       summary: Build Information
+      tags:
+        - Info
       description: Returns application build info, such as the git repository and
         revision, the golang version it was built with, and the app release version.
       security:
@@ -101,6 +107,8 @@ paths:
       - url: https://upp-staging-delivery-glb.upp.ft.com/__internal-content-api/
     get:
       summary: Good To Go
+      tags:
+        - Health
       description: Lightly healthchecks the application, and returns a 200 if it's
         Good-To-Go.
       security:
