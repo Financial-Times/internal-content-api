@@ -18,26 +18,8 @@ spec:
         app: {{ .Values.service.name }}
         visualize: "true"
     spec:
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: app
-                operator: In
-                values:
-                - {{ .Values.service.name }}
-            topologyKey: "kubernetes.io/hostname"
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                - key: app
-                  operator: In
-                  values:
-                  - content-search-api-port
-              topologyKey: "kubernetes.io/hostname"
+      affinity:        
+{{ toYaml .Values.affinity | indent 8 }}
       containers:
       - name: {{ .Values.service.name }}
         image: "{{ .Values.image.repository }}:{{ .Chart.Version }}"
