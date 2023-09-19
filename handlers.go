@@ -282,7 +282,7 @@ func renameKey(oldKey, newKey string, m map[string]interface{}) map[string]inter
 			for _, v := range vi {
 				_value, _find := v.(map[string]interface{})
 				if _find {
-					_value = renameKey(oldKey, newKey, _value)
+					renameKey(oldKey, newKey, _value)
 				}
 			}
 		}
@@ -313,7 +313,7 @@ func transformEmbeds(vMap []interface{}, baseURL string) {
 			delete(valueMap, "uuid")
 		}
 		// Deep renaming
-		valueMap = renameKey("requestUrl", "apiUrl", valueMap)
+		renameKey("requestUrl", "apiUrl", valueMap)
 	}
 }
 
