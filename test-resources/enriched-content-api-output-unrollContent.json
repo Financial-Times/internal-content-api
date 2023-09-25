@@ -1,288 +1,375 @@
 {
-    "id": "http://www.ft.com/thing/9607cb04-7ac4-11e8-8e17-ed45e46cf554",
-    "bodyXML": "<body><ft-content type=\"http://www.ft.com/ontology/content/ImageSet\" url=\"http://test.api.ft.com/content/b7c8e40e-73a7-11e8-17fc-56e8d19c9a20\" data-embedded=\"true\"></ft-content><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.</p>\n<ft-content data-embedded=\"true\" type=\"http://www.ft.com/ontology/content/DynamicContent\" url=\"http://test.api.ft.com/content/f22b581a-7ac4-11e8-8e17-ed45e46cf554\"></ft-content>\n<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.</p>\n<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in </p>\n<h2>Image set below</h2>\n<ft-content data-embedded=\"true\" type=\"http://www.ft.com/ontology/content/ImageSet\" url=\"http://test.api.ft.com/content/504f6678-fcc8-36cb-9bfb-025f33758e90\"></ft-content>\n<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.</p>\n<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.</p>\n</body>",
-    "title": "Story containing image sets, linking to a dynamic content story",
-    "alternativeTitles": {},
-    "alternativeStandfirsts": {},
-    "byline": "",
-    "firstPublishedDate": "2018-06-28T11:27:06.000Z",
-    "publishedDate": "2018-06-28T11:27:06.000Z",
-    "webUrl": "https://www.ft.com/content/9607cb04-7ac4-11e8-8e17-ed45e46cf554",
-    "identifiers": [
+  "id": "http://www.ft.com/thing/ef5c0c27-ffe6-44d6-b992-8d919f2b476c",
+  "bodyXML": "<body><p>When knights saddled up for the Crusades in the Middle Ages, they made sure their wives and children were properly looked after — and their assets secured — by setting up a trust. This centuries-old concept, which allows assets to be held by trustees on behalf of beneficiaries, has been employed as a legal <a href=\"https://www.ft.com/content/548bd88e-d60b-11e9-8367-807ebd53ab77\">tool </a>in Britain ever since. </p><p>These days trusts are often used in <a href=\"https://www.ft.com/content/c5559861-6c19-4fdb-a652-4059cf5e6bd0\">wills </a>for estate planning and are frequently combined with life assurance policies. They also feature in <a href=\"https://www.ft.com/content/10370c58-a235-11e9-974c-ad1c6ab5efd1\">inheritance tax </a>planning because they allow people to control how their assets are used after they have given them away. People also use them to help pay <a href=\"https://ftalphaville.ft.com/2019/09/26/1569493996000/Why-are-private-school-fees-so-high-/\">school fees</a>, provide financially for children or vulnerable adults or protect family assets from divorce or bankruptcy.</p><p>But a series of government moves over the past few decades have <a href=\"https://www.ft.com/content/8a260fe4-e1c7-11e7-8f9f-de1c2175f5ce\">reduced </a>their tax advantages and made trusts much <a href=\"https://www.ft.com/content/04b6de70-e066-11e9-b112-9624ec9edc59\">less attractive</a> to wealthy families. They are likely to become less popular still from March, when a new requirement will force thousands more trustees to list on a government register that is partially open to the public, or risk penalties.</p><p>FT Money looks at what the new rules entail and who may be affected. Given the rising burden of red tape and dwindling advantages of confidentiality, are trusts still a useful part of the financial planning toolkit?</p><h2>The trusts register</h2><p>Since 2017, certain types of trusts have had to report information to a government online register called the Trusts Registration Service (TRS). This came into being as result of an EU-wide directive to tackle money laundering. To comply with the rules, all UK trusts that have to pay a tax liability such as <a href=\"https://www.ft.com/content/6945d210-6681-11e9-9adc-98bf1d35a056\">capital gains tax </a>(CGT), <a href=\"https://www.ft.com/content/506f728a-feea-11e9-be59-e49b2a136b8d\">income tax</a>, inheritance tax or <a href=\"https://www.ft.com/content/0a27712a-0d2b-11ea-b2d6-9bf4d1957a67\">stamp duty </a>must report information to the register. Trusts that are outside the UK but trigger UK tax must also do so, as must all trusts that are required to fill out a self-assessment tax return anyway.</p><p>Currently the register is not publicly available, with access limited to law enforcement authorities. </p><p>But from March, the next phase of the EU directive (the fifth Anti <a href=\"https://www.ft.com/content/d810c676-fb34-11e9-98fd-4d6c20050229\">Money-Laundering </a>Directive) is set to increase the number of trusts that must submit reports. It will also partially open up the register to the public, including journalists, leading some to worry about an erosion of privacy. </p><p>Despite the UK’s imminent departure from the EU, the government is committed to implementing the directive and passing it into domestic law before Christmas. However, the provisions relating to the expansion of the trust register are yet to be finalised and HM Revenue &amp; Customs has said it will run a consultation before the legislation needs to be in force by March 10. Nevertheless, tax experts warn that hundreds of thousands of trustees and <a href=\"https://www.ft.com/content/125bc323-8770-485a-aefa-5f064f7f3701\">beneficiaries</a> could be affected and need to understand better the possible impact of the changes.</p> <h2>What’s changing?</h2><h4>Many more trusts will need to register</h4><p>Under the current proposed rules all UK “express trusts” — not just those with a tax liability — will have to register on the TRS. An express trust is one created on purpose, not one imposed by a court.</p><p>“Trusts that are just sitting there holding [assets like] company shares — with no income or gains being produced, with nothing happening, will need to be registered,” explains Dominic Lawrance, partner at Charles Russell Speechlys, a law firm. </p><p>Tax experts warn that such a wide definition could lead to an explosion in the number of trusts required to register. Under the proposals, non-EU trusts that buy UK property or those that have a business relationship with an “obliged entity” would be affected. Obliged entities include lawyers, accountants, tax advisers, estate agents, banks and other financial institutions, as well as other intermediaries such as auction houses and galleries. </p><p>As a result of the changes, the Society of Trust and Estate Practitioners (Step), a professional body for advisers to wealthy families, believes the number of trusts needing to register could rise from 200,000 to 2m unless the government responds to the industry’s pleas by narrowing the definition before the March deadline. </p><p>The requirement for all UK express trusts to report would include <a href=\"https://www.ft.com/content/3309d61c-b53f-11e9-b2c2-1e116952691a\">life insurance </a>policies and shareholder protection policies, according to Dhana Sabanathan, partner at law firm Winckworth Sherwood, and may even stretch to all jointly owned property and bank accounts.</p><p>Advisers are concerned that including these trusts in the legislation will increase the administrative burden for many more trustees and leave them with higher costs — while not fulfilling the aim of the directive.</p><p>“The use of trusts to hold insurance benefits is standard estate planning practice in the UK,” say Step advisers. “There are likely to be millions of life policies written into trust. If there is an obligation to register a life policy trust, HMRC will be overwhelmed with registrations in respect of assets which are most unlikely to be used for money laundering and which may never mature if the life assured [person] survives a specified date.”</p><p>Advisers have also expressed worry that many people holding life assurance policies in trust may have forgotten they had taken out a policy years before. They may be unaware they are trustees yet be under an obligation to report under the new rules. </p><p>“These are lay trustees, people who don’t understand trust law and are unlikely to be keeping abreast of all these [compliance] issues,” says Rachael Griffin, tax and financial planning expert at Quilter. </p><p>Advisers have also raised alarm bells over trusts established to receive funds on the death of an individual or as a result of a nomination relating to the death benefits under a <a href=\"https://www.ft.com/personal-finance/pensions\">pension </a>policy. Both practices have been commonly used as part of estate planning in the UK for many years.</p><p>“There is scope for quite a lot of innocent non-compliance,” says Mr Lawrance, adding that ignorance is generally not seen as a reasonable excuse when it comes to the law.</p><ft-content autoplay=\"true\" data-embedded=\"true\" data-layout=\"in-line\" loop=\"true\" muted=\"true\" type=\"http://www.ft.com/ontology/content/ClipSet\" url=\"http://api-t.ft.com/content/d79441ee-6692-4c88-8c47-2f05df125027\"></ft-content><p>Crucially, failure to register a trust when required to do so will lead to trustees — not their agents — facing penalties, according to Lynne Rowland, partner at accountancy firm Moore Kingston Smith. “If a trustee gets something wrong, they could be personally liable if they are seen to have been negligent.”</p><p>The sort of penalties that await those who fail to follow the new rules have yet to be confirmed by the government. Currently individuals who register a trust up to three months late face a £100 fine, rising to £200 for filing up to six months late. </p><p>Filing more than six months late leads to a £300 penalty or 5 per cent of any tax liability, whichever is greater. However, the government has said these penalties will change when the new regime comes in and will be discussed in the forthcoming consultation. Ms Sabanathan warns non-compliance could include civil penalties (fines) and criminal penalties (prison sentences), so trustees need to be on their guard.</p><p>“For trusts holding assets that do not produce an income, this will then raise the question of how the trustees can raise funds to pay any penalties that may be incurred,” adds Carolyn Byrne, head of trust services at Roythornes Solicitors. </p><h4>Increased transparency</h4><p>The changes also mean that information held in the register can be seen by a wider range of people. From March 10, access will be granted to obliged entities (advisers and financial institutions), anyone who can demonstrate a “legitimate interest” or anyone who files a written request in relation to a trust which holds a controlling interest in a non-EU company.</p><p>The last two categories of people will be able to access most, but not all of the information on the register, including the name, month and year of birth of the beneficial owners, their country of residence and nationality, as well as the nature and extent of the beneficial interest held.</p><p>“This represents a disclosure of substantially more information about such structures than has ever been made available previously,” says Ms Sabanathan. “For clients who are concerned about <a href=\"https://www.ft.com/content/c4288d72-a7d0-11e9-984c-fac8325aaa04\">privacy </a>and security, these developments are worrying.”</p><p>Ms Griffin believes the exposure forced by the changes could undermine one aspect of trusts’ appeal. Unlike wills — where the contents are publicly revealed — trusts allow individuals the privacy to make financial provisions for “complex family situations” which family members might not wish to become public.</p><p>“The danger is you end up vilifying trusts to a certain extent,” she adds. This might stop people using trusts for legitimate reasons, such as to hold money for children until they are mature enough to manage it for themselves.</p><p>Advisers have also raised questions over possible security risks. People able to access the register based on a “legitimate interest” will include journalists and researchers. The government has suggested they would need to present evidence of suspected money-laundering to gain access, but this has yet to be confirmed in legislation.</p><p>“It is currently unclear how legitimate interest applications will be dealt with as this is not defined,” says Emily Deane, technical counsel at Step. “We hope that the government will require strong evidence of illegality or wrongdoing that clearly implicates the trust concerned before agreeing to consider a legitimate interest application, in order to respect families’ basic rights to legitimate confidentiality in their financial affairs and to ensure that sensitive information is not vulnerable to abuse.”</p><p>However, there is no requirement to present any evidence for accessing information about trusts which hold or own a controlling interest in a non-EU company; all that is needed is a written request. Ms Sabanathan says this rule evidence of suspected money-laundering to gain access, but this has yet to be confirmed in legislation.</p><p>“It is currently unclear how legitimate ino creditors and potentially the UK family courts, she says.</p><p>Mr Lawrance argues the legitimate interest test should apply to non-EU trusts too. “If you’re a settlor or a trustee from a high-risk jurisdiction, people may get blackmailed or kidnapped. That’s a pretty scary thought,” he says.</p><p>A government spokesperson says: “The overall objective of the transposition of [the fifth anti-money laundering directive] into UK law is to ensure that the UK’s anti-money laundering and counter terrorist financing regime is up-to-date, effective and proportionate.”</p><h2>Are trusts worth it?</h2><p>With the increased admin burden, transparency and cost of running trusts, some advisers think <a href=\"https://www.ft.com/content/a6cedc28-3128-11e9-ba00-0251022932c8\">wealthy families</a> are going to take a different approach to managing their money. More are likely to hang on to wealth rather than giving it away during their lifetime via trusts, or make greater use of wills to distribute assets.</p><p>Ms Griffin says: “There is an increased danger of people not passing wealth down the generations or of them giving that money away, but not having the control of those assets [that trusts offer].” </p><p>“I think a lot of people are going to be put off setting up trusts,” Ms Rowland adds. “There may be greater reluctance to take on that trustee role.”</p><p>Given the hassle factor and reduced tax advantages, many trustees will consider winding trusts up she believes; however this will require them to weigh the asset protection benefits versus the ongoing costs. As a rule of thumb Ms Rowland thinks it is not worth setting up a trust unless you have at least £500,000 of assets to put into it. </p><p>If tax is not the only consideration — for example, if you want to provide for vulnerable beneficiaries or protect assets from divorce — then setting up a trust with a lower value can be justified, she adds. </p><p>But what are the alternatives? One is the family investment company, in which typically parents hold voting shares and children hold shares with dividend rights. These have the advantage of flexibility though they will be subject to public scrutiny, unless a decision is made to do without limited liability.</p><p>Other advisers believe that, regardless of the reforms to trust administration, they can still be an effective way to manage <a href=\"https://www.ft.com/content/43defbcc-047a-11ea-a984-fbbacad9e7dd\">family money</a>. </p><p>“Trusts continue not only to bring certain inheritance tax benefits, [but] their flexibility around how family wealth can be distributed is a key driver as to why settlors consider a trust,” says Joan Foster, partner at RSM. “These factors coupled with the control over the capital that can be retained by the trustees, which often include the settlor, can make trusts a very attractive prospect.”</p><p>Despite the difficulties in prospect for trustees and beneficiaries from the upcoming reforms, Mr Lawrance does not believe there will be a surge in trust closures — not least because of the crystallisation of tax this could cause. </p><p>“A very small number of people who might have thought of creating a trust may think twice,” he adds. “But there’s nothing that quite replicates the qualities of a trust without being a trust. There’s no readily available alternatives, so [these changes] are just going to be part of the model going forward, with trustees sucking up the burden.”</p><p><em>This article has been amended to make clear that, under the CGT rules on bare trusts, CGT would only be charged on disposal of an asset.</em></p></body>",
+  "title": "Could new regulation spell the death of trusts?",
+  "alternativeTitles": {
+    "promotionalTitle": "Could new regulation spell the death of trusts?"
+  },
+  "standfirst": "Huge shake-up of the rules in March will open trusts to intense scrutiny ",
+  "alternativeStandfirsts": {},
+  "byline": "Emma Agyemang",
+  "firstPublishedDate": "2020-01-17T05:00:51.553Z",
+  "publishedDate": "2020-01-17T05:00:51.553Z",
+  "webUrl": "https://www.ft.com/content/ef5c0c27-ffe6-44d6-b992-8d919f2b476c",
+  "requestUrl": "https://api-t.ft.com/enrichedcontent/ef5c0c27-ffe6-44d6-b992-8d919f2b476c",
+  "brands": ["http://www.ft.com/thing/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"],
+  "alternativeImages": {},
+  "standout": {
+    "editorsChoice": false,
+    "exclusive": false,
+    "scoop": false
+  },
+  "canBeDistributed": "yes",
+  "canBeSyndicated": "yes",
+  "accessLevel": "subscribed",
+  "apiUrl": "https://api-t.ft.com/enrichedcontent/ef5c0c27-ffe6-44d6-b992-8d919f2b476c",
+  "prefLabel": "Could new regulation spell the death of trusts?",
+  "types": ["http://www.ft.com/ontology/content/Article"],
+  "annotations": [
+    {
+      "predicate": "http://www.ft.com/ontology/annotation/mentions",
+      "id": "http://api.ft.com/things/7bcfe07b-0fb1-49ce-a5fa-e51d5c01c3e0",
+      "apiUrl": "http://api-t.ft.com/organisations/7bcfe07b-0fb1-49ce-a5fa-e51d5c01c3e0",
+      "types": [
+        "http://www.ft.com/ontology/core/Thing",
+        "http://www.ft.com/ontology/concept/Concept",
+        "http://www.ft.com/ontology/organisation/Organisation"
+      ],
+      "prefLabel": "Financial Times",
+      "type": "ORGANISATION",
+      "directType": "http://www.ft.com/ontology/organisation/Organisation"
+    },
+    {
+      "predicate": "http://www.ft.com/ontology/annotation/mentions",
+      "id": "http://api.ft.com/things/ebb614b8-c986-36dd-b166-dfc06a9ef11f",
+      "apiUrl": "http://api-t.ft.com/organisations/ebb614b8-c986-36dd-b166-dfc06a9ef11f",
+      "types": [
+        "http://www.ft.com/ontology/core/Thing",
+        "http://www.ft.com/ontology/concept/Concept",
+        "http://www.ft.com/ontology/organisation/Organisation"
+      ],
+      "NAICS": [
         {
-            "authority": "http://api.ft.com/system/FTCOM-METHODE",
-            "identifierValue": "9607cb04-7ac4-11e8-8e17-ed45e46cf554"
+          "identifier": "541211",
+          "prefLabel": "Offices of Certified Public Accountants",
+          "rank": 1
         }
-    ],
-    "requestUrl": "https://test.api.ft.com/enrichedcontent/9607cb04-7ac4-11e8-8e17-ed45e46cf554",
-    "brands": [
-        "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
-    ],
-    "mainImage": {
-        "alternativeImages": {},
-        "alternativeStandfirsts": {},
-        "alternativeTitles": {},
-        "canBeDistributed": "yes",
-        "description": "Ai Sakai (C) greets the audience at Namba Grand Kagetsu theater in Osaka on July 26, 2017, after becoming the first female among six directors of the Shin Yoshimoto theatrical comedy troupe, one of Japan's leading comedy companies. (Kyodo)\n==Kyodo\n(Photo by Kyodo News via Getty Images)",
-        "firstPublishedDate": "2018-06-28T11:27:00.000Z",
-        "id": "https://test.api.ft.com/content/b7c8e40e-73a7-11e8-17fc-56e8d19c9a20",
-        "identifiers": [
-            {
-                "authority": "http://api.ft.com/system/FTCOM-METHODE",
-                "identifierValue": "b7c8e40e-73a7-11e8-17fc-56e8d19c9a20"
-            }
+      ],
+      "prefLabel": "Moore Kingston Smith LLP",
+      "type": "ORGANISATION",
+      "directType": "http://www.ft.com/ontology/organisation/Organisation"
+    },
+    {
+      "predicate": "http://www.ft.com/ontology/annotation/mentions",
+      "id": "http://api.ft.com/things/9c4ba801-7ec7-42c4-a506-f9b2c91d5320",
+      "apiUrl": "http://api-t.ft.com/organisations/9c4ba801-7ec7-42c4-a506-f9b2c91d5320",
+      "types": [
+        "http://www.ft.com/ontology/core/Thing",
+        "http://www.ft.com/ontology/concept/Concept",
+        "http://www.ft.com/ontology/organisation/Organisation"
+      ],
+      "prefLabel": "Society of Trust & Estate Practitioners",
+      "type": "ORGANISATION",
+      "directType": "http://www.ft.com/ontology/organisation/Organisation"
+    },
+    {
+      "predicate": "http://www.ft.com/ontology/annotation/mentions",
+      "id": "http://api.ft.com/things/b3cf0ec0-a9d0-3a5c-be3a-a5ee76be6dd1",
+      "apiUrl": "http://api-t.ft.com/organisations/b3cf0ec0-a9d0-3a5c-be3a-a5ee76be6dd1",
+      "types": [
+        "http://www.ft.com/ontology/core/Thing",
+        "http://www.ft.com/ontology/concept/Concept",
+        "http://www.ft.com/ontology/organisation/Organisation"
+      ],
+      "NAICS": [
+        {
+          "identifier": "541110",
+          "prefLabel": "Offices of Lawyers",
+          "rank": 1
+        }
+      ],
+      "prefLabel": "Winckworth Sherwood LLP",
+      "type": "ORGANISATION",
+      "directType": "http://www.ft.com/ontology/organisation/Organisation"
+    },
+    {
+      "predicate": "http://www.ft.com/ontology/annotation/mentions",
+      "id": "http://api.ft.com/things/e05846a6-3cf5-48e5-8907-89a307e4795e",
+      "apiUrl": "http://api-t.ft.com/organisations/e05846a6-3cf5-48e5-8907-89a307e4795e",
+      "types": [
+        "http://www.ft.com/ontology/core/Thing",
+        "http://www.ft.com/ontology/concept/Concept",
+        "http://www.ft.com/ontology/organisation/Organisation"
+      ],
+      "leiCode": "529900FZRK8FGMPEOM08",
+      "prefLabel": "European Union",
+      "type": "ORGANISATION",
+      "directType": "http://www.ft.com/ontology/organisation/Organisation"
+    },
+    {
+      "predicate": "http://www.ft.com/ontology/annotation/mentions",
+      "id": "http://api.ft.com/things/fac0a9d3-f00c-32fc-aedd-8449bca18e97",
+      "apiUrl": "http://api-t.ft.com/people/fac0a9d3-f00c-32fc-aedd-8449bca18e97",
+      "types": [
+        "http://www.ft.com/ontology/core/Thing",
+        "http://www.ft.com/ontology/concept/Concept",
+        "http://www.ft.com/ontology/person/Person"
+      ],
+      "prefLabel": "Joan Foster",
+      "type": "PERSON",
+      "directType": "http://www.ft.com/ontology/person/Person"
+    },
+    {
+      "predicate": "http://www.ft.com/ontology/annotation/mentions",
+      "id": "http://api.ft.com/things/e5edd86d-246e-46f8-bdfb-9a380fc130c6",
+      "apiUrl": "http://api-t.ft.com/organisations/e5edd86d-246e-46f8-bdfb-9a380fc130c6",
+      "types": [
+        "http://www.ft.com/ontology/core/Thing",
+        "http://www.ft.com/ontology/concept/Concept",
+        "http://www.ft.com/ontology/organisation/Organisation",
+        "http://www.ft.com/ontology/company/Company",
+        "http://www.ft.com/ontology/company/PublicCompany"
+      ],
+      "leiCode": "54930092XIVK28RZGM95",
+      "prefLabel": "Quilter PLC",
+      "type": "ORGANISATION",
+      "directType": "http://www.ft.com/ontology/company/PublicCompany"
+    },
+    {
+      "predicate": "http://www.ft.com/ontology/annotation/mentions",
+      "id": "http://api.ft.com/things/0b2f67f9-f24c-432c-8a0b-a22e282b33e7",
+      "apiUrl": "http://api-t.ft.com/organisations/0b2f67f9-f24c-432c-8a0b-a22e282b33e7",
+      "types": [
+        "http://www.ft.com/ontology/core/Thing",
+        "http://www.ft.com/ontology/concept/Concept",
+        "http://www.ft.com/ontology/organisation/Organisation"
+      ],
+      "leiCode": "213800UVWYXR4IF75640",
+      "prefLabel": "HM Revenue & Customs",
+      "type": "ORGANISATION",
+      "directType": "http://www.ft.com/ontology/organisation/Organisation"
+    },
+    {
+      "predicate": "http://www.ft.com/ontology/annotation/mentions",
+      "id": "http://api.ft.com/things/fedc958c-ce7c-34f3-a77e-34f37cf25212",
+      "apiUrl": "http://api-t.ft.com/organisations/fedc958c-ce7c-34f3-a77e-34f37cf25212",
+      "types": [
+        "http://www.ft.com/ontology/core/Thing",
+        "http://www.ft.com/ontology/concept/Concept",
+        "http://www.ft.com/ontology/organisation/Organisation"
+      ],
+      "leiCode": "213800SCNK3MITR1JC14",
+      "NAICS": [
+        {
+          "identifier": "541110",
+          "prefLabel": "Offices of Lawyers",
+          "rank": 1
+        }
+      ],
+      "prefLabel": "Charles Russell Speechlys LLP",
+      "type": "ORGANISATION",
+      "directType": "http://www.ft.com/ontology/organisation/Organisation"
+    }
+  ],
+  "curatedRelatedContent": [],
+  "containedIn": [],
+  "embeds": [
+    {
+      "alternativeImages": {},
+      "alternativeStandfirsts": {},
+      "alternativeTitles": {},
+      "description": "Number of trusts in decline",
+      "id": "https://api-t.ft.com/content/66101830-3863-11ea-bfdf-938130fb4080",
+      "members": [
+        {
+          "alternativeImages": {},
+          "alternativeStandfirsts": {},
+          "alternativeTitles": {},
+          "binaryUrl": "https://d6c748xw2pzm8.cloudfront.net/prod/66101830-3863-11ea-bfdf-938130fb4080-mobile.png",
+          "description": "Number of trusts in decline",
+          "firstPublishedDate": "2020-01-21T16:41:32.026Z",
+          "id": "https://api-t.ft.com/content/2ab480b4-72c4-4cd0-8598-ff72773b36f5",
+          "maxDisplayWidth": "490px",
+          "publishedDate": "2020-01-21T16:41:32.026Z",
+          "title": "",
+          "type": "http://www.ft.com/ontology/content/Graphic",
+          "apiUrl": "https://api-t.ft.com/content/2ab480b4-72c4-4cd0-8598-ff72773b36f5",
+          "canBeSyndicated": "verify"
+        },
+        {
+          "alternativeImages": {},
+          "alternativeStandfirsts": {},
+          "alternativeTitles": {},
+          "binaryUrl": "https://d6c748xw2pzm8.cloudfront.net/prod/66101830-3863-11ea-bfdf-938130fb4080-fullwidth.png",
+          "description": "Number of trusts in decline",
+          "firstPublishedDate": "2020-01-21T16:41:32.027Z",
+          "id": "https://api-t.ft.com/content/61143a33-ca31-49a5-9205-6f16182fee08",
+          "minDisplayWidth": "980px",
+          "publishedDate": "2020-01-21T16:41:32.027Z",
+          "title": "",
+          "type": "http://www.ft.com/ontology/content/Graphic",
+          "apiUrl": "https://api-t.ft.com/content/61143a33-ca31-49a5-9205-6f16182fee08",
+          "canBeSyndicated": "verify"
+        }
+      ],
+      "publishedDate": "2020-01-21T16:41:32.028Z",
+      "type": "http://www.ft.com/ontology/content/ImageSet",
+      "apiUrl": "https://api-t.ft.com/content/66101830-3863-11ea-bfdf-938130fb4080",
+      "canBeSyndicated": "verify"
+    },
+    {
+      "accessibility": {
+        "captions": [
+          {
+            "mediaType": "text/vtt",
+            "url": "https://next-media-api.ft.com/captions/16904708836660.vtt"
+          }
         ],
-        "lastModified": "2018-06-28T11:27:16.817Z",
-        "members": [
+        "transcript": "<p>INTERVIEWER: Doggo! </p><p>Lorem ipsum dolor sit amet. </p><p>[MUSIC] </p><p>BRUTUS: Consectetur adipiscing elit eiusmod do, tempor incididunt. </p>"
+      },
+      "alternativeImages": {},
+      "alternativeStandfirsts": {},
+      "alternativeTitles": {},
+      "brands": [
+        "http://www.ft.com/thing/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
+      ],
+      "canBeDistributed": "verify",
+      "canBeSyndicated": "verify",
+      "caption": "Satellite animation of Europe",
+      "dataCopyright": "Reuters",
+      "description": "The global push for net zero carbon emissions is one of humanity's greatest challenges. ...",
+      "displayTitle": "Ukranians fight back",
+      "firstPublishedDate": "2023-09-11T08:58:32.000Z",
+      "id": "https://api-t.ft.com/content/d79441ee-6692-4c88-8c47-2f05df125027",
+      "members": [
+        {
+          "alternativeImages": {},
+          "alternativeStandfirsts": {},
+          "alternativeTitles": {},
+          "brands": [
+            "http://www.ft.com/thing/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
+          ],
+          "canBeDistributed": "verify",
+          "canBeSyndicated": "verify",
+          "dataSource": [
             {
+              "audioCodec": "mp3",
+              "binaryUrl": "https://next-media-api.ft.com/renditions/16868569859480/0x0.mp3",
+              "duration": 1057,
+              "mediaType": "audio/mpeg",
+              "pixelHeight": 720,
+              "pixelWidth": 1280,
+              "videoCodec": "h264"
+            }
+          ],
+          "firstPublishedDate": "2023-09-11T08:51:56.000Z",
+          "format": "standardInline",
+          "id": "https://api-t.ft.com/content/e8a3d3d8-052b-409d-9418-c814f6b1a645",
+          "poster": {
+            "alternativeImages": {},
+            "alternativeStandfirsts": {},
+            "alternativeTitles": {},
+            "brands": [
+              "http://www.ft.com/thing/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
+            ],
+            "canBeSyndicated": "verify",
+            "description": "A man in a blue shirt stands with arms crossed in a bay that holds a white space rocket ",
+            "id": "http://www.ft.com/thing/e845c784-1c56-41bc-be31-bb67bf64512b",
+            "lastModified": "2023-09-13T11:02:48.000Z",
+            "members": [
+              {
                 "alternativeImages": {},
                 "alternativeStandfirsts": {},
                 "alternativeTitles": {},
-                "binaryUrl": "http://com.ft.imagepublish.k8s-content-test.test.s3.amazonaws.com/b7c8e40e-73a7-11e8-899a-c1720be83169",
-                "canBeDistributed": "no",
-                "canBeSyndicated": "no",
-                "description": "Ai Sakai (C) greets the audience at Namba Grand Kagetsu theater in Osaka on July 26, 2017, after becoming the first female among six directors of the Shin Yoshimoto theatrical comedy troupe, one of Japan's leading comedy companies. (Kyodo)\n==Kyodo\n(Photo by Kyodo News via Getty Images)",
-                "firstPublishedDate": "2018-06-28T11:27:00.000Z",
-                "id": "https://test.api.ft.com/content/b7c8e40e-73a7-11e8-899a-c1720be83169",
-                "identifiers": [
-                    {
-                        "authority": "http://api.ft.com/system/FTCOM-METHODE",
-                        "identifierValue": "b7c8e40e-73a7-11e8-899a-c1720be83169"
-                    }
+                "binaryUrl": "https://d1e00ek4ebabms.cloudfront.net/production/e3393dad-0723-4ce6-8dd9-9165a2ab8eb1.jpg",
+                "brands": [
+                  "http://www.ft.com/thing/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
                 ],
-                "lastModified": "2018-06-28T11:27:16.817Z",
-                "masterSource": {
-                    "authority": "http://api.ft.com/system/FT-FOTOWARE",
-                    "identifierValue": "250CB42F251D4B60 8254B52BF55FE086"
+                "canBeSyndicated": "verify",
+                "copyright": {
+                  "notice": "© Getty Images"
                 },
-                "pixelHeight": 1152,
-                "pixelWidth": 2048,
-                "publishReference": "tid_mak59jdd3g",
-                "publishedDate": "2018-06-28T11:27:00.000Z",
-                "rightsGroup": "Getty",
-                "title": "",
-                "type": "http://www.ft.com/ontology/content/Image",
-                "apiUrl": "https://test.api.ft.com/content/b7c8e40e-73a7-11e8-899a-c1720be83169"
-            }
-        ],
-        "publishReference": "tid_mak59jdd3g",
-        "publishedDate": "2018-06-28T11:27:00.000Z",
-        "title": "",
-        "type": "http://www.ft.com/ontology/content/ImageSet",
-        "apiUrl": "https://test.api.ft.com/content/b7c8e40e-73a7-11e8-17fc-56e8d19c9a20"
-    },
-    "alternativeImages": {},
-    "comments": {
-        "enabled": true
-    },
-    "standout": {
-        "editorsChoice": false,
-        "exclusive": false,
-        "scoop": false
-    },
-    "publishReference": "tid_nybzmzlduw",
-    "lastModified": "2018-07-13T15:51:11.057Z",
-    "canBeDistributed": "yes",
-    "canBeSyndicated": "verify",
-    "accessLevel": "subscribed",
-    "editorialDesk": "/FT/WorldNews",
-    "apiUrl": "https://test.api.ft.com/enrichedcontent/9607cb04-7ac4-11e8-8e17-ed45e46cf554",
-    "prefLabel": "Story containing image sets, linking to a dynamic content story",
-    "types": [
-        "http://www.ft.com/ontology/content/Article"
-    ],
-    "annotations": [],
-    "curatedRelatedContent": [],
-    "containedIn": [],
-    "embeds": [
-        {
-            "alternativeImages": {},
-            "alternativeStandfirsts": {},
-            "alternativeTitles": {},
-            "canBeDistributed": "yes",
-            "description": "Ai Sakai (C) greets the audience at Namba Grand Kagetsu theater in Osaka on July 26, 2017, after becoming the first female among six directors of the Shin Yoshimoto theatrical comedy troupe, one of Japan's leading comedy companies. (Kyodo)\n==Kyodo\n(Photo by Kyodo News via Getty Images)",
-            "firstPublishedDate": "2018-06-28T11:27:00.000Z",
-            "id": "https://test.api.ft.com/content/b7c8e40e-73a7-11e8-17fc-56e8d19c9a20",
-            "identifiers": [
-                {
-                    "authority": "http://api.ft.com/system/FTCOM-METHODE",
-                    "identifierValue": "b7c8e40e-73a7-11e8-17fc-56e8d19c9a20"
-                }
+                "description": "A man in a blue shirt stands with arms crossed in a bay that holds a white space rocket ",
+                "firstPublishedDate": "2023-09-13T10:46:13.961Z",
+                "format": "standardInline",
+                "id": "http://www.ft.com/thing/e3393dad-0723-4ce6-8dd9-9165a2ab8eb1",
+                "identifiers": [
+                  {
+                    "authority": "http://api.ft.com/system/cct",
+                    "identifierValue": "e3393dad-0723-4ce6-8dd9-9165a2ab8eb1"
+                  }
+                ],
+                "lastModified": "2023-09-13T11:02:47.000Z",
+                "pixelHeight": 1526,
+                "pixelWidth": 2288,
+                "publishReference": "republish_tid_UxbyRU1POf",
+                "publishedDate": "2023-09-13T10:46:13.961Z",
+                "requestUrl": "https://api-t.ft.com/content/e3393dad-0723-4ce6-8dd9-9165a2ab8eb1",
+                "title": "Elon Musk stands beside a rocket in El Segundo, Los Angeles, in 2004",
+                "type": "http://www.ft.com/ontology/content/Image"
+              }
             ],
-            "lastModified": "2018-06-28T11:27:16.817Z",
-            "members": [
-                {
-                    "alternativeImages": {},
-                    "alternativeStandfirsts": {},
-                    "alternativeTitles": {},
-                    "binaryUrl": "http://com.ft.imagepublish.k8s-content-test.test.s3.amazonaws.com/b7c8e40e-73a7-11e8-899a-c1720be83169",
-                    "canBeDistributed": "no",
-                    "canBeSyndicated": "no",
-                    "description": "Ai Sakai (C) greets the audience at Namba Grand Kagetsu theater in Osaka on July 26, 2017, after becoming the first female among six directors of the Shin Yoshimoto theatrical comedy troupe, one of Japan's leading comedy companies. (Kyodo)\n==Kyodo\n(Photo by Kyodo News via Getty Images)",
-                    "firstPublishedDate": "2018-06-28T11:27:00.000Z",
-                    "id": "https://test.api.ft.com/content/b7c8e40e-73a7-11e8-899a-c1720be83169",
-                    "identifiers": [
-                        {
-                            "authority": "http://api.ft.com/system/FTCOM-METHODE",
-                            "identifierValue": "b7c8e40e-73a7-11e8-899a-c1720be83169"
-                        }
-                    ],
-                    "lastModified": "2018-06-28T11:27:16.817Z",
-                    "masterSource": {
-                        "authority": "http://api.ft.com/system/FT-FOTOWARE",
-                        "identifierValue": "250CB42F251D4B60 8254B52BF55FE086"
-                    },
-                    "pixelHeight": 1152,
-                    "pixelWidth": 2048,
-                    "publishReference": "tid_mak59jdd3g",
-                    "publishedDate": "2018-06-28T11:27:00.000Z",
-                    "rightsGroup": "Getty",
-                    "title": "",
-                    "type": "http://www.ft.com/ontology/content/Image",
-                    "apiUrl": "https://test.api.ft.com/content/b7c8e40e-73a7-11e8-899a-c1720be83169"
-                }
-            ],
-            "publishReference": "tid_mak59jdd3g",
-            "publishedDate": "2018-06-28T11:27:00.000Z",
-            "title": "",
-            "type": "http://www.ft.com/ontology/content/ImageSet",
-            "apiUrl": "https://test.api.ft.com/content/b7c8e40e-73a7-11e8-17fc-56e8d19c9a20"
-        },
-        {
-            "accessLevel": "subscribed",
-            "alternativeImages": {},
-            "alternativeStandfirsts": {},
-            "alternativeTitles": {},
-            "bodyXML": "<body><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.</p>\n<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.</p>\n<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat turpis at massa tristique sagittis. Curabitur accumsan elit luctus nunc condimentum non gravida ipsum blandit. Pellentesque a ante ac nisl porttitor placerat id ac arcu. Phasellus sit amet felis quis velit sollicitudin pellentesque ac ut dui. Ut sit amet dolor vel risus imperdiet placerat at non nisi. Mauris eu nisl non libero semper ornare ut in neque. Donec semper tellus id magna feugiat at eleifend urna volutpat.</p>\n</body>",
-            "brands": [
-                "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
-            ],
-            "byline": "",
-            "canBeDistributed": "verify",
-            "canBeSyndicated": "verify",
-            "comments": {
-                "enabled": true
-            },
-            "editorialDesk": "/FT/WorldNews",
-            "firstPublishedDate": "2018-06-28T11:20:10.000Z",
-            "id": "https://test.api.ft.com/content/f22b581a-7ac4-11e8-8e17-ed45e46cf554",
-            "identifiers": [
-                {
-                    "authority": "http://api.ft.com/system/FTCOM-IG",
-                    "identifierValue": "ce0cccf2-747a-11e8-b4ef-b1558cf87650"
-                },
-                {
-                    "authority": "http://api.ft.com/system/FTCOM-METHODE",
-                    "identifierValue": "f22b581a-7ac4-11e8-8e17-ed45e46cf554"
-                }
-            ],
-            "lastModified": "2018-07-18T07:01:27.767Z",
-            "publishReference": "Postman_1531897287",
-            "publishedDate": "2018-06-28T11:20:10.000Z",
-            "standout": {
-                "editorsChoice": false,
-                "exclusive": false,
-                "scoop": false
-            },
-            "title": "Dynamic content story",
-            "type": "http://www.ft.com/ontology/content/DynamicContent",
-            "webUrl": "https://www.ft.com/content/f22b581a-7ac4-11e8-8e17-ed45e46cf554",
-            "apiUrl": "https://test.api.ft.com/content/f22b581a-7ac4-11e8-8e17-ed45e46cf554"
-        },
-        {
-            "alternativeImages": {},
-            "alternativeStandfirsts": {},
-            "alternativeTitles": {},
-            "canBeDistributed": "yes",
-            "firstPublishedDate": "2018-06-28T11:27:06.000Z",
-            "id": "https://test.api.ft.com/content/504f6678-fcc8-36cb-9bfb-025f33758e90",
-            "identifiers": [
-                {
-                    "authority": "http://api.ft.com/system/FTCOM-METHODE",
-                    "identifierValue": "504f6678-fcc8-36cb-9bfb-025f33758e90"
-                }
-            ],
-            "lastModified": "2018-07-13T15:51:11.057Z",
-            "members": [
-                {
-                    "alternativeImages": {},
-                    "alternativeStandfirsts": {},
-                    "alternativeTitles": {},
-                    "binaryUrl": "http://com.ft.imagepublish.k8s-content-test.test.s3.amazonaws.com/f5f5cd46-4e13-11e8-9625-2fc6a20bb261",
-                    "canBeDistributed": "verify",
-                    "description": "A mother of twins, one with microcephaly, holds them at the couch just hours after being born at IMIP, a public hospital in Recife, Brazil, Thursday, January, 21, 2016. The city has been the national epicenter of hundreds of cases of microcephaly linked to a Zika virus outbreak that has its roots on poor sanitation, unattended garbage and urban sprawl. These factors contribute to Aedes aegypt mosquitoes' proliferation and along with them the viruses that use it as vector, like dengue, zika and chikungunya. (Hilaea Media/Dado Galdieri for Financial Times)\n",
-                    "firstPublishedDate": "2018-06-28T11:27:00.000Z",
-                    "id": "https://test.api.ft.com/content/f5f5cd46-4e13-11e8-9625-2fc6a20bb261",
-                    "identifiers": [
-                        {
-                            "authority": "http://api.ft.com/system/FTCOM-METHODE",
-                            "identifierValue": "f5f5cd46-4e13-11e8-9625-2fc6a20bb261"
-                        }
-                    ],
-                    "lastModified": "2018-06-28T11:27:16.893Z",
-                    "pixelHeight": 972,
-                    "pixelWidth": 1458,
-                    "publishReference": "tid_cvduuui3vd",
-                    "publishedDate": "2018-06-28T11:27:00.000Z",
-                    "title": "",
-                    "type": "http://www.ft.com/ontology/content/Image",
-                    "apiUrl": "https://test.api.ft.com/content/f5f5cd46-4e13-11e8-9625-2fc6a20bb261"
-                },
-                {
-                    "alternativeImages": {},
-                    "alternativeStandfirsts": {},
-                    "alternativeTitles": {},
-                    "binaryUrl": "http://com.ft.imagepublish.k8s-content-test.test.s3.amazonaws.com/f42e8a48-4e13-11e8-9625-2fc6a20bb261",
-                    "canBeDistributed": "verify",
-                    "description": "A mother of twins, one with microcephaly, holds them at the couch just hours after being born at IMIP, a public hospital in Recife, Brazil, Thursday, January, 21, 2016. The city has been the national epicenter of hundreds of cases of microcephaly linked to a Zika virus outbreak that has its roots on poor sanitation, unattended garbage and urban sprawl. These factors contribute to Aedes aegypt mosquitoes' proliferation and along with them the viruses that use it as vector, like dengue, zika and chikungunya. (Hilaea Media/Dado Galdieri for Financial Times)\n",
-                    "firstPublishedDate": "2018-06-28T11:27:00.000Z",
-                    "id": "https://test.api.ft.com/content/f42e8a48-4e13-11e8-9625-2fc6a20bb261",
-                    "identifiers": [
-                        {
-                            "authority": "http://api.ft.com/system/FTCOM-METHODE",
-                            "identifierValue": "f42e8a48-4e13-11e8-9625-2fc6a20bb261"
-                        }
-                    ],
-                    "lastModified": "2018-06-28T11:27:16.879Z",
-                    "maxDisplayWidth": "490px",
-                    "pixelHeight": 417,
-                    "pixelWidth": 625,
-                    "publishReference": "tid_wvg1gnmgke",
-                    "publishedDate": "2018-06-28T11:27:00.000Z",
-                    "title": "",
-                    "type": "http://www.ft.com/ontology/content/Image",
-                    "apiUrl": "https://test.api.ft.com/content/f42e8a48-4e13-11e8-9625-2fc6a20bb261"
-                },
-                {
-                    "alternativeImages": {},
-                    "alternativeStandfirsts": {},
-                    "alternativeTitles": {},
-                    "binaryUrl": "http://com.ft.imagepublish.k8s-content-test.test.s3.amazonaws.com/ed641b38-4e13-11e8-9625-2fc6a20bb261",
-                    "canBeDistributed": "verify",
-                    "description": "A mother of twins, one with microcephaly, holds them at the couch just hours after being born at IMIP, a public hospital in Recife, Brazil, Thursday, January, 21, 2016. The city has been the national epicenter of hundreds of cases of microcephaly linked to a Zika virus outbreak that has its roots on poor sanitation, unattended garbage and urban sprawl. These factors contribute to Aedes aegypt mosquitoes' proliferation and along with them the viruses that use it as vector, like dengue, zika and chikungunya. (Hilaea Media/Dado Galdieri for Financial Times)\n",
-                    "firstPublishedDate": "2018-06-28T11:27:00.000Z",
-                    "id": "https://test.api.ft.com/content/ed641b38-4e13-11e8-9625-2fc6a20bb261",
-                    "identifiers": [
-                        {
-                            "authority": "http://api.ft.com/system/FTCOM-METHODE",
-                            "identifierValue": "ed641b38-4e13-11e8-9625-2fc6a20bb261"
-                        }
-                    ],
-                    "lastModified": "2018-06-28T11:27:16.858Z",
-                    "minDisplayWidth": "980px",
-                    "pixelHeight": 1966,
-                    "pixelWidth": 2458,
-                    "publishReference": "tid_fldo3p6oty",
-                    "publishedDate": "2018-06-28T11:27:00.000Z",
-                    "title": "",
-                    "type": "http://www.ft.com/ontology/content/Image",
-                    "apiUrl": "https://test.api.ft.com/content/ed641b38-4e13-11e8-9625-2fc6a20bb261"
-                }
-            ],
-            "publishReference": "tid_nybzmzlduw",
-            "publishedDate": "2018-06-28T11:27:06.000Z",
-            "type": "http://www.ft.com/ontology/content/ImageSet",
-            "apiUrl": "https://test.api.ft.com/content/504f6678-fcc8-36cb-9bfb-025f33758e90"
+            "publishReference": "republish_tid_rN12yJp3gw",
+            "publishedDate": "2023-09-13T10:46:13.966Z",
+            "requestUrl": "https://api-t.ft.com/content/e845c784-1c56-41bc-be31-bb67bf64512b",
+            "type": "http://www.ft.com/ontology/content/ImageSet"
+          },
+          "publishedDate": "2023-09-11T08:51:56.000Z",
+          "type": "http://www.ft.com/ontology/content/Clip",
+          "apiUrl": "https://api-t.ft.com/content/e8a3d3d8-052b-409d-9418-c814f6b1a645"
         }
-    ]
+      ],
+      "noAudio": false,
+      "publishedDate": "2023-09-11T08:58:32.000Z",
+      "source": "YouGov",
+      "subtitle": "Drone hits Moscow tower block",
+      "systemTitle": "input.mp4",
+      "type": "http://www.ft.com/ontology/content/ClipSet",
+      "apiUrl": "https://api-t.ft.com/content/d79441ee-6692-4c88-8c47-2f05df125027"
+    },
+    {
+      "alternativeImages": {},
+      "alternativeStandfirsts": {},
+      "alternativeTitles": {},
+      "description": "Tax take from UK trusts",
+      "id": "https://api-t.ft.com/content/ba8e7f00-3863-11ea-a1dd-5d185de0c964",
+      "members": [
+        {
+          "alternativeImages": {},
+          "alternativeStandfirsts": {},
+          "alternativeTitles": {},
+          "binaryUrl": "https://d6c748xw2pzm8.cloudfront.net/prod/ba8e7f00-3863-11ea-a1dd-5d185de0c964-mobile.png",
+          "description": "Tax take from UK trusts",
+          "firstPublishedDate": "2020-01-21T16:41:32.027Z",
+          "id": "https://api-t.ft.com/content/27cf9485-17ef-4548-ae92-8768500e7779",
+          "maxDisplayWidth": "490px",
+          "publishedDate": "2020-01-21T16:41:32.027Z",
+          "title": "",
+          "type": "http://www.ft.com/ontology/content/Graphic",
+          "apiUrl": "https://api-t.ft.com/content/27cf9485-17ef-4548-ae92-8768500e7779",
+          "canBeSyndicated": "verify"
+        },
+        {
+          "alternativeImages": {},
+          "alternativeStandfirsts": {},
+          "alternativeTitles": {},
+          "binaryUrl": "https://d6c748xw2pzm8.cloudfront.net/prod/ba8e7f00-3863-11ea-a1dd-5d185de0c964-fullwidth.png",
+          "description": "Tax take from UK trusts",
+          "firstPublishedDate": "2020-01-21T16:41:32.028Z",
+          "id": "https://api-t.ft.com/content/1c49d002-5546-4723-a562-0b7148335fae",
+          "minDisplayWidth": "980px",
+          "publishedDate": "2020-01-21T16:41:32.028Z",
+          "title": "",
+          "type": "http://www.ft.com/ontology/content/Graphic",
+          "apiUrl": "https://api-t.ft.com/content/1c49d002-5546-4723-a562-0b7148335fae",
+          "canBeSyndicated": "verify"
+        }
+      ],
+      "publishedDate": "2020-01-21T16:41:32.028Z",
+      "type": "http://www.ft.com/ontology/content/ImageSet",
+      "apiUrl": "https://api-t.ft.com/content/ba8e7f00-3863-11ea-a1dd-5d185de0c964",
+      "canBeSyndicated": "verify"
+    }
+  ],
+  "canonicalWebUrl": "https://www.ft.com/content/ef5c0c27-ffe6-44d6-b992-8d919f2b476c"
 }

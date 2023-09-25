@@ -270,6 +270,31 @@ func filterEmbedsKeys(m map[string]interface{}, filter []string) map[string]inte
 	return m
 }
 
+func renameKey(oldKey, newKey string, m map[string]interface{}) map[string]interface{} {
+	_, find := m[oldKey]
+	if find {
+		m[newKey] = m[oldKey]
+		delete(m, oldKey)
+	}
+	for k, v := range m {
+		vi, find := v.([]interface{})
+		if find {
+			for _, v := range vi {
+				_value, _find := v.(map[string]interface{})
+				if _find {
+					renameKey(oldKey, newKey, _value)
+				}
+			}
+		}
+		vMap, vMapHere := v.(map[string]interface{})
+		if vMapHere {
+			vMap = renameKey(oldKey, newKey, vMap)
+			m[k] = vMap
+		}
+	}
+	return m
+}
+
 func transformEmbeds(vMap []interface{}, baseURL string) {
 	for _, valueMapB := range vMap {
 		valueMap, ok := valueMapB.(map[string]interface{})
@@ -287,6 +312,8 @@ func transformEmbeds(vMap []interface{}, baseURL string) {
 			valueMap["id"] = baseURL + uuid.(string)
 			delete(valueMap, "uuid")
 		}
+		// Deep renaming
+		renameKey("requestUrl", "apiUrl", valueMap)
 	}
 }
 
