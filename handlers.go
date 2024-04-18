@@ -23,6 +23,7 @@ import (
 const (
 	uuidKey          contextKey = "uuid"
 	unrollContentKey contextKey = "unrollContent"
+	publicationKey   contextKey = "publication"
 )
 
 var internalComponentsFilter = map[string]interface{}{
@@ -55,9 +56,10 @@ type responsePart struct {
 type transformContent func(ctx context.Context, content map[string]interface{}, h internalContentHandler) map[string]interface{}
 
 type retriever struct {
-	uri           string
-	sourceAppName string
-	doFail        bool
+	uri             string
+	sourceAppName   string
+	doFail          bool
+	sendPublication bool
 	transformContent
 }
 
@@ -96,13 +98,15 @@ func (h internalContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		unrollContent = false
 	}
+	publicationParam := r.URL.Query()["publication"]
 
 	ctx := context.WithValue(transactionidutils.TransactionAwareContext(context.Background(), tid), uuidKey, uuid)
 	ctx = context.WithValue(ctx, unrollContentKey, unrollContent)
+	ctx = context.WithValue(ctx, publicationKey, publicationParam)
 
 	retrievers := []retriever{
-		{h.serviceConfig.content.appURI, h.serviceConfig.content.appName, true, transformContentSourceContent},
-		{h.serviceConfig.internalComponents.appURI, h.serviceConfig.internalComponents.appName, false, transformInternalComponentsContent},
+		{h.serviceConfig.content.appURI, h.serviceConfig.content.appName, true, true, transformContentSourceContent},
+		{h.serviceConfig.internalComponents.appURI, h.serviceConfig.internalComponents.appName, false, false, transformInternalComponentsContent},
 	}
 	parts := h.asyncRetrievalsAndUnmarshalls(ctx, retrievers, uuid, tid)
 	for _, p := range parts {
@@ -475,6 +479,7 @@ func createRequestURL(APIHost string, handlerPath string, uuid string) string {
 
 func (h internalContentHandler) callService(ctx context.Context, r retriever) (responsePart, *http.Response) {
 	uuid := ctx.Value(uuidKey).(string)
+
 	requestURL := fmt.Sprintf("%s%s", r.uri, uuid)
 	transactionID, _ := transactionidutils.GetTransactionIDFromContext(ctx)
 	req, err := http.NewRequest(http.MethodGet, requestURL, nil)
@@ -484,6 +489,16 @@ func (h internalContentHandler) callService(ctx context.Context, r retriever) (r
 	}
 	req.Header.Set(transactionidutils.TransactionIDHeader, transactionID)
 	req.Header.Set("Content-Type", "application/json")
+	if r.sendPublication {
+		publication, ok := ctx.Value(publicationKey).([]string)
+		if ok {
+			q := req.URL.Query()
+			for _, pub := range publication {
+				q.Add("publication", pub)
+			}
+			req.URL.RawQuery = q.Encode()
+		}
+	}
 
 	unrollContent, ok := ctx.Value(unrollContentKey).(bool)
 	if ok && r.sourceAppName == h.serviceConfig.content.appName {
