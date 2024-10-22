@@ -1,6 +1,6 @@
 module github.com/Financial-Times/internal-content-api
 
-go 1.21
+go 1.23
 
 require (
 	github.com/Financial-Times/api-endpoint v1.0.0
@@ -13,8 +13,8 @@ require (
 	github.com/gorilla/mux v1.6.2
 	github.com/jawher/mow.cli v1.0.4
 	github.com/rcrowley/go-metrics v0.0.0-20180503174638-e2704e165165
-	github.com/sirupsen/logrus v1.0.6
-	github.com/stretchr/testify v1.5.1
+	github.com/sirupsen/logrus v1.9.3
+	github.com/stretchr/testify v1.7.0
 	golang.org/x/net v0.0.0-20210428140749-89ef3d95e781
 )
 
@@ -24,8 +24,9 @@ require (
 	github.com/hashicorp/go-version v1.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // indirect
-	golang.org/x/sys v0.0.0-20210423082822-04245dca01da // indirect
+	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
 	gopkg.in/airbrake/gobrake.v2 v2.0.9 // indirect
 	gopkg.in/gemnasium/logrus-airbrake-hook.v2 v2.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
 )

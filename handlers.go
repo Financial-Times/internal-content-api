@@ -25,6 +25,8 @@ const (
 	unrollContentKey contextKey = "unrollContent"
 )
 
+var ErrLeadImages = errors.New("cannot find leadImages in response")
+
 var internalComponentsFilter = map[string]interface{}{
 	"id":               "",
 	"uuid":             "",
@@ -384,7 +386,7 @@ func mergeTwoContents(a map[string]interface{}, b map[string]interface{}, baseUR
 func (h internalContentHandler) expandLeadImages(ec map[string]interface{}) (map[string]interface{}, error) {
 	leadImages, found := ec["leadImages"]
 	if !found {
-		return ec, errors.New("cannot find leadImages in response")
+		return ec, ErrLeadImages
 	}
 
 	leadImagesAsArray := (leadImages).([]interface{})

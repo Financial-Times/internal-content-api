@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 
 	tid "github.com/Financial-Times/transactionid-utils-go"
@@ -36,7 +37,7 @@ func (appLogger *appLogger) TransactionStartedEvent(requestURL string, transacti
 		"request_url":    requestURL,
 		"transaction_id": transactionID,
 		"uuid":           uuid,
-	}).Info()
+	}).Debug()
 }
 
 func (appLogger *appLogger) RequestEvent(requestURL string, transactionID string, uuid string) {
@@ -49,15 +50,18 @@ func (appLogger *appLogger) RequestEvent(requestURL string, transactionID string
 }
 
 func (appLogger *appLogger) ErrorEvent(serviceName string, requestURL string, transactionID string, err error, uuid string) {
-	appLogger.log.WithFields(logrus.Fields{
+	log := appLogger.log.WithFields(logrus.Fields{
 		"event":          "error",
 		"request_url":    requestURL,
 		"transaction_id": transactionID,
 		"error":          err,
 		"uuid":           uuid,
-	}).
-		Warnf("Cannot reach %s host", serviceName)
-
+	})
+	if errors.Is(err, ErrLeadImages) {
+		log.Debugf("Cannot reach %s host", serviceName)
+	} else {
+		log.Warnf("Cannot reach %s host", serviceName)
+	}
 }
 
 func (appLogger *appLogger) Error(event event, errMessage string) {
