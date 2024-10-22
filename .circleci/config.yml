@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  ft-golang-ci: financial-times/golang-ci@1
+  ft-golang-ci: financial-times/golang-ci@2
 
 workflows:
   tests_and_docker:
@@ -12,8 +12,3 @@ workflows:
           name: build-docker-image
           requires:
             - build-and-test-project
-  snyk-scanning:
-    jobs:
-      - ft-golang-ci/scan:
-          name: scan-dependencies
-          context: cm-team-snyk
