@@ -36,7 +36,7 @@ func (appLogger *appLogger) TransactionStartedEvent(requestURL string, transacti
 		"request_url":    requestURL,
 		"transaction_id": transactionID,
 		"uuid":           uuid,
-	}).Info()
+	}).Debug()
 }
 
 func (appLogger *appLogger) RequestEvent(requestURL string, transactionID string, uuid string) {
@@ -56,8 +56,7 @@ func (appLogger *appLogger) ErrorEvent(serviceName string, requestURL string, tr
 		"error":          err,
 		"uuid":           uuid,
 	}).
-		Warnf("Cannot reach %s host", serviceName)
-
+		Debugf("Cannot reach %s host", serviceName)
 }
 
 func (appLogger *appLogger) Error(event event, errMessage string) {
@@ -79,7 +78,7 @@ func (appLogger *appLogger) RequestFailedEvent(serviceName string, requestURL st
 		"status":         resp.StatusCode,
 		"uuid":           uuid,
 	}).
-		Warnf("Request failed. %s responded with %s", serviceName, resp.Status)
+		Debugf("Request failed. %s responded with %s", serviceName, resp.Status)
 }
 
 func (appLogger *appLogger) ResponseEvent(serviceName string, requestURL string, resp *http.Response, uuid string) {
